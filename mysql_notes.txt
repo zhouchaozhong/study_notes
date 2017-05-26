@@ -1,0 +1,13 @@
+#Mysql学习笔记
+###########################################################
+
+
+########SQL聚合操作##############################
+########在公司中统计部分人数并统计总人数#########
+
+select deptno,count(1) from emp group by deptno with rollup;
+
+
+########统计人数大于1的部门######################
+
+select deptno,count(1) from emp group by deptno having count(1)>1;
