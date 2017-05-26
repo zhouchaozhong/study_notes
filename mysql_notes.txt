@@ -1,13 +1,28 @@
 #Mysql学习笔记
-###########################################################
+############################################################
 
 
-########SQL聚合操作##############################
-########在公司中统计部分人数并统计总人数#########
+########SQL聚合操作#########################################
+########在公司中统计部门人数并统计总人数####################
 
 select deptno,count(1) from emp group by deptno with rollup;
 
 
-########统计人数大于1的部门######################
+########统计人数大于1的部门#################################
 
 select deptno,count(1) from emp group by deptno having count(1)>1;
+
+########统计公司所有员工的薪水总额、最高和最低薪水##########
+
+select sum(sal),max(sal),min(sal) from emp;
+
+########查询出所有雇员的名字和所在部门的名称################
+
+select ename,deptname from emp ,dept where emp.deptno = dept.deptno;
+
+
+########查询emp中所有用户名和所在部门名称###################
+
+select ename,deptname from emp left join dept on emp.deptno=dept.deptno;
+
+
