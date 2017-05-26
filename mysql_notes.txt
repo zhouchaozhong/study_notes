@@ -25,4 +25,22 @@ select ename,deptname from emp ,dept where emp.deptno = dept.deptno;
 
 select ename,deptname from emp left join dept on emp.deptno=dept.deptno;
 
+########联合查询############################################
+UNION 和 UNION ALL 的主要区别是 UNION ALL 是把结果集直接合并在一起，而 UNION 是将
+UNION ALL 后的结果进行一次 DISTINCT，去除重复记录后的结果。
 
+select deptno from emp union select deptno from dept;
+
+
+
+
+##############DCL 语句主要是 DBA 用来管理系统中的对象权限时所使用，一般的开发人员很少使用。############
+
+##########创建一个数据库用户test,密码为123,具有对mydb数据库所有表的INSERT/SELECT权限#########
+
+grant select,insert on mydb.* to 'test'@'localhost' identified by '123';
+
+
+######收回用户test的insert权限###################
+
+revoke insert on mydb.* from 'test'@'localhost';
