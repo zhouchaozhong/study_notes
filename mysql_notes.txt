@@ -143,3 +143,38 @@ WEEK(DATE)和 YEAR(DATE)函数：前者返回所给的日期是一年中的第�
 
 DATE_FORMAT(date,fmt)函数：按字符串 fmt 格式化日期 date 值，此函数能够按指定的
 格式显示日期
+
+DATEDIFF（date1，date2）函数：用来计算两个日期之间相差的天数。
+
+
+#####################流程函数######################################
+模拟了对职员薪水进行分类，这里首先创建并初始化一个职员薪水表
+create table salary (userid int,salary decimal(9,2));
+insert into salary values(1,1000),(2,2000), (3,3000),(4,4000),(5,5000), (1,null);
+
+
+IF(value,t,f)函数：
+select if(salary>2000,'high','low') from salary;
+
+IFNULL(value1,value2)函数：这个函数一般用来替换 NULL 值的，我们知道 NULL 值是不
+能参与数值运算的，下面这个语句就是把 NULL 值用 0 来替换。
+select ifnull(salary,0) from salary;
+
+CASE WHEN [value1] THEN[result1]…ELSE[default]END 
+select case when salary<=2000 then 'low' else 'high' end from salary;
+
+
+CASE [expr] WHEN [value1] THEN[result1]…ELSE[default]END 函数：这里还可以分多种情况把职
+员的薪水分多个档次
+select case salary when 1000 then 'low' when 2000 then 'mid' else 'high' end from salary;
+
+
+
+######################其他常用函数########################
+DATABASE()        返回当前数据库名
+VERSION()         返回当前数据库版本
+USER()            返回当前登录用户名
+INET_ATON(IP)     返回 IP 地址的数字表示
+INET_NTOA(num)    返回数字代表的 IP 地址
+PASSWORD(str)     返回字符串 str 的加密版本
+MD5()             返回字符串 str 的 MD5 值
