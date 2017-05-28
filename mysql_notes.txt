@@ -208,3 +208,46 @@ INET_ATON(IP)     返回 IP 地址的数字表示
 INET_NTOA(num)    返回数字代表的 IP 地址
 PASSWORD(str)     返回字符串 str 的加密版本
 MD5()             返回字符串 str 的 MD5 值
+
+
+####################MySQL数据库引擎#######################
+可以通过“ALTER TABLE *** AUTO_INCREMENT = n;”语句强制设置自动增长列的初始值，
+默认从 1 开始
+
+可以使用 LAST_INSERT_ID()查询当前线程最后插入记录使用的值。
+
+
+##################外键约束################################
+
+MySQL 支持外键的存储引擎只有 InnoDB，在创建外键的时候，要求父表必须有对应的
+索引，子表在创建外键的时候也会自动创建对应的索引
+
+下面是样例数据库中的两个表，country 表是父表，country_id 为主键索引，city 表是子
+表，country_id 字段对 country 表的 country_id 有外键。
+
+
+CREATE TABLE country (
+country_id SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
+country VARCHAR(50) NOT NULL,
+last_update TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+PRIMARY KEY (country_id)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+
+CREATE TABLE city (
+city_id SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
+city VARCHAR(50) NOT NULL,
+country_id SMALLINT UNSIGNED NOT NULL,
+last_update TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+PRIMARY KEY (city_id),
+KEY idx_fk_country_id (country_id),
+CONSTRAINT `fk_city_country` FOREIGN KEY (country_id) REFERENCES country (country_id) ON
+DELETE RESTRICT ON UPDATE CASCADE
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+在导入多个表的数据时，如果需要忽略表之前的导入顺序，可以暂时关闭外键的检查；
+同样，在执行 LOAD DATA 和 ALTER TABLE 操作的时候，可以通过暂时关闭外键约束来加快处
+理的速度，关闭的命令是“SET FOREIGN_KEY_CHECKS = 0;”，执行完成之后，通过执行“SET
+FOREIGN_KEY_CHECKS = 1;”语句改回原状态。
