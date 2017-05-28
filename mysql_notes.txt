@@ -1,6 +1,36 @@
 #Mysql学习笔记
 ############################################################
 
+############################SQL基础#########################
+创建数据库  create database test1;
+删除数据库  drop database dbname;
+创建表      CREATE TABLE tablename (column_name_1 column_type_1 constraints，
+column_name_2  column_type_2  constraints ， ……column_name_n  column_type_n
+constraints）
+create table emp(ename varchar(10),hiredate date,sal decimal(10,2),deptno int(2));
+
+删除表      DROP TABLE tablename
+
+修改表  ALTER TABLE tablename MODIFY [COLUMN] column_definition [FIRST | AFTER col_name]
+alter table emp modify ename varchar(20);
+
+增加表字段
+ALTER TABLE tablename ADD [COLUMN] column_definition [FIRST | AFTER col_name]
+alter table emp add column age int(3);
+
+删除表字段
+ALTER TABLE tablename DROP [COLUMN] col_name
+alter table emp drop column age;
+
+字段改名
+ALTER TABLE tablename CHANGE [COLUMN] old_col_name column_definition
+[FIRST|AFTER col_name]
+alter table emp change age age1 int(4) ;
+
+表改名
+ALTER TABLE tablename RENAME [TO] new_tablename
+alter table emp rename emp1;
+
 
 ########SQL聚合操作#########################################
 ########在公司中统计部门人数并统计总人数####################
