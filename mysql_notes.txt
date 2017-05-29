@@ -236,7 +236,7 @@ MD5()             返回字符串 str 的 MD5 值
 可以使用 LAST_INSERT_ID()查询当前线程最后插入记录使用的值。
 
 
-##################外键约束################################
+##################约束################################
 
 MySQL 支持外键的存储引擎只有 InnoDB，在创建外键的时候，要求父表必须有对应的
 索引，子表在创建外键的时候也会自动创建对应的索引
@@ -263,14 +263,64 @@ PRIMARY KEY (city_id),
 KEY idx_fk_country_id (country_id),
 CONSTRAINT `fk_city_country` FOREIGN KEY (country_id) REFERENCES country (country_id) ON DELETE RESTRICT ON UPDATE CASCADE)ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+为已创建的表添加外键约束
+alter table student add foreign key(class_id) references class(id) on delete restrict on update cascade;
+
 删除主键约束
 alter table 表名 drop primary key;
 
-删除唯一性约束
-alter table 表名 drop index 字段1，字段2
+删除外键约束
+alter table 表名 foreign key 外键名称
 
 
 在导入多个表的数据时，如果需要忽略表之前的导入顺序，可以暂时关闭外键的检查；
 同样，在执行 LOAD DATA 和 ALTER TABLE 操作的时候，可以通过暂时关闭外键约束来加快处
 理的速度，关闭的命令是“SET FOREIGN_KEY_CHECKS = 0;”，执行完成之后，通过执行“SET
 FOREIGN_KEY_CHECKS = 1;”语句改回原状态。
+
+
+##########################索引###############################
+
+创建普通索引
+
+create index 索引名 on 表名(字段名)
+
+alter table 表名 add index 索引名(字段名)
+
+唯一索引 必须唯一，可以有空值
+create unique index 索引名 on 表名(字段名)
+alter table 表名 add unique(字段名)
+
+主键索引
+创建表时添加 或 alter table 表名 add primary key(字段名)
+
+组合索引
+create index 索引名 on 表名(字段1,字段2)
+
+删除索引
+drop index 索引名称 on 表名
+
+
+############################视图##############################
+
+创建视图
+
+create view 视图名[字段...] as 查询的SQL语句
+
+create view myview as select id from mytable2;
+
+create view myview2(city_id,myname) as select city_id,city from city limit 2;
+
+更新视图
+
+create or replace view 视图名 [字段] as 查询的SQL语句  #########有就替换，没有就创建#########
+或alter view 视图名 [字段...] as 查询的SQL语句
+
+删除视图
+
+drop view 视图名
+
+查看数据库中那些是表 那些是视图
+
+show table status
+
