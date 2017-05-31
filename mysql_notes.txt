@@ -361,3 +361,160 @@ drop view 视图名
 
 show table status
 
+
+
+##########################存储过程和函数#########################
+
+变量定义
+delimiter $$
+create procedure p_vartest()
+begin 
+declare a varchar(20) default 'abc';
+select a;
+end $$
+
+调用：
+
+delimiter ;
+call p_vartest();
+
+
+参数类型
+delimiter $$
+
+create procedure p_test_out(out v_out_int int)
+begin
+select v_out_int;
+set v_out_int=15;
+select v_out_int;
+end $$
+
+调用：
+delimiter ;
+set @v_out_int=10;
+call p_test_out(@v_out_int);
+
+输出：
+v_out_int 
+ NULL
+
+ v_out_int
+ 15
+
+ 输入参数(in)，存储过程会复制一份输入参数的值，不会改变它本身的值，而输出参数(out)有这样一个特点，即便我们之前给这个变量赋了值，但它的初始值仍然为空值。输入输出参数(inout)
+ 兼并输入和输出这两个参数的值。
+
+
+选择语句
+delimiter $$
+
+create procedure p_showage(in age int)
+begin
+if age>=18 then
+select '成年人';
+else 
+select '未成年人';
+end if;
+end $$
+
+调用：
+delimiter ;
+set @age=19;
+call p_showage(@age);
+
+case分支
+create procedure p_addsalary(in v_empno int)
+begin
+declare adds int;
+case v_empno
+when 1001 then
+set adds=1500;
+when 1002 then
+set adds=2500;
+when 1003 then
+set adds=3200;
+else
+set adds=1000;
+end case;
+end $$
+
+
+while循环语句
+create procedure p_addnum()
+begin
+declare i int default 1;
+declare addresult int default 0;
+while i <= 100 do
+set addresult=addresult+i;
+set i=i+1;
+end while;
+select addresult;
+end $$
+
+
+
+create procedure p_insertEmp()
+begin 
+declare maxempno int default 0;
+declare i int default 1;
+while i<=100 do
+select max(emp_no) into maxempno from employees;  /*将最大值赋值给maxempno*/
+set maxempno=maxempno+1;
+insert into employees(emp_no,birth_date,first_name,last_name,gender,hire_date)values(
+maxempno,'1991-01-01','jmi','ui','M','2011-01-05');
+set i=i+1;
+end while;
+end $$
+
+
+repeat循环语句
+create procedure p_updateGender()
+begin
+declare imin int default 1;
+declare imax int default 1;
+select min(emp_no) into imin from employees;
+select max(emp_no) into imax from employees;
+repeat
+if imin%2=0 then
+update employees set gender='F' where emp_no = imin;
+end if;
+set imin=imin+1;
+until imin>imax
+end repeat;
+end $$
+
+
+loop循环语句
+create procedure p_updateHire()
+begin
+declare imin int default 1;
+declare imax int default 1;
+select min(emp_no) into imin from employees;
+select max(emp_no) into imax form employees;
+myloop:loop
+if imin%2=1 then
+update employees set hire_date='1991-10-12' where emp_no=imin;
+end if;
+set imin=imin+1;
+if imin>imax then
+leave myloop;
+end if;
+end loop;
+end $$
+
+
+定义条件和处理（错误处理，当前面的代码执行出错，后面的代码也能执行）
+declare continue handler for sqlstate '错误代码值' set 变量=变量值;
+
+存储过程管理
+show procedure status where db='数据库名';
+select specific_name from mysql.proc; //查看存储过程的名字
+select specific_name,body from mysql.proc where specific_name='存储过程名字';
+
+drop procedure if exists 存储过程名字;//删除存储过程
+
+alter procedure 存储过程名 选项 //修改存储过程
+
+
+
+
