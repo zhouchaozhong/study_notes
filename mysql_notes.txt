@@ -649,3 +649,27 @@ lock table 表名 read local;
 
 ###############################事务#########################################
 
+set autocommit=0 //取消自动提交
+
+
+//事务提交
+start transaction;
+update account set accmoney=accmoney-1000 where aid=1;
+update account set accmoney=accomoney+1000 where aid=2;
+commit;
+
+//事务回滚
+ start transaction;
+ insert into account value(3,'C',1000);
+ savepoint s1;  // 创建还原点
+ insert into account value(4,'D',6000);
+ savepoint s2;
+ insert into account value(5,'E',2000);
+ savepoint s3;
+ rollback to s2;  //回滚到还原点s2
+ commit;
+
+
+补充；
+commit and chain;   //表示提交事务之后重新开启了新事务
+rollback release;   //表示事务回滚之后断开和客户端的连接
