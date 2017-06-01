@@ -41,6 +41,16 @@
 		<input v-model="message">
 	</div>
 
+
+	<!--组件化应用构建-->
+	<div id="app-7">
+		<ol>
+		 	<!-- 现在我们为每个todo-item提供待办项对象  -->
+    		<!-- 待办项对象是变量，即其内容可以是动态的 -->
+			<todo-item v-for="item in groceryList" v-bind:todo="item"></todo-item>
+		</ol>
+	</div>
+
 	<script type="text/javascript">
 		var app = new Vue({
 			el:'#app',
@@ -56,6 +66,7 @@
 			}
 		});
 
+		/*条件*/
 		var app3 = new Vue({
 			el:'#app-3',
 			data:{
@@ -63,6 +74,7 @@
 			}
 		});
 
+		/*循环*/
 		var app4 = new Vue({
 			el:'#app-4',
 			data:{
@@ -74,6 +86,7 @@
 			}
 		});
 
+		/*处理用户输入输出*/
 		var app5 = new Vue({
 			el:'#app-5',
 			data:{
@@ -93,6 +106,24 @@
 				message:'Hello Vue!'
 			}
 		});
+
+
+		/*构建组件化应用*/
+		Vue.component('todo-item',{
+			props:['todo'],
+			template:'<li>{{todo.text}}</li>'
+		})
+
+		var app7 = new Vue({
+			el:'#app-7',
+			data:{
+				groceryList:[
+					{text:'蔬菜'},
+					{text:'奶酪'},
+					{text:'随便其他什么人吃的东西'}
+				]
+			}
+		})
 	</script>
 </body>
 </html>
