@@ -9,9 +9,23 @@
 	</style>
 </head>
 <body>
+	<div id="app-1">
+		<a :href="url">{{url}}</a>
+		<p @click="test">aaaa</p> <!--   v-bind:可以缩写为:   v-on:可以缩写为@     -->
+	</div>
 
 	<script type="text/javascript">
-		
+		var vm = new Vue({
+			el:'#app-1',
+			data:{
+				url:'http://www.baidu.com'
+			},
+			methods:{
+				test:function(){
+					alert('aaa');
+				}
+			}
+		});
 	</script>
 </body>
 </html>
