@@ -62,6 +62,15 @@
 			<li is="todo-item" v-for="(todo,index) in todos" v-bind:title="todo" v-on:remove="todos.splice(index,1)"></li>
 		</ul>
 	</div>
+
+	<div id="app-7">
+		<li v-for="n in evenNumbers">{{ n }}</li>
+	</div>
+
+	<div id="app-8">
+		<li v-for="n in even(numbers)">{{ n }}</li>
+	</div>
+
 	<script type="text/javascript">
 		var vm = new Vue({
 			el:'#app-1',
@@ -143,6 +152,34 @@
 				addNewTodo:function(){
 					this.todos.push(this.newTodoText);
 					this.newTodoText='';
+				}
+			}
+		});
+
+		var vm7 = new Vue({
+			el:'#app-7',
+			data:{
+				numbers:[1,2,3,4,5]
+			},
+			computed:{
+				evenNumbers: function(){
+					return this.numbers.filter(function(number){
+						return number % 2 === 0
+					})
+				}
+			}
+		});
+
+		var vm8 = new Vue({
+			el:'#app-8',
+			data:{
+				numbers:[1,2,3,4,5]
+			},
+			methods:{
+				even:function(numbers){
+					return this.numbers.filter(function(number){
+						return number % 2 === 0
+					})
 				}
 			}
 		});
