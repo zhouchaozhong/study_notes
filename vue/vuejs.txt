@@ -97,3 +97,54 @@ Vue.config.keyCodes.f1 = 112
 
 如果要自动过滤用户输入的首尾空格，可以添加 trim 修饰符到 v-model 上过滤输入：
 <input v-model.trim="msg">
+
+
+######################################过渡效果#######################################
+
+过渡的-CSS-类名
+
+会有 4 个(CSS)类名在 enter/leave 的过渡中切换
+v-enter: 定义进入过渡的开始状态。在元素被插入时生效，在下一个帧移除。
+v-enter-active: 定义进入过渡的结束状态。在元素被插入时生效，在 transition/animation 完成之后移除。
+v-leave: 定义离开过渡的开始状态。在离开过渡被触发时生效，在下一个帧移除。
+v-leave-active: 定义离开过渡的结束状态。在离开过渡被触发时生效，在 transition/animation 完成之后移除。
+
+对于这些在 enter/leave 过渡中切换的类名，v- 是这些类名的前缀。使用 <transition name="my-transition"> 可以重置前缀，比如 v-enter 替换为 my-transition-enter。
+
+
+自定义过渡类名
+
+我们可以通过以下特性来自定义过渡类名：
+enter-class
+enter-active-class
+leave-class
+leave-active-class
+他们的优先级高于普通的类名，这对于 Vue 的过渡系统和其他第三方 CSS 动画库，如 Animate.css 结合使用十分有用。
+示例：
+<link href="https://unpkg.com/animate.css@3.5.1/animate.min.css" rel="stylesheet" type="text/css">
+<div id="example-3">
+  <button @click="show = !show">
+    Toggle render
+  </button>
+  <transition
+    name="custom-classes-transition"
+    enter-active-class="animated tada"
+    leave-active-class="animated bounceOutRight"
+  >
+    <p v-if="show">hello</p>
+  </transition>
+</div>
+new Vue({
+  el: '#example-3',
+  data: {
+    show: true
+  }
+})
+
+
+过渡模式
+in-out: 新元素先进行过渡，完成之后当前元素过渡离开。
+out-in: 当前元素先进行过渡，完成之后新元素过渡进入。
+<transition name="fade" mode="out-in">
+  <!-- ... the buttons ... -->
+</transition>
