@@ -23,6 +23,12 @@
 		<tchild v-bind:my-message="parentMsg"></tchild>
 	</div>
 
+	<div id="counter-event-example">
+		<p>{{total}}</p>
+		<button-counter v-on:increment="incrementTotal"></button-counter>
+		<button-counter v-on:increment="incrementTotal"></button-counter>
+	</div>
+
 	<script type="text/javascript">
 		var child = {
 			template:'<div>A custom component!</div>'
@@ -54,6 +60,32 @@
 			el:'#app-3',
 			data:{
 				parentMsg:'动态绑定父组件数据！'
+			}
+		});
+
+		Vue.component('button-counter',{
+			template:'<button v-on:click="increment">{{counter}}</button>',
+			data:function(){
+				return{
+					counter:0
+				}
+			},
+			methods:{
+				increment:function(){
+					this.counter += 1
+					this.$emit('increment')
+				}
+			}
+		});
+		var vmexp = new Vue({
+			el:'#counter-event-example',
+			data:{
+				total:0
+			},
+			methods:{
+				incrementTotal:function(){
+					this.total += 1
+				}
 			}
 		});
 	</script>
