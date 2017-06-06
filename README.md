@@ -1,2 +1,2 @@
 # study_notes
-My study notes
+<h1 style="color:green">My study notes</h1>
