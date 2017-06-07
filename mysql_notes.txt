@@ -14,10 +14,10 @@ create table emp(ename varchar(10),hiredate date,sal decimal(10,2),deptno int(2)
 create table 新表 like 旧表
 
 将旧表中的数据复制到新表中
-结构相同
+结构相同的两张表
 insert 新表 select * from 旧表
 
-结构不同
+结构不同的两张表
 insert 新表(字段1,字段2,字段3) select 字段1,字段2,字段3 from 旧表
 
 复制整个表（包括结构和数据）
@@ -270,7 +270,7 @@ alter table student add foreign key(class_id) references class(id) on delete res
 alter table 表名 drop primary key;
 
 删除外键约束
-alter table 表名 foreign key 外键名称
+alter table 表名 drop foreign key 外键名称
 
 
 在导入多个表的数据时，如果需要忽略表之前的导入顺序，可以暂时关闭外键的检查；
