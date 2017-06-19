@@ -1,0 +1,15 @@
+###################################Redis学习笔记##########################################
+
+keys *                      查看存在的键
+
+exists key名                判断某个key是否存在
+
+move key db                 移动key到其他库
+
+expire key 时间（秒）       为给定的key设置过期时间
+
+tll key                     查看这个key还有多少秒过期
+
+type key                    查看key的类型
+
+del key                     删除某个key
