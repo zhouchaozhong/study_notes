@@ -163,3 +163,37 @@ ZREVRANGEBYSCORE key max min [WITHSCORES] [LIMIT offset count]   返回有序集
                                                               (默认包括等于 max 或 min )的所有的成员。有序集成员按 
                                                                score 值递减(从大到小)的次序排列。
 
+
+
+##############################事务######################################33
+
+> MULTI    //开启事务
+OK
+
+> INCR foo  //操作指令
+QUEUED
+
+> INCR bar
+QUEUED
+
+> EXEC   //提交事务
+1) (integer) 1
+2) (integer) 1
+
+
+redis> SET foo 1
+OK
+
+redis> MULTI
+OK
+
+redis> INCR foo
+QUEUED
+
+redis> DISCARD   //放弃事务  当执行 DISCARD 命令时，事务会被放弃，事务队列会被清空，并且客户端会从事务状态中退出
+OK
+
+redis> GET foo
+"1"
+
+被 WATCH 的键会被监视，并会发觉这些键是否被改动过了。 如果有至少一个被监视的键在 EXEC 执行之前被修改了， 那么整个事务都会被取消， EXEC 返回空多条批量回复（null multi-bulk reply）来表示事务已经失败。
