@@ -1,7 +1,7 @@
 ###################################Redis学习笔记##########################################
 
 
-备注：所有命令可以参考   http://www.redisdoc.com
+备注：所有命令可以参考   http://redisdoc.com
 
 keys *                      查看存在的键
 
@@ -29,6 +29,9 @@ decrby key 3                将某个key的值减3
 
 del key                     删除某个key
 
+
+GET key                     返回 key 所关联的字符串值
+
 getrange key 0 2            获取某个key 0 2 区间内的值（例如 getrange k1 0 2  k1的值是123456  则最终的值是123）
 
 setrange key 2  xxxx        设置某个key 从第2个位置的值(例如 setrange k1 2 xxx k1的值是123456 则最终的值是12xxx6)
@@ -46,6 +49,9 @@ MGET key [key ...]            返回所有(一个或多个)给定 key 的值。�
 
 MSETNX key value [key value ...]     同时设置一个或多个 key-value 对，当且仅当所有给定 key 都不存在。
                                      即使只有一个给定 key 已存在， MSETNX 也会拒绝执行所有给定 key 的设置操作。
+
+LRANGE key start stop          返回列表 key 中指定区间内的元素，区间以偏移量 start 和 stop 指定。
+
 
 LPUSH key value [value ...]    将一个或多个值 value 插入到列表 key 的表头如果有多个 value 值，那么各个
 							   value 值按从左到右的顺序依次插入到表头
@@ -80,3 +86,80 @@ LINSERT key BEFORE|AFTER pivot value   将值 value 插入到列表 key 当中�
                                        当 pivot 不存在于列表 key 时，不执行任何操作。
                                        当 key 不存在时， key 被视为空列表，不执行任何操作。
                                        如果 key 不是列表类型，返回一个错误。
+
+SADD key member [member ...]           将一个或多个 member 元素加入到集合 key 当中，已经存在于集合
+									   的 member 元素将被忽
+
+SMEMBERS key                        返回集合 key 中的所有成员
+
+SCARD key                           返回集合 key 的基数(集合中元素的数量)。
+
+SREM key member [member ...]        移除集合 key 中的一个或多个 member 元素，不存在的 member 元素会被忽略。
+
+SRANDMEMBER key [count]             如果命令执行时，只提供了 key 参数，那么返回集合中的一个随机元素。
+
+SPOP key                            移除并返回集合中的一个随机元素。
+
+SMOVE source destination member     将 member 元素从 source 集合移动到 destination 集合。
+
+SDIFF key [key ...]                 返回一个集合的全部成员，该集合是所有给定集合之间的差集
+
+SINTER key [key ...]                返回一个集合的全部成员，该集合是所有给定集合的交集
+
+SUNION key [key ...]                返回一个集合的全部成员，该集合是所有给定集合的并集。
+
+HSET key field value                将哈希表 key 中的域 field 的值设为 value 。
+
+HGET key field                      返回哈希表 key 中给定域 field 的值。
+
+HMSET key field value [field value ...]    同时将多个 field-value (域-值)对设置到哈希表 key 中。
+
+HMGET key field [field ...]         返回哈希表 key 中，一个或多个给定域的值。
+
+HGETALL key                         返回哈希表 key 中，所有的域和值。
+
+HDEL key field [field ...]          删除哈希表 key 中的一个或多个指定域，不存在的域将被忽略。
+
+HLEN key                            返回哈希表 key 中域的数量。
+
+HEXISTS key field                   查看哈希表 key 中，给定域 field 是否存在。
+
+HKEYS key                           返回哈希表 key 中的所有域。
+
+HVALS key                           返回哈希表 key 中所有域的值。
+
+HINCRBY key field increment         为哈希表 key 中的域 field 的值加上增量 increment 。
+                                    增量也可以为负数，相当于对给定域进行减法操作。
+
+HINCRBYFLOAT key field increment    为哈希表 key 中的域 field 加上浮点数增量 increment 。
+
+HSETNX key field value              将哈希表 key 中的域 field 的值设置为 value ，当且仅当域 field 不存在。
+
+ZADD key score member [[score member] [score member] ...]   将一个或多个 member 元素及其 score 值加入到有序集 key 
+                                                            当中。
+
+ZRANGE key start stop [WITHSCORES]   返回有序集 key 中，指定区间内的成员。
+
+ZRANGEBYSCORE key min max [WITHSCORES] [LIMIT offset count]  返回有序集 key 中，所有 score 值介于 min 和 max 之间
+                                                          (包括等于 min 或 max )的成员。有序集成员按 score 值递增
+                                                          (从小到大)次序排列。
+
+ZREM key member [member ...]                    移除有序集 key 中的一个或多个成员，不存在的成员将被忽略。
+
+ZCARD key                                        返回有序集 key 的基数。
+
+ZCOUNT key min max  返回有序集 key 中， score 值在 min 和 max 之间(默认包括 score 值等于 min 或 max )的成员的数量。
+
+ZRANK key member          返回有序集 key 中成员 member 的排名。其中有序集成员按 score 值递增(从小到大)顺序排列。
+
+ZSCORE key member          返回有序集 key 中，成员 member 的 score 值。
+
+ZREVRANK key member        返回有序集 key 中成员 member 的排名。其中有序集成员按 score 值递减(从大到小)排序。
+
+ZREVRANGE key start stop [WITHSCORES]   返回有序集 key 中，指定区间内的成员。其中成员的位置按 score 值递减
+                                        (从大到小)来排列。
+
+ZREVRANGEBYSCORE key max min [WITHSCORES] [LIMIT offset count]   返回有序集 key 中， score 值介于 max 和 min 之间
+                                                              (默认包括等于 max 或 min )的所有的成员。有序集成员按 
+                                                               score 值递减(从大到小)的次序排列。
+
