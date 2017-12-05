@@ -257,8 +257,8 @@ windows下vagrant的注意事项（热心同学整理的）
         http://www.cnblogs.com/fengchi/p/6549784.html
         http://stackoverflow.com/questions/27992354/vagrant-error-failed-to-mount-folders-in-linux-guest-after-halt-or-reload*
 
-vagrant rsync  将本机文件与虚拟机内映射的文件同步
-vagrant rsync-auto 监听本机文件的改动，当本机文件改动时，自动同步文件改动到虚拟机
+    * vagrant rsync  将本机文件与虚拟机内映射的文件同步
+    * vagrant rsync-auto 监听本机文件的改动，当本机文件改动时，自动同步文件改动到虚拟机
             
     
 
