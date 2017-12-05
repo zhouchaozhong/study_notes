@@ -18,6 +18,9 @@ Vagrant使用教程
 
 * VirtualBox 5.1.8
     * 下载地址 https://www.virtualbox.org/wiki/Download_Old_Builds_5_1
+
+
+    * 在Windows环境中安装VirtualBox时，需要将VirtualBox的安装路径添加到path环境变量中，否则vagrant会找不到VirtualBox的路径   
     
 * Vagrant 1.8.6  
     * 下载地址：https://releases.hashicorp.com/vagrant/1.8.6/
