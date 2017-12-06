@@ -125,9 +125,8 @@ windows下vagrant的注意事项
 Vagrant在windows10系统中的配置示例（VirtualBox5.2.2,Vagrant2.0.1）
 ------------------------          
     
-Vagrant.configure("2") do |config|
-
-#所使用的box的名称
+  Vagrant.configure("2") do |config|
+  #所使用的box的名称
   config.vm.box = "centos/7"
   #linux系统中显示的主机名
   config.vm.hostname = "centos7"
@@ -150,12 +149,12 @@ Vagrant.configure("2") do |config|
 
 
   config.vm.provider "virtualbox" do |vb|
-  #   # Display the VirtualBox GUI when booting the machine
-  #   vb.gui = true
+  #Display the VirtualBox GUI when booting the machine
+  # vb.gui = true
   #配置在VirtualBox中显示的系统名字
     vb.name = "centos7_dev_env"
-  #   # Customize the amount of memory on the VM:
-  #   vb.memory = "1024"
+  #Customize the amount of memory on the VM:
+  #vb.memory = "1024"
   end
 
 
