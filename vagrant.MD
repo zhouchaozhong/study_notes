@@ -176,49 +176,6 @@ Vagrant高级配置
         
         `config.vm.synced_folder "/Users/vincent/code/", "/home/www"`
         
-框架配置
---------------------
-* tp5
-    * git clone https://github.com/top-think/think tp5
-    * 然后切换到tp5目录下面，再克隆核心框架仓库：cd tp5 && git clone https://github.com/top-think/framework thinkphp
-    * [nginx 配置](./ubuntu/nginx/tp5.conf)
-        * 无法查看日志 sudo chmod -R 755 /var/log/nginx
-    * [apache 配置](./ubuntu/apache/tp5.conf)
-        * 无法查看日志sudo chmod -R 755 /var/log/apache2
-        * Forbidden解决办法
-            * cd /etc/apache2
-            * sudo vim apache2.conf
-            ``` 
-                 <Directory />
-                         Options FollowSymLinks
-                         AllowOverride None #修改成AllowOverride ALL 打开rewrite
-                         #Require all denied #把这行屏蔽掉，拒绝一切链接
-                 </Directory>
-            ``` 
-    * 测试效果
-        * http://tp5.imooc.test 或者 http://tp5.imooc.test:8888
-        * 做个测试页面 http://tp5.imooc.test/index/index/test 或者 http://tp5.imooc.test:8000/index/index/test
-        
-* yii2
-    * 下载：github.com/yiisoft/yii2/releases/download/2.0.10/yii-basic-app-2.0.10.tgz 
-    * [nginx 配置](./ubuntu/nginx/yii2.conf)
-    * [apache 配置](./ubuntu/apache/yii2.conf) 
-    * 测试效果
-            * http://yii.imooc.test 或者 http://yii.imooc.test:8888
-            * 做个测试页面 http://yii.imooc.test/site/test 或者 http://yii.imooc.test:8000/site/test
-    * 问题
-        * runtime/logs": mkdir(): Permission denied
-            * 权限不够 chmod -R 777 runtime  (如果在虚拟机不能修改文件权限，请使用nfs共享目录)
-        * yii\web\Request::cookieValidationKey must be configured with a secret key.
-            * config/web.php cookieValidationKey 赋值
-        * 如果打不开 site/test ，请修改config/web.php 中urlManager 注释打开
-        
-* laravel5
-    * 下载： down.golaravel.com/laravel/laravel-v5.1.11.zip  
-    * [nginx 配置](./ubuntu/nginx/laravel5.conf)
-    * [apache 配置](./ubuntu/apache/laravel5.conf) 
-    * 测试效果
-        * http://laravel.imooc.test 或者 http://laravel.imooc.test:8888
         
 优化
 ----------------
@@ -258,13 +215,55 @@ windows下vagrant的注意事项（热心同学整理的）
         先执行命令 vagrant plugin install vagrant-vbguest,再看看virtualbox版本对到了2号工具否.
         其他参考:
         http://www.cnblogs.com/fengchi/p/6549784.html
-        http://stackoverflow.com/questions/27992354/vagrant-error-failed-to-mount-folders-in-linux-guest-after-halt-or-reload*
+        http://stackoverflow.com/questions/27992354/vagrant-error-failed-to-mount-folders-in-linux-guest-after-halt-or-reload
+        * 在windows环境下虚拟机系统为centos7，要实现smb类型的文件共享，centos7中必须安装cifs-utils.x86_64这个包，
+          yum install cifs-utils.x86_64。同时，如果是win10系统，windows账户的密码必须是微软邮箱的密码，不能是pin密码。
 
-    * vagrant rsync  将本机文件与虚拟机内映射的文件同步
-    * vagrant rsync-auto 监听本机文件的改动，当本机文件改动时，自动同步文件改动到虚拟机
-            
+
+    * 默认共享方式和rsync共享方式
+      rsync同步方式在windows上的同步存在一些问题，在宿主机改动文件，虚拟机的文件会同步。当虚拟机内文件改动时，宿主机上的文件不会同步。且只有在vagrant up 和vagrant reload时才会同步文件。或者用以下两个命令才会同步文件
+    * vagrant rsync  将宿主机文件与虚拟机内映射的文件同步
+    * vagrant rsync-auto 监听宿主机文件的改动，当宿主机文件改动时，自动同步文件改动到虚拟机
+
+
+Vagrant在windows10系统中的配置示例（VirtualBox5.2.2,Vagrant2.0.1）
+------------------------          
     
+Vagrant.configure("2") do |config|
 
+#所使用的box的名称
+  config.vm.box = "centos/7"
+  #linux系统中显示的主机名
+  config.vm.hostname = "centos7"
+
+  #配置私有网络ip和共享文件夹
+  #config.vm.network "private_network", ip: "192.168.33.10"
+ 
+  config.vm.synced_folder "d:/vagrant/centos7", "/vagrant",type:"smb",
+  #windows系统用户名
+  smb_username:"*********",
+  #windows系统密码
+  smb_password:"********",
+  #同步到虚拟机内的文件所有者
+  owner:"vagrant",
+  #同步到虚拟机内的文件所属群组
+  group:"vagrant"
+
+  #mount_options: ["dmode=775,fmode=664"]
+
+
+
+  config.vm.provider "virtualbox" do |vb|
+  #   # Display the VirtualBox GUI when booting the machine
+  #   vb.gui = true
+  #配置在VirtualBox中显示的系统名字
+    vb.name = "centos7_dev_env"
+  #   # Customize the amount of memory on the VM:
+  #   vb.memory = "1024"
+  end
+
+
+end
    
     
     
