@@ -120,6 +120,7 @@ windows下vagrant的注意事项
       rsync同步方式在windows上的同步存在一些问题，在宿主机改动文件，虚拟机的文件会同步。当虚拟机内文件改动时，宿主机上的文件不会同步。且只有在vagrant up 和vagrant reload时才会同步文件。或者用以下两个命令才会同步文件
     * vagrant rsync  将宿主机文件与虚拟机内映射的文件同步
     * vagrant rsync-auto 监听宿主机文件的改动，当宿主机文件改动时，自动同步文件改动到虚拟机
+    * 在用xshell  ssh连接虚拟机中的centos7 系统时，会提示需要public_key,这个时候我们可以选择浏览文件，到vagrant当前的工作目录下的.vagrant/machines/default/virtualbox目录下，找到private_key这个文件，这个时候就可以通过ssh连接到虚拟机中的系统了
 
 
 Vagrant在windows10系统中的配置示例（VirtualBox5.2.2,Vagrant2.0.1）
