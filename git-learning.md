@@ -30,6 +30,7 @@ git常用命令
 * 设置提交代码时的用户信息
 
  `$ git config [--global] user.name "[name]"`
+
  `$ git config [--global] user.email "[email address]"`
 
 三、增加或删除文件 
