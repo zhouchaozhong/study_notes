@@ -112,7 +112,7 @@ _第二段强调文字_
 表情（github专用）
 -----
 
-:star: :sparkling_heart:
+:star: :sparkling_heart: :two_hearts: :dog: :rabbit: :tiger:
 
 
 
