@@ -31,58 +31,71 @@ constraints）
 * 删除表      DROP TABLE tablename
 
 * 修改表  ALTER TABLE tablename MODIFY [COLUMN] column_definition [FIRST | AFTER col_name]
+
 alter table emp modify ename varchar(20);
 
 * 增加表字段
 ALTER TABLE tablename ADD [COLUMN] column_definition [FIRST | AFTER col_name]
+
 alter table emp add column age int(3);
 
 * 删除表字段
 ALTER TABLE tablename DROP [COLUMN] col_name
+
 alter table emp drop column age;
 
 * 字段改名
 ALTER TABLE tablename CHANGE [COLUMN] old_col_name column_definition
 [FIRST|AFTER col_name]
+
 alter table emp change age age1 int(4) ;
 
 * 表改名
 ALTER TABLE tablename RENAME [TO] new_tablename
+
 alter table emp rename emp1;
 
 
 SQL聚合操作
 -----------------------------------------------
 * 在公司中统计部门人数并统计总人数
+
 select deptno,count(1) from emp group by deptno with rollup;
 
 
 * 统计人数大于1的部门
+
 select deptno,count(1) from emp group by deptno having count(1)>1;
 
 * 统计公司所有员工的薪水总额、最高和最低薪水
+
 select sum(sal),max(sal),min(sal) from emp;
 
 * 查询出所有雇员的名字和所在部门的名称
+
 select ename,deptname from emp ,dept where emp.deptno = dept.deptno;
 
 
 * 查询emp中所有用户名和所在部门名称
+
 select ename,deptname from emp left join dept on emp.deptno=dept.deptno;
 
 联合查询
 ---------------------------------------------
 * UNION 和 UNION ALL 的主要区别是 UNION ALL 是把结果集直接合并在一起，而 UNION 是将
 UNION ALL 后的结果进行一次 DISTINCT，去除重复记录后的结果。
+
 select deptno from emp union select deptno from dept;
 
 * DCL 语句主要是 DBA 用来管理系统中的对象权限时所使用，一般的开发人员很少使用。
 
 * 创建一个数据库用户test,密码为123,具有对mydb数据库所有表的INSERT/SELECT权限
+
 grant select,insert on mydb.* to 'test'@'localhost' identified by '123';
 
 
 * 收回用户test的insert权限
+
 revoke insert on mydb.* from 'test'@'localhost';
 
 
