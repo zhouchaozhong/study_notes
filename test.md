@@ -93,28 +93,7 @@ _第二段强调文字_
 
  [^1]:来自徐志摩
 
-公式
--------
 
-  $E=mc^2$
-
-  $$\sum_{i=1}^n a_i=0$$
-  
-  $$f(x_1,x_x,\ldots,x_n) = x_1^2 + x_2^2 + \cdots + x_n^2 $$
-  
-  $$\sum^{j-1}_{k=0}{\widehat{\gamma}_{kj} z_k}$$
-
-
-flow
-st=>start: Start:>https://www.zybuluo.com
-io=>inputoutput: verification
-op=>operation: Your Operation
-cond=>condition: Yes or No?
-sub=>subroutine: Your Subroutine
-e=>end
-st->io->op->cond
-cond(yes)->e
-cond(no)->sub->io
 
 表格
 ------
@@ -125,9 +104,6 @@ cond(no)->sub->io
  |  3   | 碧瑶 |  19  |  女  |
 
 
-表情
------
-:+1: :0: :+2:
 
 
 
