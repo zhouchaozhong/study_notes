@@ -82,7 +82,6 @@ select deptno from emp union select deptno from dept;
 
 
 
-
 ##############DCL 语句主要是 DBA 用来管理系统中的对象权限时所使用，一般的开发人员很少使用。############
 
 ##########创建一个数据库用户test,密码为123,具有对mydb数据库所有表的INSERT/SELECT权限#########
