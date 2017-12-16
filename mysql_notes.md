@@ -10,6 +10,7 @@ SQL基础
 * 创建表      CREATE TABLE tablename (column_name_1 column_type_1 constraints，
   column_name_2  column_type_2  constraints ， ……column_name_n  column_type_n
 constraints）
+
   create table emp(ename varchar(10),hiredate date,sal decimal(10,2),deptno int(2));
 
 
@@ -21,82 +22,82 @@ constraints）
     insert 新表 select * from 旧表
 
   * 结构不同的两张表
-  insert 新表(字段1,字段2,字段3) select 字段1,字段2,字段3 from 旧表
+    insert 新表(字段1,字段2,字段3) select 字段1,字段2,字段3 from 旧表
 
   * 复制整个表（包括结构和数据）
-  create table 新表 select * from 旧表
+    create table 新表 select * from 旧表
 
-  注：只是用select 语句的结果建了一个新表，所以新表不会有主键，索引
+  * 注：只是用select 语句的结果建了一个新表，所以新表不会有主键，索引
 
 * 删除表      DROP TABLE tablename
 
 * 修改表  ALTER TABLE tablename MODIFY [COLUMN] column_definition [FIRST | AFTER col_name]
 
-alter table emp modify ename varchar(20);
+  alter table emp modify ename varchar(20);
 
 * 增加表字段
-ALTER TABLE tablename ADD [COLUMN] column_definition [FIRST | AFTER col_name]
+  ALTER TABLE tablename ADD [COLUMN] column_definition [FIRST | AFTER col_name]
 
-alter table emp add column age int(3);
+  alter table emp add column age int(3);
 
 * 删除表字段
-ALTER TABLE tablename DROP [COLUMN] col_name
+  ALTER TABLE tablename DROP [COLUMN] col_name
 
-alter table emp drop column age;
+  alter table emp drop column age;
 
 * 字段改名
-ALTER TABLE tablename CHANGE [COLUMN] old_col_name column_definition
+  ALTER TABLE tablename CHANGE [COLUMN] old_col_name column_definition
 [FIRST|AFTER col_name]
 
-alter table emp change age age1 int(4) ;
+  alter table emp change age age1 int(4) ;
 
 * 表改名
-ALTER TABLE tablename RENAME [TO] new_tablename
+  ALTER TABLE tablename RENAME [TO] new_tablename
 
-alter table emp rename emp1;
+  alter table emp rename emp1;
 
 
 SQL聚合操作
 -----------------------------------------------
 * 在公司中统计部门人数并统计总人数
 
-select deptno,count(1) from emp group by deptno with rollup;
+  select deptno,count(1) from emp group by deptno with rollup;
 
 
 * 统计人数大于1的部门
 
-select deptno,count(1) from emp group by deptno having count(1)>1;
+  select deptno,count(1) from emp group by deptno having count(1)>1;
 
 * 统计公司所有员工的薪水总额、最高和最低薪水
 
-select sum(sal),max(sal),min(sal) from emp;
+  select sum(sal),max(sal),min(sal) from emp;
 
 * 查询出所有雇员的名字和所在部门的名称
 
-select ename,deptname from emp ,dept where emp.deptno = dept.deptno;
+  select ename,deptname from emp ,dept where emp.deptno = dept.deptno;
 
 
 * 查询emp中所有用户名和所在部门名称
 
-select ename,deptname from emp left join dept on emp.deptno=dept.deptno;
+  select ename,deptname from emp left join dept on emp.deptno=dept.deptno;
 
 联合查询
 ---------------------------------------------
 * UNION 和 UNION ALL 的主要区别是 UNION ALL 是把结果集直接合并在一起，而 UNION 是将
 UNION ALL 后的结果进行一次 DISTINCT，去除重复记录后的结果。
 
-select deptno from emp union select deptno from dept;
+  select deptno from emp union select deptno from dept;
 
 * DCL 语句主要是 DBA 用来管理系统中的对象权限时所使用，一般的开发人员很少使用。
 
 * 创建一个数据库用户test,密码为123,具有对mydb数据库所有表的INSERT/SELECT权限
 
-grant select,insert on mydb.* to 'test'@'localhost' identified by '123';
+  grant select,insert on mydb.* to 'test'@'localhost' identified by '123';
 
 
 * 收回用户test的insert权限
 
-revoke insert on mydb.* from 'test'@'localhost';
+  revoke insert on mydb.* from 'test'@'localhost';
 
 
 Mysql数据类型
@@ -199,23 +200,28 @@ UNIX_TIMESTAMP(date)互为逆操作。
 ------------------------------------------------------
 
 * 模拟了对职员薪水进行分类，这里首先创建并初始化一个职员薪水表
-create table salary (userid int,salary decimal(9,2));
-insert into salary values(1,1000),(2,2000), (3,3000),(4,4000),(5,5000), (1,null);
+  create table salary (userid int,salary decimal(9,2));
+
+  insert into salary values(1,1000),(2,2000), (3,3000),(4,4000),(5,5000), (1,null);
 
 
 * IF(value,t,f)函数：
-select if(salary>2000,'high','low') from salary;
+
+  select if(salary>2000,'high','low') from salary;
 
 * IFNULL(value1,value2)函数：这个函数一般用来替换 NULL 值的，我们知道 NULL 值是不
 能参与数值运算的，下面这个语句就是把 NULL 值用 0 来替换。
-select ifnull(salary,0) from salary;
+
+  select ifnull(salary,0) from salary;
 
 * CASE WHEN [value1] THEN[result1]…ELSE[default]END 
-select case when salary<=2000 then 'low' else 'high' end from salary;
+
+  select case when salary<=2000 then 'low' else 'high' end from salary;
 
 
 * CASE [expr] WHEN [value1] THEN[result1]…ELSE[default]END 函数：这里还可以分多种情况把职员的薪水分多个档次
-select case salary when 1000 then 'low' when 2000 then 'mid' else 'high' end from salary;
+
+  select case salary when 1000 then 'low' when 2000 then 'mid' else 'high' end from salary;
 
 
 
@@ -274,13 +280,13 @@ CONSTRAINT `fk_city_country` FOREIGN KEY (country_id) REFERENCES country (countr
 ```
 
 * 为已创建的表添加外键约束
-alter table student add foreign key(class_id) references class(id) on delete restrict on update cascade;
+  alter table student add foreign key(class_id) references class(id) on delete restrict on update cascade;
 
 * 删除主键约束
-alter table 表名 drop primary key;
+  alter table 表名 drop primary key;
 
 * 删除外键约束
-alter table 表名 drop foreign key 外键名称
+  alter table 表名 drop foreign key 外键名称
 
 
 * 在导入多个表的数据时，如果需要忽略表之前的导入顺序，可以暂时关闭外键的检查；
@@ -299,17 +305,17 @@ FOREIGN_KEY_CHECKS = 1;”语句改回原状态。
   * alter table 表名 add index 索引名(字段名)
 
 * 唯一索引 必须唯一，可以有空值
-create unique index 索引名 on 表名(字段名)
-alter table 表名 add unique(字段名)
+  create unique index 索引名 on 表名(字段名)
+  alter table 表名 add unique(字段名)
 
 * 主键索引
-创建表时添加 或 alter table 表名 add primary key(字段名)
+  创建表时添加 或 alter table 表名 add primary key(字段名)
 
 * 组合索引
-create index 索引名 on 表名(字段1,字段2)
+  create index 索引名 on 表名(字段1,字段2)
 
 * 删除索引
-drop index 索引名称 on 表名
+  drop index 索引名称 on 表名
 
 
 
