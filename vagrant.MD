@@ -106,7 +106,7 @@ windows下vagrant的注意事项
     * 在用xshell  ssh连接虚拟机中的centos7 系统时，会提示需要public_key,这个时候我们可以选择浏览文件，到vagrant当前的工作目录下的.vagrant/machines/default/virtualbox目录下，找到private_key这个文件，这个时候就可以通过ssh连接到虚拟机中的系统了
 
 
-Vagrant在windows10系统中的配置示例（VirtualBox5.2.2,Vagrant2.0.1）
+Vagrant在win10系统中的配置示例（VirtualBox5.2.2,Vagrant2.0.1）
 ------------------------          
   
 	Vagrant.configure("2") do |config|
