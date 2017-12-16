@@ -200,6 +200,7 @@ UNIX_TIMESTAMP(date)互为逆操作。
 ------------------------------------------------------
 
 * 模拟了对职员薪水进行分类，这里首先创建并初始化一个职员薪水表
+
   create table salary (userid int,salary decimal(9,2));
 
   insert into salary values(1,1000),(2,2000), (3,3000),(4,4000),(5,5000), (1,null);
