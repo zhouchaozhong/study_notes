@@ -1,37 +1,20 @@
 Vagrant使用教程
 ==================
-注意
-------------------
-* 快速打造跨平台开发环境 vagrant + virtualbox + box](http://www.54php.cn/default/26.html)
-
-目标
-------------------
-* 成果是打包一个box镜像
-* 这个box镜像需要运行 LAMP(Linux + Apache + Mysql + PHP ) 和 LNMP( Linux + Nginx + Mysql + PHP) 
-* 配置好3个比较流行的PHP框架运行环境
-    * Yii2
-    * Laravel5
-    * ThinkPHP5
 
 基础环境
 --------------------
 
-* VirtualBox 5.1.8
-    * 下载地址 https://www.virtualbox.org/wiki/Download_Old_Builds_5_1
-
-
+* VirtualBox 
     * 在Windows环境中安装VirtualBox时，需要将VirtualBox的安装路径添加到path环境变量中，否则vagrant会找不到VirtualBox的路径   
     
-* Vagrant 1.8.6  
-    * 下载地址：https://releases.hashicorp.com/vagrant/1.8.6/
+* Vagrant 
     * 切记根据自己的操作系统下载，同时分32位和64位
 
 * Windows 额外工作
     * 可能需要配置环境变量
     * 安装Xshell命令行工具
     * [注意，一定要开启 VT-x/AMD-V 硬件加速](https://zhidao.baidu.com/question/1383660674073569340.html)
-    
-    
+      
 启动虚拟机
 -------------------
 * box下载
@@ -125,41 +108,35 @@ windows下vagrant的注意事项
 
 Vagrant在windows10系统中的配置示例（VirtualBox5.2.2,Vagrant2.0.1）
 ------------------------          
-    
-  Vagrant.configure("2") do |config|
-  #所使用的box的名称
-  config.vm.box = "centos/7"
-  #linux系统中显示的主机名
-  config.vm.hostname = "centos7"
-
-  #配置私有网络ip和共享文件夹
-  #config.vm.network "private_network", ip: "192.168.33.10"
- 
-  config.vm.synced_folder "d:/vagrant/centos7", "/vagrant",type:"smb",
-  #windows系统用户名
-  smb_username:"*********",
-  #windows系统密码
-  smb_password:"********",
-  #同步到虚拟机内的文件所有者
-  owner:"vagrant",
-  #同步到虚拟机内的文件所属群组
-  group:"vagrant"
-
-  #mount_options: ["dmode=775,fmode=664"]
-
-
-
-  config.vm.provider "virtualbox" do |vb|
-  #Display the VirtualBox GUI when booting the machine
-  # vb.gui = true
-  #配置在VirtualBox中显示的系统名字
-    vb.name = "centos7_dev_env"
-  #Customize the amount of memory on the VM:
-  #vb.memory = "1024"
-  end
-
-
-end
+  
+	Vagrant.configure("2") do |config|
+	#所使用的box的名称
+	config.vm.box = "centos/7"
+	#linux系统中显示的主机名
+	config.vm.hostname = "centos7"
+	
+	#配置私有网络ip和共享文件夹
+	#config.vm.network "private_network", ip: "192.168.33.10"
+	
+	config.vm.synced_folder "d:/vagrant/centos7", "/vagrant",type:"smb",
+	#windows系统用户名
+	smb_username:"*********",
+	#windows系统密码
+	smb_password:"********",
+	#同步到虚拟机内的文件所有者
+	owner:"vagrant",
+	#同步到虚拟机内的文件所属群组
+	group:"vagrant"
+	#mount_options: ["dmode=775,fmode=664"]
+	config.vm.provider "virtualbox" do |vb|
+	#Display the VirtualBox GUI when booting the machine
+	# vb.gui = true
+	#配置在VirtualBox中显示的系统名字
+	vb.name = "centos7_dev_env"
+	#Customize the amount of memory on the VM:
+	#vb.memory = "1024"
+	end
+	end
    
     
     
