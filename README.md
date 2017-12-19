@@ -1,2 +1,3 @@
-# study_notes
-<h1 style="color:green">My study notes</h1>
+日常学习笔记整理
+====================================
+![头像](./md1.jpg)
