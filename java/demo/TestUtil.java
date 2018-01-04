@@ -26,7 +26,7 @@ public class TestUtil {
 	public static void main(String[] args) {
 		ArrayList al = new ArrayList();
 		al.add(12345);
-		al.add("����");
+		al.add("张三");
 		al.add(66.66);
 		al.add(new AU());
 		System.out.println(al.get(2));
