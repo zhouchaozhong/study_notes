@@ -7,6 +7,35 @@ public class Animal {
 	public String name="aaa";
 	private int password = 123;
 	private static int age = 18;
+	private String room;
+	private int stu_no;
+	public int getPassword() {
+		return password;
+	}
+
+	public void setPassword(int password) {
+		this.password = password;
+	}
+
+	public String getRoom() {
+		return room;
+	}
+
+	public void setRoom(String room) {
+		this.room = room;
+	}
+
+	public int getStu_no() {
+		return stu_no;
+	}
+
+	public void setStu_no(int stu_no) {
+		this.stu_no = stu_no;
+	}
+
+	public String getAb() {
+		return null;
+	}
 	public Animal() {
 		System.out.println("Animal class has been created!");
 	}
