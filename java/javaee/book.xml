@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE bookshelf SYSTEM "book.dtd">
-<bookshelf>
-    <book>
-        <title>编译原理</title>
-        <author>屈婉玲</author>
-        <price>50.00元</price>
-    </book>
-    <book>
-        <title>数据结构</title>
-        <author>张大山</author>
-        <price>30.00元</price>
-    </book>
-    <book>
-        <title>&bookname;</title>
-        <author>张晓</author>
-        <price>60.00元</price>
-    </book>
+
+<bookshelf> 
+  <book> 
+    <title copyright="机械工业出版社" name="xxx">编译原理</title>  
+    <author>屈婉玲</author>  
+    <price>60.00元</price> 
+  </book>  
+  <book> 
+    <title name="xxxxxxx">数据结构</title>  
+    <author>陆雪琪</author>  
+    <price>30.00元</price> 
+  </book>  
+  <book> 
+    <title>javaweb开发</title>  
+    <author>张大山</author>  
+    <price>60.00元</price> 
+  </book> 
 </bookshelf>
