@@ -682,3 +682,247 @@
     }
 
 ```
+
+对xml文件的读写操作
+-----------------------------------------------------------
+
+1. MainActivity.java
+```
+    package com.example.myapp3;
+
+    import android.content.Context;
+    import android.support.v7.app.AppCompatActivity;
+    import android.os.Bundle;
+    import android.view.View;
+    import android.widget.Button;
+    import android.widget.Toast;
+
+    public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+        private Context mContext;
+        @Override
+        protected void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setContentView(R.layout.activity_main);
+
+            mContext = this;
+            Button bt_backup = (Button) findViewById(R.id.bt_backup);
+            Button bt_restore = (Button) findViewById(R.id.bt_restore);
+
+            bt_backup.setOnClickListener(this);
+            bt_restore.setOnClickListener(this);
+
+        }
+
+        @Override
+        public void onClick(View view) {
+            switch (view.getId()){
+                case R.id.bt_backup:
+                    if(SmsUtils.backupSms(mContext)){
+                        Toast.makeText(mContext, "备份成功！", Toast.LENGTH_SHORT).show();
+                    }else{
+                        Toast.makeText(mContext, "备份失败！", Toast.LENGTH_SHORT).show();
+                    }
+                    break;
+                case R.id.bt_restore:
+                    int result = SmsUtils.restoreSms(mContext);
+                    Toast.makeText(mContext,"成功恢复" + result + "条短信",Toast.LENGTH_SHORT).show();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+
+    }
+
+```
+
+2. SmsUtils.java
+
+```
+    package com.example.myapp3;
+
+    import android.content.Context;
+    import android.content.res.AssetManager;
+    import android.util.Xml;
+
+    import org.xmlpull.v1.XmlPullParser;
+    import org.xmlpull.v1.XmlSerializer;
+
+    import java.io.IOException;
+    import java.io.InputStream;
+    import java.util.ArrayList;
+    import java.util.List;
+
+    /**
+    * Created by zhouchaozhong on 2018/1/22.
+    */
+
+    class SmsUtils {
+        public static boolean backupSms(Context context) {
+            /*
+                //通过写入字符的方式创建xml文件
+            StringBuffer sb = new StringBuffer();
+            sb.append("<?xml version='1.0' encoding='utf-8' standalone='yes' ?>");
+            sb.append("<Smss>");
+            sb.append("</Smss>");
+            try {
+                FileOutputStream fos = context.openFileOutput("backupsms.xml",Context.MODE_PRIVATE);
+                fos.write(sb.toString().getBytes());
+                fos.close();
+                return true;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            return false;
+
+            */
+
+            List<SmsBean> list = new ArrayList<SmsBean>();
+            SmsBean sb1 = new SmsBean("13525689752","你好吗？","2018-01-22",1);
+            SmsBean sb2 = new SmsBean("15565987562","我很好！","2018-01-23",2);
+            SmsBean sb3 = new SmsBean("15632568966","吃晚饭了吗？","2018-01-25",3);
+            list.add(sb1);
+            list.add(sb2);
+            list.add(sb3);
+
+            try {
+                //创建一个XmlSerializer对象
+                XmlSerializer xs = Xml.newSerializer();
+                //设置XmlSerializer的参数
+                xs.setOutput(context.openFileOutput("backupsms2.xml",Context.MODE_PRIVATE),"utf-8");
+                //序列化一个xml的声明头，(encoding,standalone)编码和是否独立
+                xs.startDocument("utf-8",true);
+
+                //序列化一个根节点的开始节点（namespace,name）命名空间，标签名称
+                xs.startTag(null,"Smss");
+
+                //循环遍历list集合中的信息
+                for(SmsBean obj : list){
+                    xs.startTag(null,"Sms");
+                    xs.attribute(null,"id",obj.id+"");
+
+                    xs.startTag(null,"num");
+                    xs.text(obj.num);
+                    xs.endTag(null,"num");
+
+                    xs.startTag(null,"msg");
+                    xs.text(obj.msg);
+                    xs.endTag(null,"msg");
+
+                    xs.startTag(null,"date");
+                    xs.text(obj.date);
+                    xs.endTag(null,"date");
+
+                    xs.endTag(null,"Sms");
+
+
+                }
+                //序列化一个根节点的结束节点
+                xs.endTag(null,"Smss");
+
+                //将xml写入文件中，完成xml的序列化
+                xs.endDocument();
+                return true;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return false;
+
+
+        }
+
+        //解析xml文件
+        public static int restoreSms(Context context) {
+            ArrayList<SmsBean> arrayList = null;
+            SmsBean smsBean = null;
+            try {
+                //通过Xml获取一个XmlPullParser对象
+                XmlPullParser xpp = Xml.newPullParser();
+
+                //通过context获取资产管理者对象
+                AssetManager assets = context.getAssets();
+
+                //通过资产管理者对象获取一个文件读取流
+                InputStream is = assets.open("backupsms2.xml");
+
+                //设置XmlPullParser对象的参数
+                //xpp.setInput(context.openFileInput("backupsms2.xml"), "utf-8");
+
+                xpp.setInput(is,"utf-8");
+                //获取当前xml行的事件类型
+                int type = xpp.getEventType();
+                //判断事件类型是否是文档结束的事件类型，如果不是，循环遍历解析每一行，解析一行后，获取下一行的事件类型
+                while(type != XmlPullParser.END_DOCUMENT){
+
+                    String currentTagName = xpp.getName();
+                    //判断当前行的事件类型是开始标签还是结束标签
+                    switch(type){
+                        case XmlPullParser.START_TAG:
+                            if(currentTagName.equals("Smss")){
+                                //如果当前标签是Smss，需要创建一个集合
+                                arrayList = new ArrayList<SmsBean>();
+                            }else if(currentTagName.equals("Sms")){
+                                smsBean = new SmsBean();
+                                smsBean.id = Integer.valueOf(xpp.getAttributeValue(null,"id"));
+                            }else if(currentTagName.equals("num")){
+                                smsBean.num = xpp.nextText();
+                            }else if(currentTagName.equals("msg")){
+                                smsBean.num = xpp.nextText();
+                            }else if(currentTagName.equals("date")){
+                                smsBean.num = xpp.nextText();
+                            }
+                            break;
+                        case XmlPullParser.END_TAG:
+                            if(currentTagName.equals("Sms")){
+                                //将解析的数据封装到list中
+                                arrayList.add(smsBean);
+                            }
+                            break;
+                    }
+                    type = xpp.next();
+                }
+
+                return arrayList.size();
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+
+            return 0;
+
+        }
+    }
+
+```
+
+3. SmsBean.java
+
+```
+    package com.example.myapp3;
+
+    /**
+    * Created by zhouchaozhong on 2018/1/22.
+    */
+
+    public class SmsBean {
+        public String num ;
+        public String msg;
+        public String date;
+        public int id;
+
+        public SmsBean(){
+
+        }
+
+        public SmsBean(String num,String msg,String date,int id){
+            this.num = num;
+            this.msg = msg;
+            this.date = date;
+            this.id = id;
+        }
+
+    }
+
+```
