@@ -926,3 +926,206 @@
     }
 
 ```
+
+
+数据库的CRUD操作
+----------------------------------------------------------------------
+
+1. 增删改查
+```
+    package com.example.myapp4;
+
+    import android.content.Context;
+    import android.database.sqlite.SQLiteDatabase;
+    import android.database.sqlite.SQLiteOpenHelper;
+
+    /**
+    * Created by zhouchaozhong on 2018/1/22.
+    */
+
+    public class MySqliteOpenHelper extends SQLiteOpenHelper {
+
+        public MySqliteOpenHelper(Context context){
+            super(context,"info.db",null,1);
+        }
+
+
+        //数据库第一次创建时会被调用，适合做表结构的初始化
+        @Override
+        public void onCreate(SQLiteDatabase sqLiteDatabase) {
+            sqLiteDatabase.execSQL("create table info(_id integer primary key autoincrement,name varchar(20),phone varchar(11))");
+        }
+
+        //数据库版本号发生改变才会执行，适合做表结构的修改
+        @Override
+        public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
+
+        }
+    }
+
+
+
+
+
+
+    package com.example.myapp4;
+
+    import android.content.ContentValues;
+    import android.content.Context;
+    import android.database.Cursor;
+    import android.database.sqlite.SQLiteDatabase;
+
+    /**
+    * Created by zhouchaozhong on 2018/1/22.
+    */
+
+    public class InfoDao {
+        private MySqliteOpenHelper mySqliteOpenHelper;
+        public InfoDao(Context context){
+            //创建一个帮助类对象
+        mySqliteOpenHelper = new MySqliteOpenHelper(context);
+
+        }
+
+        public boolean add(InfoBean bean){
+            //调用getReadableDatabase方法类初始化数据库
+            SQLiteDatabase db = mySqliteOpenHelper.getWritableDatabase();
+            //db.execSQL("insert into info(name,phone) values (?,?);",new Object[]{bean.name,bean.phone});
+            ContentValues cv = new ContentValues();
+            cv.put("name",bean.name);
+            cv.put("phone",bean.phone);
+            long result = db.insert("info",null,cv);
+
+            //关闭数据库对象
+            db.close();
+
+            if(result != -1){  //-1代表添加失败
+                return true;
+            }else{
+                return false;
+            }
+        }
+
+        public int delete(String name){
+            //调用getReadableDatabase方法类初始化数据库
+            SQLiteDatabase db = mySqliteOpenHelper.getReadableDatabase();
+
+            //db.execSQL("delete from info where name=?;",new Object[]{name});
+
+            int result = db.delete("info","name=?",new String[]{name});
+            //关闭数据库对象
+            db.close();
+
+            return result;
+        }
+
+        public int update(InfoBean bean){
+            //调用getReadableDatabase方法类初始化数据库
+            SQLiteDatabase db = mySqliteOpenHelper.getReadableDatabase();
+            //db.execSQL("update info set phone=? where name=?;",new Object[]{bean.phone,bean.name});
+
+            ContentValues cv = new ContentValues();
+            cv.put("phone",bean.phone);  //要更新的值
+            int result = db.update("info",cv,"name=?",new String[]{bean.name});
+            //关闭数据库对象
+            db.close();
+
+            return result;
+        }
+
+        public void query(String name){
+            //调用getReadableDatabase方法类初始化数据库
+            SQLiteDatabase db = mySqliteOpenHelper.getReadableDatabase();
+            //Cursor cursor = db.rawQuery("select _id,name,phone from info where name=?",new String[]{name});
+
+            //table:表名 columns:查询的列名  如果null代表查询所有列 selection:查询条件 selectionArgs:条件占位符的参数值
+            //groupBy按什么字段分组 having:分组条件  orderBy按什么字段排序
+            Cursor cursor = db.query("info",new String[]{"_id","name","phone"},"name=?",new String[]{name},null,null,"_id desc");
+
+            //解析cursor中的数据
+            if(cursor != null && cursor.getCount() > 0){ //判断cursor中是否存在数据
+                //循环遍历结果集，获取每一行的内容
+                while(cursor.moveToNext()){
+                    //获取数据
+                    int id = cursor.getInt(0);
+                    String name_str = cursor.getString(1);
+                    String phone = cursor.getString(2);
+
+                    System.out.println("_id:"+id+"  name:"+name_str+"  phone:"+phone);
+                }
+                cursor.close();
+            }
+            //关闭数据库对象
+            db.close();
+        }
+    }
+
+```
+
+2. 事务操作
+
+```
+    package com.example.myapp4;
+
+    import android.content.Context;
+    import android.database.sqlite.SQLiteDatabase;
+    import android.database.sqlite.SQLiteOpenHelper;
+
+    /**
+    * Created by zhouchaozhong on 2018/1/23.
+    */
+
+    public class BankOpenHelper extends SQLiteOpenHelper {
+        public BankOpenHelper(Context context){
+            super(context,"bank.db",null,1);
+        }
+
+        @Override
+        public void onCreate(SQLiteDatabase db) {
+            db.execSQL("create table account (_id integer primary key autoincrement,name varchar(20),money varchar(20))");
+            db.execSQL("insert into account ('name','money') values ('张三','2000')");
+            db.execSQL("insert into account ('name','money') values ('李四','5000')");
+        }
+
+        @Override
+        public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
+
+        }
+    }
+
+
+
+    
+    package com.example.myapp4;
+
+    import android.content.Context;
+    import android.database.sqlite.SQLiteDatabase;
+
+    /**
+    * Created by zhouchaozhong on 2018/1/23.
+    */
+
+    public class BankDao {
+        private BankOpenHelper myBankOpenHelper;
+        public BankDao(Context context){
+            //创建一个帮助类对象
+            myBankOpenHelper = new BankOpenHelper(context);
+        }
+
+        public void transtation(){
+            SQLiteDatabase db = myBankOpenHelper.getReadableDatabase();
+            db.beginTransaction();//开启一个数据库事务
+            try{
+                db.execSQL("update account set money= money-200 where name=?",new String[]{"李四"});
+                int i = 100/0;//模拟一个异常
+                db.execSQL("update account set money= money+200 where name=?",new String[]{"张三"});
+                db.setTransactionSuccessful();  //标记事务中的sql语句全部成功执行！
+            }finally {
+                db.endTransaction();  //判断事务的标记是否成功，如果不成功，回滚错误之前sql语句
+            }
+
+        }
+    }
+
+
+```
