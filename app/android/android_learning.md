@@ -1129,3 +1129,288 @@
 
 
 ```
+
+ListView的使用
+--------------------------------------------------------
+
+* 布局
+
+    1. activity_main.xml
+
+    ```
+        <?xml version="1.0" encoding="utf-8"?>
+        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:context="com.example.myapp5.MainActivity">
+
+            <ListView
+                android:id="@+id/lv_news"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"></ListView>
+
+
+
+        </RelativeLayout>
+
+    ```
+
+    2. item_news_layout.xml
+
+    ```
+        <?xml version="1.0" encoding="utf-8"?>
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:orientation="horizontal"
+            android:paddingTop="20dp"
+            android:paddingBottom="20dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <ImageView
+                android:id="@+id/item_img_icon"
+                android:src="@drawable/icon"
+                android:layout_gravity="center"
+                android:layout_marginRight="10dp"
+                android:layout_width="68dp"
+                android:layout_height="68dp" />
+            <LinearLayout
+                android:orientation="vertical"
+                android:gravity="center"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+                <TextView
+                    android:id="@+id/item_tv_title"
+                    android:lines="1"
+                    android:ellipsize="end"
+                    android:text="title"
+                    android:textSize="16sp"
+                    android:textColor="#000000"
+                    android:layout_marginBottom="3dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+                <TextView
+                    android:id="@+id/item_tv_des"
+                    android:maxLines="2"
+                    android:text="des"
+                    android:textSize="13sp"
+                    android:textColor="#666666"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+        </LinearLayout>
+
+    ```
+
+* MainActivity.java
+
+```
+    package com.example.myapp5;
+
+    import android.content.Context;
+    import android.content.Intent;
+    import android.database.DataSetObserver;
+    import android.graphics.Color;
+    import android.net.Uri;
+    import android.support.v7.app.AppCompatActivity;
+    import android.os.Bundle;
+    import android.view.View;
+    import android.view.ViewGroup;
+    import android.widget.AdapterView;
+    import android.widget.BaseAdapter;
+    import android.widget.Button;
+    import android.widget.ListView;
+    import android.widget.TextView;
+    import android.widget.Toast;
+
+    import java.util.ArrayList;
+    import java.util.Random;
+
+    public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener{
+        private Context mContext;
+        @Override
+        protected void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setContentView(R.layout.activity_main);
+
+            mContext = this;
+            //找到ListView
+            ListView lv_news= (ListView) findViewById(R.id.lv_news);
+            ArrayList<NewsBean> allNews = NewsUtil.getAllNews(mContext);
+
+            //创建一个Adapter，并设置给lv_news
+            NewsAdapter newsAdapter = new NewsAdapter(mContext,allNews);
+            lv_news.setAdapter(newsAdapter);
+
+            //设置listview条目的点击事件
+            lv_news.setOnItemClickListener(this);
+
+        }
+
+
+        //listview条目点击时会调用该方法
+        @Override
+        public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+            //获取条目中bean对象上的url做跳转
+            NewsBean bean = (NewsBean) adapterView.getItemAtPosition(i);
+            String url = bean.news_url;
+            //跳转到浏览器
+            Intent intent = new Intent();
+            intent.setAction(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse(url));
+            startActivity(intent);
+        }
+    }
+
+
+```
+
+* NewsAdapter.java
+
+```
+    package com.example.myapp5;
+
+    import android.content.Context;
+    import android.view.View;
+    import android.view.ViewGroup;
+    import android.widget.BaseAdapter;
+    import android.widget.ImageView;
+    import android.widget.TextView;
+
+    import java.lang.reflect.Array;
+    import java.util.ArrayList;
+
+    /**
+    * Created by zhouchaozhong on 2018/1/24.
+    */
+
+    public class NewsAdapter extends BaseAdapter {
+        private ArrayList<NewsBean> list;
+        private Context context;
+
+        //通过构造方法接收要显示的新闻的数据集合
+
+        public NewsAdapter(Context context, ArrayList<NewsBean> list){
+            this.list = list;
+            this.context = context;
+        }
+        @Override
+        public int getCount() {
+            return list.size();
+        }
+
+        @Override
+        public Object getItem(int i) {
+            //return null;
+            return list.get(i);
+        }
+
+        @Override
+        public long getItemId(int i) {
+        //return 0;
+            return i;
+        }
+
+        @Override
+        public View getView(int i, View view, ViewGroup viewGroup) {
+            View myView = null;
+            if(view != null){
+                myView = view;
+            }else{
+                myView = View.inflate(context,R.layout.item_news_layout,null);
+
+            }
+
+            //获取myView上的子控件对象
+            ImageView item_img_icon = (ImageView) myView.findViewById(R.id.item_img_icon);
+            TextView item_tv_title = (TextView) myView.findViewById(R.id.item_tv_title);
+            TextView item_tv_des = (TextView) myView.findViewById(R.id.item_tv_des);
+
+            //获取对应条目的新闻数据
+            NewsBean bean = list.get(i);
+
+            //给子控件设置数据
+            item_img_icon.setImageDrawable(bean.icon);  //设置ImageView的图片
+            item_tv_title.setText(bean.title);  //设置标题
+            item_tv_des.setText(bean.des);   //设置描述
+            return myView;
+        }
+    }
+
+
+```  
+
+* NewsUtil.java
+
+```
+    package com.example.myapp5;
+
+    import android.content.Context;
+    import android.support.v4.content.ContextCompat;
+
+    import java.util.ArrayList;
+
+    /**
+    * Created by zhouchaozhong on 2018/1/24.
+    */
+
+    class NewsUtil {
+        public static ArrayList<NewsBean> getAllNews(Context context) {
+            ArrayList<NewsBean> arrayList = new ArrayList<NewsBean>();
+            for(int i = 0 ;i <100;i++)
+            {
+                NewsBean newsBean = new NewsBean();
+                newsBean.title ="谢霆锋经纪人偷拍系侵权行为谢霆锋经纪人偷拍系侵权行为谢霆锋经纪人偷拍系侵权行为谢霆锋经纪人：偷拍系侵权行为";
+                newsBean.des= "称谢霆锋隐私权收到侵犯，将保留追究法律责任";
+                newsBean.news_url= "http://www.sina.cn";
+                //newsBean.icon = context.getResources().getDrawable(R.drawable.ic_launcher);//通过context对象将一个资源id转换成一个Drawable对象。
+                newsBean.icon = ContextCompat.getDrawable(context,R.drawable.ic_launcher);   //上述方法已过时，这个方法是谷歌推荐使用的
+                arrayList.add(newsBean);
+
+                NewsBean newsBean1 = new NewsBean();
+                newsBean1.title ="知情人：王菲是谢霆锋心头最爱的人";
+                newsBean1.des= "身边的人都知道谢霆锋最爱王菲，二人早有复合迹象";
+                newsBean1.news_url= "http://www.baidu.cn";
+            //newsBean1.icon = context.getResources().getDrawable(R.drawable.icon);//通过context对象将一个资源id转换成一个Drawable对象。
+                newsBean1.icon = ContextCompat.getDrawable(context,R.drawable.icon); //上述方法已过时，这个方法是谷歌推荐使用的
+
+                arrayList.add(newsBean1);
+
+
+
+                NewsBean newsBean2 = new NewsBean();
+                newsBean2.title ="热烈祝贺黑马74高薪就业";
+                newsBean2.des= "74期平均薪资20000，其中有一个哥们超过10万，这些It精英都迎娶了白富美.";
+                newsBean2.news_url= "http://www.itheima.com";
+            // newsBean2.icon = context.getResources().getDrawable(R.drawable.icon2);//通过context对象将一个资源id转换成一个Drawable对象。
+                newsBean2.icon = ContextCompat.getDrawable(context,R.drawable.icon2); //上述方法已过时，这个方法是谷歌推荐使用的
+
+                arrayList.add(newsBean2);
+            }
+            return arrayList;
+
+        }
+    }
+
+
+```  
+
+* NewsBean.java
+
+```
+    package com.example.myapp5;
+
+    import android.graphics.drawable.Drawable;
+
+    /**
+    * Created by zhouchaozhong on 2018/1/24.
+    */
+
+    class NewsBean {
+        public String title;
+        public String des;
+        public Drawable icon;
+        public String news_url;
+    }
+
+```
