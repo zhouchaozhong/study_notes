@@ -1414,3 +1414,392 @@ ListView的使用
     }
 
 ```
+
+
+网络请求和消息处理
+----------------------------------------------------------
+
+    1. 网路请求数据（新闻app案例）
+
+    ```
+        MainActivity.java
+
+
+        package com.example.myapp7;
+
+        import android.content.Context;
+        import android.content.Intent;
+        import android.database.DataSetObserver;
+        import android.graphics.Color;
+        import android.net.Uri;
+        import android.os.Handler;
+        import android.os.Message;
+        import android.support.v7.app.AppCompatActivity;
+        import android.os.Bundle;
+        import android.view.View;
+        import android.view.ViewGroup;
+        import android.widget.AdapterView;
+        import android.widget.BaseAdapter;
+        import android.widget.Button;
+        import android.widget.ListView;
+        import android.widget.TextView;
+        import android.widget.Toast;
+
+        import java.util.ArrayList;
+        import java.util.Random;
+
+        public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener{
+            private Context mContext;
+            private ListView lv_news;
+            @Override
+            protected void onCreate(Bundle savedInstanceState) {
+                super.onCreate(savedInstanceState);
+                setContentView(R.layout.activity_main);
+
+                mContext = this;
+                //找到ListView
+                lv_news = (ListView) findViewById(R.id.lv_news);
+                //获取新闻数据用list封装，获取网络数据需要在子线程中做
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        //请求网络数据
+                        ArrayList<NewsBean> allNews = NewsUtil.getAllNewsForNetwork(mContext);
+                        //通过handler将Message发送给主线程去更新UI
+                        Message msg = Message.obtain();
+                        msg.obj = allNews;
+                        handler.sendMessage(msg);
+                    }
+                }).start();
+
+
+                //设置listview条目的点击事件
+                lv_news.setOnItemClickListener(this);
+
+            }
+
+            private Handler handler = new Handler(){
+                @Override
+                public void handleMessage(Message msg) {
+                    ArrayList<NewsBean> allNews = (ArrayList<NewsBean>) msg.obj;
+
+                    if(allNews != null && allNews .size()>0)
+                    {
+                        //3.创建一个adapter设置给listview
+                        NewsAdapter newsAdapter = new NewsAdapter(mContext, allNews);
+                        lv_news.setAdapter(newsAdapter);
+                    }
+                }
+            };
+
+
+            //listview条目点击时会调用该方法
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                //获取条目中bean对象上的url做跳转
+                NewsBean bean = (NewsBean) adapterView.getItemAtPosition(i);
+                String url = bean.news_url;
+                //跳转到浏览器
+                Intent intent = new Intent();
+                intent.setAction(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse(url));
+                startActivity(intent);
+            }
+        }
+
+
+
+
+
+        NewsAdapter.java
+
+
+        package com.example.myapp7;
+
+        import android.content.Context;
+        import android.view.View;
+        import android.view.ViewGroup;
+        import android.widget.BaseAdapter;
+        import android.widget.ImageView;
+        import android.widget.TextView;
+
+
+        import com.loopj.android.image.SmartImageView;
+
+        import java.lang.reflect.Array;
+        import java.util.ArrayList;
+
+        /**
+        * Created by zhouchaozhong on 2018/1/24.
+        */
+
+        public class NewsAdapter extends BaseAdapter {
+            private ArrayList<NewsBean> list;
+            private Context context;
+
+            //通过构造方法接收要显示的新闻的数据集合
+
+            public NewsAdapter(Context context, ArrayList<NewsBean> list){
+                this.list = list;
+                this.context = context;
+            }
+            @Override
+            public int getCount() {
+                return list.size();
+            }
+
+            @Override
+            public Object getItem(int i) {
+                //return null;
+                return list.get(i);
+            }
+
+            @Override
+            public long getItemId(int i) {
+            //return 0;
+                return i;
+            }
+
+            @Override
+            public View getView(int i, View view, ViewGroup viewGroup) {
+                View myView = null;
+                if(view != null){
+                    myView = view;
+                }else{
+                    myView = View.inflate(context,R.layout.item_news_layout,null);
+
+                }
+
+                //获取myView上的子控件对象
+                SmartImageView item_img_icon = (SmartImageView) myView.findViewById(R.id.item_img_icon);
+                TextView item_tv_title = (TextView) myView.findViewById(R.id.item_tv_title);
+                TextView item_tv_des = (TextView) myView.findViewById(R.id.item_tv_des);
+
+                //获取对应条目的新闻数据
+                NewsBean bean = list.get(i);
+
+                //给子控件设置数据
+                //item_img_icon.setImageDrawable(bean.icon);  //设置ImageView的图片
+                item_img_icon.setImageUrl(bean.icon_url);
+                item_tv_title.setText(bean.title);  //设置标题
+                item_tv_des.setText(bean.des);   //设置描述
+                return myView;
+            }
+        }
+
+
+
+        NewsUtil.java
+
+        package com.example.myapp7;
+
+        import android.content.Context;
+        import android.support.v4.content.ContextCompat;
+
+        import org.json.JSONArray;
+        import org.json.JSONObject;
+
+        import java.io.InputStream;
+        import java.net.HttpURLConnection;
+        import java.net.MalformedURLException;
+        import java.net.URL;
+        import java.util.ArrayList;
+
+        /**
+        * Created by zhouchaozhong on 2018/1/24.
+        */
+
+        class NewsUtil {
+            public static String newsPathUrl = "http://192.168.33.10/newsdata.php";
+            public static ArrayList<NewsBean> getAllNewsForNetwork(Context context) {
+                ArrayList<NewsBean> arrayList = new ArrayList<NewsBean>();
+
+                try {
+                    //请求服务器获取新闻数据
+                    URL url = new URL(newsPathUrl);
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                    connection.setRequestMethod("GET");
+                    connection.setConnectTimeout(1000*10);
+                    int code = connection.getResponseCode();
+                    if(code == 200){
+                        InputStream in = connection.getInputStream();
+                        String result = StreamUtils.streamToString(in);
+                        //解析获取到的新闻数据到List集合中
+                        JSONObject root_json = new JSONObject(result);
+                        //获取root_json中的newss作为JSONArray的对象
+                        JSONArray jsonArray = root_json.getJSONArray("newss");
+
+                        for(int i = 0;i < jsonArray.length();i++){
+                            JSONObject news_json = jsonArray.getJSONObject(i);
+                            NewsBean newsBean = new NewsBean();
+                            newsBean.id = news_json.getInt("id");
+                            newsBean.comment = news_json.getInt("comment");
+                            newsBean.type = news_json.getInt("type");  //新闻类型
+                            newsBean.time = news_json.getString("time");
+                            newsBean.des = news_json.getString("des");
+                            newsBean.title = news_json.getString("title");
+                            newsBean.news_url = news_json.getString("news_url");
+                            newsBean.icon_url = news_json.getString("icon_url");
+                            arrayList.add(newsBean);
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                //解析获取的新闻数据到List
+                return arrayList;
+
+            }
+        }
+
+
+
+
+        NewsBean.java
+
+        package com.example.myapp7;
+
+        import android.graphics.drawable.Drawable;
+
+        /**
+        * Created by zhouchaozhong on 2018/1/24.
+        */
+
+        class NewsBean {
+        public int id;
+        public int comment;
+        public int type;
+        public String time;
+        public String des;
+        public String title;
+        public String news_url;
+        public String icon_url;
+        public Drawable icon;
+        }
+
+
+    ```
+
+    2. GET方式和POST方式请求服务器数据
+
+    ```
+    package com.example.myapp8;
+
+    import android.content.Context;
+    import android.os.Handler;
+    import android.os.Message;
+    import android.support.v7.app.AppCompatActivity;
+    import android.os.Bundle;
+    import android.view.View;
+    import android.widget.Button;
+    import android.widget.EditText;
+    import android.widget.Toast;
+
+    import java.io.InputStream;
+    import java.net.HttpURLConnection;
+    import java.net.URL;
+
+    public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+        private Context mContext;
+        private EditText et_username;
+        private EditText et_password;
+        private Button bt_submit;
+
+        @Override
+        protected void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setContentView(R.layout.activity_main);
+
+            mContext = this;
+            et_username = (EditText) findViewById(R.id.et_username);
+            et_password = (EditText) findViewById(R.id.et_password);
+            bt_submit = (Button) findViewById(R.id.bt_submit);
+            bt_submit.setOnClickListener(this);
+        }
+
+        private Handler handler = new Handler(){
+            @Override
+            public void handleMessage(Message msg) {
+                boolean isLogin = (boolean) msg.obj;
+                if(isLogin){
+                    Toast.makeText(mContext,"登录成功！",Toast.LENGTH_SHORT).show();
+                }else{
+                    Toast.makeText(mContext,"登录失败！",Toast.LENGTH_SHORT).show();
+                }
+            }
+        };
+
+        @Override
+        public void onClick(View view) {
+            final String username = et_username.getText().toString().trim();
+            final String password = et_password.getText().toString().trim();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    //boolean isLogin = requestNetForGetLogin(username,password);
+                    boolean isLogin = requestNetForPostLogin(username,password);
+                    Message msg = Message.obtain();
+                    msg.obj = isLogin;
+                    handler.sendMessage(msg);
+
+                }
+            }).start();
+        }
+
+        private boolean requestNetForGetLogin(String username,String password){
+            try{
+                URL url = new URL("http://192.168.33.10/androidlogin.php?username="+username+"&password="+password);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+                connection.setConnectTimeout(10*1000);
+                int code = connection.getResponseCode();
+                if(code == 200){
+                    InputStream inputStream = connection.getInputStream();
+                    String result = StreamUtils.streamToString(inputStream);
+                    if(result.contains("success")){
+                        return true;
+                    }
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+
+            return false;
+        }
+
+        private boolean requestNetForPostLogin(String username,String password){
+            try{
+                URL url = new URL("http://192.168.33.10/androidlogin.php");
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("POST");
+                connection.setConnectTimeout(10*1000);
+                //设置一些请求头信息
+                String body = "username="+username+"&password="+password;
+                connection.setRequestProperty("Content-Length",body.length()+"");
+
+                //设置URLConnection可以写请求的内容
+                connection.setDoOutput(true);
+                //获取一个OutputStream，并将内容写入该流
+                connection.getOutputStream().write(body.getBytes());
+                int code = connection.getResponseCode();
+                if(code == 200){
+                    InputStream inputStream = connection.getInputStream();
+                    String result = StreamUtils.streamToString(inputStream);
+                    System.out.println("----------------------------------------------------------------"+result);
+                    if(result.contains("success")){
+                        return true;
+                    }
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+
+            return false;
+        }
+
+
+    }
+
+
+    ```
+
