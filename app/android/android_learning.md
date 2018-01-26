@@ -1852,3 +1852,89 @@ ListView的使用
 
     ```
 
+
+Activity的创建和跳转
+--------------------------------------------------------------
+
+1. 显式意图与隐式意图
+
+```
+    public void onClick(View view) {
+            switch (view.getId()){
+                case R.id.bt_call:
+                    Intent intent = new Intent();
+                    intent.setAction(Intent.ACTION_CALL);
+                    intent.setData(Uri.parse("tel:"+112));
+                    startActivity(intent);
+                    break;
+                case R.id.bt_redirect:
+                    //隐式意图跳转
+                    Intent intent1 = new Intent();
+                    intent1.setAction("com.example.test");
+                    intent1.setData(Uri.parse("info:helloinfo"));
+                    intent1.addCategory("android.intent.category.DEFAULT");
+                    startActivity(intent1);
+                    break;
+                case R.id.bt_redirect2:
+                    //显式意图跳转
+                    //Intent intent2 = new Intent();
+                    Intent intent2 = new Intent(this,Test2Activity.class);
+                    //指定包名和类名 开启页面
+                    //intent2.setClassName("com.example.myapp9","com.example.myapp9.Test2Activity");
+                    startActivity(intent2);
+                    break;
+                default:
+                    break;
+
+            }
+
+        }
+
+```
+
+2. AndroidManifest.xml配置
+
+```
+   <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity android:name=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name="com.example.myapp9.TestActivity"
+            android:label="第二个页面"
+            >
+            <intent-filter>
+                <action android:name="com.example.test" />
+                <data android:scheme="info"/>
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity android:name="com.example.myapp9.Test2Activity"
+            android:label="第三个页面">
+
+        </activity>
+    </application>
+
+
+    <!--
+    
+       activity android:name="com.example.myapp9.TestActivity"  这里指要配置的activity名
+       <action android:name="com.example.test" />   要配置的activity  的 action名
+    
+    
+    
+    -->
+
+```
+
+
+
