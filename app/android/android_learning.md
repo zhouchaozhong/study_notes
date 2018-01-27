@@ -1872,6 +1872,8 @@ Activity的创建和跳转
                     Intent intent1 = new Intent();
                     intent1.setAction("com.example.test");
                     intent1.setData(Uri.parse("info:helloinfo"));
+                    intent1.putExtra("name","张三");
+                    intent1.putExtra("sex",1);
                     intent1.addCategory("android.intent.category.DEFAULT");
                     startActivity(intent1);
                     break;
@@ -1889,6 +1891,18 @@ Activity的创建和跳转
             }
 
         }
+
+
+
+        //接收数据
+
+         Intent intent = getIntent();
+        //Uri data = intent.getData();
+        //String str = data.getScheme();
+        String name = intent.getStringExtra("name");
+        int sex = intent.getIntExtra("sex",0);
+
+        String str = "name:" + name + "   sex:"+sex;
 
 ```
 
