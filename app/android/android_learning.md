@@ -2125,7 +2125,7 @@ Activity的创建和跳转
         @Override
         public void onReceive(Context context, Intent intent) {
             String content = getResultData();
-            Toast.makeText(context,"最终接受者："+content,Toast.LENGTH_LONG).show();
+            Toast.makeText(context,"最终接收者："+content,Toast.LENGTH_LONG).show();
         }
     }
 
