@@ -2216,5 +2216,109 @@ Activity的创建和跳转
 
 ```
 
+Android常用对话框
+-------------------------------------------------------------
+
+```
+    public void onClick(View view) {
+            switch (view.getId()){
+                case R.id.bt_normal:
+                    //点击按钮，弹出一个普通对话框。
+                    AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                    builder.setTitle("警告");
+                    builder.setMessage("世界上最遥远的距离是没有网络！");
+                    builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            System.out.println("点击了确定按钮！");
+                        }
+                    });
+
+                    builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            System.out.println("点击了取消按钮！");
+                        }
+                    });
+
+                    builder.show();
+                    break;
+                case R.id.bt_single:
+                    //单选对话框
+                    final AlertDialog.Builder builder1 = new AlertDialog.Builder(mContext);
+                    builder1.setTitle("选择您喜欢的课！");
+                    final String items[] = {"Android","ios","PHP","C","C++"};
+                    builder1.setSingleChoiceItems(items, -1, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            //取出选中的条目
+                            String item = items[i];
+                            Toast.makeText(mContext,item,Toast.LENGTH_LONG).show();
+                            //关闭当前对话框
+                            dialogInterface.dismiss();
+                        }
+                    });
+                    builder1.show();
+                    break;
+                case R.id.bt_multi:
+                    //多选对话框
+                    AlertDialog.Builder builder2 = new AlertDialog.Builder(mContext);
+                    builder2.setTitle("选择您喜欢吃的水果！");
+                    final String items2[] = {"苹果","香蕉","葡萄","樱桃","西瓜","桃子"};
+                    final boolean checkItems[] = { true,false,true,false,false,false};
+                    builder2.setMultiChoiceItems(items2, checkItems, new DialogInterface.OnMultiChoiceClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i, boolean b) {
+
+                        }
+                    });
+                    builder2.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            StringBuffer sb = new StringBuffer();
+                            for(int j = 0;j < checkItems.length;j++){
+                                if(checkItems[j]){
+                                    String fruit = items2[j];
+                                    sb.append(fruit+ " ");
+                                }
+                            }
+
+                            Toast.makeText(mContext,sb.toString(),Toast.LENGTH_LONG).show();
+                            dialogInterface.dismiss();
+                        }
+                    });
+                    builder2.show();
+                    break;
+                case R.id.bt_progress:
+                    //进度条对话框
+                    final ProgressDialog dialog = new ProgressDialog(mContext);
+                    dialog.setTitle("正在玩命加载中...");
+                    dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                    dialog.show();
+                    //设置进度条最大值
+                    dialog.setMax(100);
+                    //模拟更新进度条
+                    new Thread(){
+                        public void run(){
+                            for(int k = 0;k <= 100;k++){
+                                //设置当前进度
+                                SystemClock.sleep(100);
+                                dialog.setProgress(k);
+
+                            }
+
+                            //关闭对话框
+                            dialog.dismiss();
+                        }
+                    }.start();
+
+                    break;
+                default:
+                    break;
+            }
+        }
+
+```
+
 
 
