@@ -2131,5 +2131,90 @@ Activity的创建和跳转
 
 ```
 
+* AndroidManifest
+
+```
+    <?xml version="1.0" encoding="utf-8"?>
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        package="com.example.myapp10">
+
+        <application
+            android:allowBackup="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:supportsRtl="true"
+            android:theme="@style/AppTheme">
+            <activity android:name=".MainActivity">
+                <intent-filter>
+                    <action android:name="android.intent.action.MAIN" />
+
+                    <category android:name="android.intent.category.LAUNCHER" />
+                </intent-filter>
+            </activity>
+            <receiver android:name=".OutGoingCallReceiver">
+                <intent-filter>
+                    <action android:name="android.intent.action.NEW_OUTGOING_CALL"></action>
+                    <action android:name="android.intent.action.MEDIA_MOUNTED"></action>
+                    <action android:name="android.intent.action.PACKAGE_INSTALL"></action>
+                    <action android:name="android.intent.action.PACKAGE_REMOVED"></action>
+                    <action android:name="android.intent.action.BOOT_COMPLETED"></action>
+                    <action android:name="com.example.myapp10.custombroadcast"></action>
+                </intent-filter>
+            </receiver>
+            <receiver android:name=".ProvinceReceiver">
+                <intent-filter android:priority="1000">
+                    <action android:name="com.example.myapp10.rice"></action>
+                </intent-filter>
+            </receiver>
+            <receiver android:name=".CityReceiver">
+                <intent-filter android:priority="800">
+                    <action android:name="com.example.myapp10.rice"></action>
+                </intent-filter>
+            </receiver>
+            <receiver android:name=".CountryReceiver">
+                <intent-filter android:priority="500">
+                    <action android:name="com.example.myapp10.rice"></action>
+                </intent-filter>
+            </receiver>
+        </application>
+        <uses-permission android:name="android.permission.PROCESS_OUTGOING_CALLS"></uses-permission>
+        <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"></uses-permission>
+    </manifest>
+
+```
+
+* 动态注册广播接收者（比较频繁的广播事件，只能动态注册）
+
+```
+        //动态注册屏幕解锁和锁屏的广播
+        screenReceiver = new ScreenReceiver();
+
+        //创建intent-filter对象
+        IntentFilter filter = new IntentFilter();
+        //添加要注册的action
+        filter.addAction("android.intent.action.SCREEN_OFF");
+        filter.addAction("android.intent.action.SCREEN_ON");
+        this.registerReceiver(screenReceiver,filter);
+
+
+
+
+        public class ScreenReceiver extends BroadcastReceiver {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                //获取当前广播的事件类型
+                String action = intent.getAction();
+                //对当前广播的事件类型做一个判断
+                if("android.intent.action.SCREEN_OFF".equals(action)){
+                    System.out.println("屏幕熄屏了！");
+                }else if("android.intent.action.SCREEN_ON".equals(action)){
+                    System.out.println("屏幕亮屏了！");
+                }
+            }
+        }
+
+```
+
 
 
