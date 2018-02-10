@@ -1951,4 +1951,185 @@ Activity的创建和跳转
 ```
 
 
+广播接收者
+-----------------------------------------------------
+
+* MainActivity
+
+```
+    package com.example.myapp10;
+
+    import android.content.Context;
+    import android.content.Intent;
+    import android.support.v7.app.AppCompatActivity;
+    import android.os.Bundle;
+    import android.view.View;
+    import android.widget.Button;
+
+    public class MainActivity extends AppCompatActivity  implements View.OnClickListener{
+        private Button bt_send;
+        private Button bt_order_send;
+        private Context mContext;
+
+        @Override
+        protected void onCreate(Bundle savedInstanceState){
+            mContext = this;
+            super.onCreate(savedInstanceState);
+            setContentView(R.layout.activity_main);
+
+            GrantPermission gp = new GrantPermission();
+            gp.requestPermissions(this);
+
+            Button bt_send = (Button) findViewById(R.id.bt_send);
+            Button bt_order_send = (Button) findViewById(R.id.bt_order_send);
+            bt_send.setOnClickListener(this);
+            bt_order_send.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View view) {
+            switch(view.getId()){
+                case R.id.bt_send:
+                    //发送一条无序广播
+                    Intent intent = new Intent();
+                    intent.setAction("com.example.myapp10.custombroadcast");
+                    intent.putExtra("name","每天晚上七点准时直播！");
+                    sendBroadcast(intent);
+                    break;
+                case R.id.bt_order_send:
+                    //发送一条有序广播
+                    Intent intent2 = new Intent();
+                    intent2.setAction("com.example.myapp10.rice");
+                    sendOrderedBroadcast(intent2,null,new FinalReceiver(),null,1,"发大米了，快来领大米了！每人1000斤！",null);
+                    System.out.println("发大米了，快来领大米了！每人1000斤！");
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+
+```
+
+
+* OutGoingCallReceiver
+
+```
+    package com.example.myapp10;
+
+    import android.content.BroadcastReceiver;
+    import android.content.Context;
+    import android.content.Intent;
+    import android.widget.Toast;
+
+    /**
+    * Created by zhouchaozhong on 2018/2/9.
+    */
+
+    public class OutGoingCallReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            //开启MainActivity
+    //        Intent intent2 = new Intent(context,MainActivity.class);
+            //在广播接收者里面开启Activity，要设置任务栈环境
+    //        intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    //        context.startActivity(intent2);
+
+    //        String action = intent.getAction();
+    //        System.out.println(action);
+    //        String currentNumber = getResultData();
+    //        if(currentNumber.startsWith("0")){
+    //            setResultData("17951" + currentNumber);
+    //        }
+
+            //接收无序广播
+            String content = intent.getStringExtra("name");
+            System.out.println(content);
+            Toast.makeText(context,content,Toast.LENGTH_LONG).show();
+
+            //接收有序广播
+
+
+
+        }
+    }
+
+
+```
+
+* ProviceReceiver
+
+```
+    package com.example.myapp10;
+
+    import android.content.BroadcastReceiver;
+    import android.content.Context;
+    import android.content.Intent;
+    import android.widget.Toast;
+
+    /**
+    * Created by zhouchaozhong on 2018/2/10.
+    */
+
+    public class ProvinceReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            //获取到发送广播携带的数据
+            String content = getResultData();
+            Toast.makeText(context,"省："+content,Toast.LENGTH_LONG).show();
+            System.out.println("省："+content);
+            setResultData("快来领大米，每人500斤！");
+            //终止广播
+            abortBroadcast();
+        }
+    }
+
+
+```
+
+* CityReceiver
+
+```
+    public class CityReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            //获取到发送广播携带的数据
+            String content = getResultData();
+            Toast.makeText(context,"市："+content,Toast.LENGTH_LONG).show();
+            System.out.println("市："+content);
+        }
+    }
+
+```
+
+* CountryReceiver
+
+```
+    public class CountryReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            //获取到发送广播携带的数据
+            String content = getResultData();
+            Toast.makeText(context,"乡："+content,Toast.LENGTH_LONG).show();
+            System.out.println("乡："+content);
+        }
+    }
+
+```
+
+* FinalReceiver
+
+```
+    public class FinalReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String content = getResultData();
+            Toast.makeText(context,"最终接受者："+content,Toast.LENGTH_LONG).show();
+        }
+    }
+
+```
+
+
 
