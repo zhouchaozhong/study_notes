@@ -2491,6 +2491,12 @@ Android常用对话框
     </manifest>
 
 ```
+* StartService开启服务的特点
+  1. 第一次开启服务，会执行服务的onCreate方法和onStart方法
+  2. 第二次开启服务，会执行服务的onStart方法
+  3. 服务开启后，能在设置页面找到这个服务
+  4. startService方式开启服务，服务会在后台长期运行，知道用户手工停止，或者调用stopService方法，服务才会被销毁
+  
 
 * bindService开启服务的特点
   1. 当点击按钮第一次开启服务，会执行onCreate方法和onBind方法
