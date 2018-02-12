@@ -2320,5 +2320,187 @@ Android常用对话框
 
 ```
 
+服务
+-------------------------------------------------------
+
+* MainActivity.java
+
+```
+    public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+        private Context mContext;
+        private Button bt_start;
+        private Button bt_stop;
+        private Button bt_bind;
+        private Myconn conn;
+        private Intent intent;
+        private Intent intent1;
+
+        @Override
+        protected void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setContentView(R.layout.activity_main);
+
+            mContext = this;
+            bt_start = findViewById(R.id.bt_start);
+            bt_bind = findViewById(R.id.bt_bind);
+            bt_stop = findViewById(R.id.bt_stop);
+            bt_start.setOnClickListener(this);
+            bt_bind.setOnClickListener(this);
+            bt_stop.setOnClickListener(this);
+            GrantPermission gp = new GrantPermission();
+            gp.requestPermissions(this);
+        }
+
+        @Override
+        public void onClick(View view) {
+            switch (view.getId()){
+                case R.id.bt_start:
+                    //开启服务
+                    intent = new Intent(this,FirstService.class);
+                    startService(intent);
+
+                    break;
+                case R.id.bt_bind:
+                    intent1 = new Intent(this,FirstService.class);
+                    conn = new Myconn();
+                    bindService(intent1,conn,BIND_AUTO_CREATE);
+                    break;
+                case R.id.bt_stop:
+                    stopService(intent);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        //用来监听服务的状态
+        private class Myconn implements ServiceConnection{
+
+            //连接成功后调用
+            @Override
+            public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+
+            }
+
+            //连接中断调用
+            @Override
+            public void onServiceDisconnected(ComponentName componentName) {
+
+            }
+        }
+
+
+    }
+
+```
+
+* FirstService.java
+
+```
+    public class FirstService extends Service {
+        private MediaRecorder recorder;
+        @Nullable
+        @Override
+        public IBinder onBind(Intent intent) {
+            System.out.println("onBind!");
+            return null;
+        }
+
+        @Override
+        public void onCreate() {
+            TelephonyManager tm = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+            tm.listen(new MyPhoneStateListener(),PhoneStateListener.LISTEN_CALL_STATE);
+            super.onCreate();
+        }
+
+        private class MyPhoneStateListener extends PhoneStateListener{
+            @Override
+            public void onCallStateChanged(int state, String incomingNumber) {
+                System.out.println("onCallStateChanged方法调用");
+                switch (state){
+                    case TelephonyManager.CALL_STATE_IDLE:
+                        if(recorder != null){
+                            recorder.stop();
+                            recorder.reset();
+                            recorder.release();
+                        }
+                        break;
+                    case TelephonyManager.CALL_STATE_OFFHOOK:
+                        recorder.start();
+                        break;
+                    case TelephonyManager.CALL_STATE_RINGING:
+                        recorder = new MediaRecorder();
+                        recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+                        recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+                        recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+                        recorder.setOutputFile("/mnt/sdcard/recorder.3gp");
+                        try {
+                            recorder.prepare();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    default:
+                        break;
+                }
+                super.onCallStateChanged(state, incomingNumber);
+            }
+        }
+
+        @Override
+        public int onStartCommand(Intent intent, int flags, int startId) {
+            return super.onStartCommand(intent, flags, startId);
+        }
+
+        @Override
+        public void onDestroy() {
+            System.out.println("onDestroy被调用了！");
+            super.onDestroy();
+        }
+    }
+
+```
+
+* AndroidManifest.xml
+
+```
+    <?xml version="1.0" encoding="utf-8"?>
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        package="com.example.myapp12">
+
+        <application
+            android:allowBackup="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:supportsRtl="true"
+            android:theme="@style/AppTheme">
+            <activity android:name=".MainActivity">
+                <intent-filter>
+                    <action android:name="android.intent.action.MAIN" />
+
+                    <category android:name="android.intent.category.LAUNCHER" />
+                </intent-filter>
+            </activity>
+            <service android:name=".FirstService"></service>
+        </application>
+        <uses-permission android:name="android.permission.RECORD_AUDIO"></uses-permission>
+        <uses-permission android:name="android.permission.READ_PHONE_STATE"></uses-permission>
+        <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
+        <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"></uses-permission>
+    </manifest>
+
+```
+
+* bindService开启服务的特点
+  1. 当点击按钮第一次开启服务，会执行onCreate方法和onBind方法
+  2. 第二次调用bindService，服务没有响应
+  3. 当activity销毁的时候，服务也销毁
+  4. 通过bind方式开启服务，服务不能在设置页面找到，相当于是一个隐式服务
+  5. bindService不能多次解绑，多次解绑会报错
+  
+
+
+
 
 
