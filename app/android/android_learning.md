@@ -2504,6 +2504,149 @@ Android常用对话框
   3. 当activity销毁的时候，服务也销毁
   4. 通过bind方式开启服务，服务不能在设置页面找到，相当于是一个隐式服务
   5. bindService不能多次解绑，多次解绑会报错
+
+
+内容提供者、内容解析者、内容观察者
+----------------------------------------------------------------
+
+* MainActivity.java
+
+```
+    public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+        private Context mContext;
+        private Button bt_getSms;
+        private Button bt_bak_contacts;
+
+        @Override
+        protected void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setContentView(R.layout.activity_main);
+
+            mContext = this;
+            bt_getSms = findViewById(R.id.bt_getSms);
+            bt_bak_contacts = findViewById(R.id.bt_bak_contacts);
+            bt_getSms.setOnClickListener(this);
+            bt_bak_contacts.setOnClickListener(this);
+
+            //动态申请权限
+            ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.READ_SMS,Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.READ_CONTACTS},1000);
+        }
+
+        @Override
+        public void onClick(View view) {
+            switch (view.getId()){
+                case R.id.bt_getSms:
+                    //备份短信到xml文件
+
+                    //获取XmlSerializer的实例
+                    XmlSerializer serializer = Xml.newSerializer();
+                    //设置序列化器参数
+                    File file = new File(Environment.getExternalStorageDirectory().getPath(),"smsbackup.xml");
+                    try{
+                        FileOutputStream fos = new FileOutputStream(file);
+                        serializer.setOutput(fos,"utf-8");
+                        //写xml文档开头
+                        serializer.startDocument("utf-8",true);
+                        serializer.startTag(null,"smss");
+
+                        //构造Uri
+                        Uri uri = Uri.parse("content://sms/");
+                        //通过内容解析者查询
+                        Cursor cursor = getContentResolver().query(uri,new String[]{"address","date","body"},null,null,null);
+                        while(cursor.moveToNext()){
+                            String address = cursor.getString(0);
+                            String date = cursor.getString(1);
+                            String body = cursor.getString(2);
+                            //写sms节点
+                            serializer.startTag(null,"sms");
+
+                            serializer.startTag(null,"address");
+                            serializer.text(address);
+                            serializer.endTag(null,"address");
+
+                            serializer.startTag(null,"date");
+                            serializer.text(date);
+                            serializer.endTag(null,"date");
+
+                            serializer.startTag(null,"body");
+                            serializer.text(body);
+                            serializer.endTag(null,"body");
+
+                            serializer.endTag(null,"sms");
+                        }
+
+                        serializer.endTag(null,"smss");
+                        serializer.endDocument();
+                        fos.close();
+                        fos.flush();
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                    break;
+
+                case R.id.bt_bak_contacts:
+                    Uri uri2 = Uri.parse("content://com.android.contacts/raw_contacts");
+                    Uri dataUri = Uri.parse("content://com.android.contacts/data");
+                    //这里查询data，真正查询的是view_data视图，没有mimetype_id列
+                    Cursor cursor2 = getContentResolver().query(uri2,new String[]{"contact_id"},null,null,null);
+                    while(cursor2.moveToNext()){
+                        String contact_id = cursor2.getString(0);
+                        Cursor dataCursor = getContentResolver().query(dataUri,new String[]{ "data1","mimetype" },"raw_contact_id=?",new String[]{ contact_id },null);
+                        while(dataCursor.moveToNext()){
+                            String data1 = dataCursor.getString(0);
+                            String mimetype= dataCursor.getString(1);
+                            if("vnd.android.cursor.item/name".equals(mimetype)){
+                                //姓名
+                                System.out.println("姓名：" + data1);
+                            }else if("vnd.android.cursor.item/phone_v2".equals(mimetype)){
+                                //电话号码
+                                System.out.println("电话号码：" + data1);
+                            }else if("vnd.android.cursor.item/email_v2".equals(mimetype)){
+                                //邮箱
+                                System.out.println("邮箱：" + data1);
+                            }
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+    }
+
+```
+
+* AndroidManifest.xml
+
+```
+    <?xml version="1.0" encoding="utf-8"?>
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        package="com.example.myapp13">
+
+        <application
+            android:allowBackup="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:supportsRtl="true"
+            android:theme="@style/AppTheme">
+            <activity android:name=".MainActivity">
+                <intent-filter>
+                    <action android:name="android.intent.action.MAIN" />
+
+                    <category android:name="android.intent.category.LAUNCHER" />
+                </intent-filter>
+            </activity>
+        </application>
+        <uses-permission android:name="android.permission.READ_SMS"></uses-permission>
+        <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"></uses-permission>
+        <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
+        <uses-permission android:name="android.permission.READ_CONTACTS"></uses-permission>
+    </manifest>
+
+```
   
 
 
