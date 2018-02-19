@@ -6,7 +6,7 @@
 --------------------------------------------------------
 1. LinearLayout
 
-```
+```xml
     <?xml version="1.0" encoding="utf-8"?>
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:orientation="vertical"
@@ -39,7 +39,7 @@
 
 2. RelativeLayout
 
-```
+```xml
     <?xml version="1.0" encoding="utf-8"?>
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent" android:layout_height="match_parent">
@@ -73,7 +73,7 @@
 
 3. FrameLayout
 
-```
+```xml
     <?xml version="1.0" encoding="utf-8"?>
     <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent" android:layout_height="match_parent">
@@ -105,7 +105,7 @@
 
 4. TableLayout
 
-```
+```xml
     <?xml version="1.0" encoding="utf-8"?>
     <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent" android:layout_height="match_parent">
@@ -147,7 +147,7 @@
 
 1. AndroidManifest文件修改
 
-```
+```xml
     <?xml version="1.0" encoding="utf-8"?>
     <manifest xmlns:android="http://schemas.android.com/apk/res/android"
         package="com.example.myapp">
@@ -175,7 +175,7 @@
 
 2. 动态申请权限类
 
-```
+```java
     package com.example.myapp;
 
     import android.Manifest;
@@ -227,7 +227,7 @@
 
 1. activity_main.xml
 
-```
+```xml
     <?xml version="1.0" encoding="utf-8"?>
     <LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
@@ -283,7 +283,7 @@
 
 2. MainActivity.java
 
-```
+```java
     package com.example.myapp;
 
     import android.content.Context;
