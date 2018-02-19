@@ -2620,7 +2620,7 @@ Android常用对话框
 
 * AndroidManifest.xml
 
-```
+```<!--lang:xml-->
     <?xml version="1.0" encoding="utf-8"?>
     <manifest xmlns:android="http://schemas.android.com/apk/res/android"
         package="com.example.myapp13">
