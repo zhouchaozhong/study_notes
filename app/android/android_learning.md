@@ -2647,6 +2647,20 @@ Android常用对话框
     </manifest>
 
 ```
+
+apk反编译
+---------------------------------------------------------------
+
+* 需要用到的工具
+  apktool  dex2jar jd-gui
+
+* apk反编译步骤
+
+ 1. apktool d -f baiduinput.apk  得到app的资源文件
+ 2. 将apk文件解压，得到classes.dex文件，然后将classes.dex文件复制到d2j-dex2jar.bat所在的目录下，然后执行命令
+
+    d2j-dex2jar classes.dex   得到classes-dex2jar.jar文件
+ 3. 用jd-gui 打开 classes-dex2jar.jar文件，即可看到源代码
   
 
 
