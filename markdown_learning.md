@@ -71,7 +71,7 @@ _第二段强调文字_
 
 `public function test(){}`
 
-
+	<!--lang:php-->
 	public function test(){
 	    $a = 1;
 		$b = 2;
