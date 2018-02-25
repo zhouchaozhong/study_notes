@@ -11,7 +11,7 @@ move key db                 移动key到其他库
 
 expire key 时间（秒）       为给定的key设置过期时间
 
-tll key                     查看这个key还有多少秒过期
+ttl key                     查看这个key还有多少秒过期
 
 type key                    查看key的类型
 
