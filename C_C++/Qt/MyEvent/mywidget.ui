@@ -16,10 +16,10 @@
   <widget class="MyLabel" name="label">
    <property name="geometry">
     <rect>
-     <x>9</x>
-     <y>9</y>
-     <width>54</width>
-     <height>16</height>
+     <x>43</x>
+     <y>20</y>
+     <width>211</width>
+     <height>81</height>
     </rect>
    </property>
    <property name="text">
@@ -29,14 +29,27 @@
   <widget class="MyButton" name="pushButton">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>90</y>
+     <x>70</x>
+     <y>250</y>
      <width>75</width>
      <height>23</height>
     </rect>
    </property>
    <property name="text">
     <string>PushButton</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_2">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>150</y>
+     <width>221</width>
+     <height>51</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>TextLabel</string>
    </property>
   </widget>
  </widget>

@@ -20,6 +20,14 @@ protected:
     void keyPressEvent(QKeyEvent *);
     //计时器事件
     void timerEvent(QTimerEvent *);
+    //鼠标点击事件
+    void mousePressEvent(QMouseEvent *);
+    //窗口关闭事件
+    void closeEvent(QCloseEvent *e);
+    //事件分发函数
+    bool event(QEvent *);
+    //事件过滤器
+    bool eventFilter(QObject * obj,QEvent * e);
 
 private:
     Ui::MyWidget *ui;
