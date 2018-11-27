@@ -1,11 +1,11 @@
-#include "serverwidget.h"
+#include "widget.h"
 #include "clientwidget.h"
 #include <QApplication>
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    ServerWidget w;
+    Widget w;
     w.show();
 
     ClientWidget w2;

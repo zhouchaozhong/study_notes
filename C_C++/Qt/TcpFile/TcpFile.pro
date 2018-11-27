@@ -1,6 +1,6 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2018-11-25T13:20:52
+# Project created by QtCreator 2018-11-27T12:13:42
 #
 #-------------------------------------------------
 
@@ -8,7 +8,7 @@ QT       += core gui network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = MyQTcpServer
+TARGET = TcpFile
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use

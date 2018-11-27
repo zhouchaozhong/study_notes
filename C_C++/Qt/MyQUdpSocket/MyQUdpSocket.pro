@@ -1,6 +1,6 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2018-11-25T13:20:52
+# Project created by QtCreator 2018-11-26T16:39:58
 #
 #-------------------------------------------------
 
@@ -8,7 +8,7 @@ QT       += core gui network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = MyQTcpServer
+TARGET = MyQUdpSocket
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use
@@ -26,15 +26,15 @@ CONFIG += c++11
 
 SOURCES += \
         main.cpp \
-        serverwidget.cpp \
+        widget.cpp \
     clientwidget.cpp
 
 HEADERS += \
-        serverwidget.h \
+        widget.h \
     clientwidget.h
 
 FORMS += \
-        serverwidget.ui \
+        widget.ui \
     clientwidget.ui
 
 # Default rules for deployment.

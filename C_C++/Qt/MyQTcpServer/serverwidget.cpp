@@ -8,6 +8,8 @@ ServerWidget::ServerWidget(QWidget *parent) :
     ui(new Ui::ServerWidget)
 {
     ui->setupUi(this);
+    tcpServer = NULL;
+    tcpSocket = NULL;
 
     //监听套接字，指定父对象，让其自动回收空间
     tcpServer = new QTcpServer(this);
@@ -48,6 +50,9 @@ ServerWidget::~ServerWidget()
 
 void ServerWidget::on_ButtonSend_clicked()
 {
+    if(NULL == tcpSocket){
+        return;
+    }
     //获取编辑区内容
     QString str = ui->textEditWrite->toPlainText();
 
@@ -58,7 +63,12 @@ void ServerWidget::on_ButtonSend_clicked()
 
 void ServerWidget::on_pushButton_2_clicked()
 {
+    if(NULL == tcpSocket){
+        return;
+    }
+
     //主动和客户端断开连接
     tcpSocket->disconnectFromHost();
     tcpSocket->close();
+    tcpSocket = NULL;
 }
