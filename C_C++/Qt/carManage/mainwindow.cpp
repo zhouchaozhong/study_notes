@@ -6,6 +6,7 @@
 #include <QMessageBox>
 #include <QSqlQueryModel>
 #include <QDebug>
+#include "domxml.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -21,6 +22,28 @@ MainWindow::MainWindow(QWidget *parent) :
 
     //初始化数据
     initData();
+
+    DomXML::createXML("../demo.xml");
+
+//    QStringList list;
+//    list << "二汽神龙" << "毕加索" << "39" << "1" << "39";
+//    DomXML::appendXML("../demo.xml",list);
+
+//    QStringList fList;
+//    QStringList bList;
+//    QStringList pList;
+//    QStringList nList;
+//    QStringList tList;
+
+//    DomXML::readXML("../demo.xml",fList,bList,pList,nList,tList);
+//    for(int i = 0;i < fList.size();i++){
+
+//        QString str = QString("%1:%2 卖出了%3,单价：%4,总价：%5").arg(fList.at(i)).arg(bList.at(i)).arg(nList.at(i)).arg(pList.at(i)).arg(tList.at(i));
+
+//        qDebug() << str.toUtf8().data();
+//    }
+
+
 }
 
 MainWindow::~MainWindow()
@@ -205,6 +228,31 @@ void MainWindow::on_buttonSure_clicked()
             .arg(ui->comboBoxBrand->currentText());
 
     query.exec(sql);
+
+    //把确认后的数据更新到xml中
+    QStringList list;
+    list << ui->comboBoxFactory->currentText()
+         << ui->comboBoxBrand->currentText()
+         << ui->lineEditPrice->text()
+         << QString::number(num)
+         << ui->lineEditTotal->text();
+
+    DomXML::appendXML("../demo.xml",list);
+
+    QStringList fList;
+    QStringList bList;
+    QStringList pList;
+    QStringList nList;
+    QStringList tList;
+
+    DomXML::readXML("../demo.xml",fList,bList,pList,nList,tList);
+    for(int i = 0;i < fList.size();i++){
+
+        QString str = QString("%1:%2 卖出了%3,单价：%4,总价：%5").arg(fList.at(i)).arg(bList.at(i)).arg(nList.at(i)).arg(pList.at(i)).arg(tList.at(i));
+        ui->textEdit->append(str);
+
+        qDebug() << str.toUtf8().data();
+    }
 
     ui->buttonSure->setEnabled(false);
     on_buttonCancel_clicked();
