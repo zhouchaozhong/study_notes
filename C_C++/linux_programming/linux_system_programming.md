@@ -84,6 +84,15 @@ linux系统编程学习笔记
 
             b. 返回 0 （子进程）
 
+        >> 父子进程之间遵循读时共享写时复制的原则    
+        >> 父子进程共享： a. 文件描述符 b. mmap建立的映射区（进程间通信详解）
+
+        3.1.2 相关函数
+        
+        >> uid_t getuid(void) 获取当前进程实际用户id
+        >> uid_t geteuid(void) 获取当前进程有效用户id
+        >> gid_t getgid(void) 获取当前进程使用用户组id
+        >> gid_t getegid(void) 获取当前进程有效用户组id
 
 
         ```
