@@ -5,26 +5,26 @@ linux系统编程学习笔记
     
     1.1 程序与进程
 
-    >> 程序，是指编译好的二进制文件，在磁盘上不占用系统资源（cpu，内存，打开的文件，设备，锁……）
+    > 程序，是指编译好的二进制文件，在磁盘上不占用系统资源（cpu，内存，打开的文件，设备，锁……）
        进程是一个抽象的概念，与操作系统原理联系紧密。进程是活跃的程序，占用系统资源。在内存中执行。（程序运行起来产生一个进程）
 
     1.2 并发
 
-    >> 并发，在操作系统中一个时间段中有多个进程都处于已启动运行到运行完毕之间的状态。但，任一个时刻点上仍只有一个进程在运行。
+    > 并发，在操作系统中一个时间段中有多个进程都处于已启动运行到运行完毕之间的状态。但，任一个时刻点上仍只有一个进程在运行。
 
     1.3 单道程序设计
 
-    >> 单道程序设计技术是指在内存一次只能允许一个程序进行运行，在这次程序运行结束前，其它程序不允许使用内存。这是早期的操作系统所使用的技术。
+    > 单道程序设计技术是指在内存一次只能允许一个程序进行运行，在这次程序运行结束前，其它程序不允许使用内存。这是早期的操作系统所使用的技术。
 
     1.4 多道程序设计
 
-    >> 多道程序设计是在计算机内存中同时存放几道相互独立的程序，使它们在管理程序控制之下，相互穿插的运行。 两个或两个以上程序在计算机系统中同处于开始到结束之间的状态。这就称为多道程序设计。多道程序技术运行的特征：多道、宏观上并行、微观上串行。
+    > 多道程序设计是在计算机内存中同时存放几道相互独立的程序，使它们在管理程序控制之下，相互穿插的运行。 两个或两个以上程序在计算机系统中同处于开始到结束之间的状态。这就称为多道程序设计。多道程序技术运行的特征：多道、宏观上并行、微观上串行。
 
     1.5 CPU/MMU
 
     1.6 进程控制块PCB
 
-    >> 每个进程在内核中都有一个进程控制块(PCB)来维护进程相关的信息,Linux内核的进程控制块是task_struct结构体。在sched.h文件中可以查看到struct task_struct结构体定义。其内部成员有很多。重点有以下：
+    > 每个进程在内核中都有一个进程控制块(PCB)来维护进程相关的信息,Linux内核的进程控制块是task_struct结构体。在sched.h文件中可以查看到struct task_struct结构体定义。其内部成员有很多。重点有以下：
 
     * 进程id。系统中每个进程有唯一的id,在c语言中用pid_t类型表示，其实就是一个非负整数。
     * 进程的状态,有就绪、运行、挂起、停止等状态。
@@ -148,9 +148,160 @@ linux系统编程学习笔记
         
         3.2.1 各个函数参数的使用方法、作用
 
+        ```
+
+            #include <stdio.h>
+            #include <stdlib.h>
+            #include <unistd.h>
+
+            int main(void){
+                
+                pid_t pid;
+                pid = fork();
+                if(pid == -1){
+                    perror("fork error");
+                    exit(1);
+                }
+                else if(pid > 0){
+                    sleep(1);
+                    printf("parent \n");
+                }
+                else if(pid == 0){
+                    // execlp("ls","ls","-l","-a",NULL);
+                    // execl("/bin/ls","ls","-l","-a",NULL);
+                    execlp("php","php","-v",NULL);
+                }
+
+
+                return 0;
+            }
+
+
+        ```
+
     3.3 wait/waitpid
 
         3.3.1 回收子进程的一般方式
+
+            * 孤儿进程
+            孤儿进程：父进程先与子进程结束,则子进程成为孤儿进程，子进程的父进程成为init进程,称为init进程领养孤儿进程。
+
+            * 僵尸进程
+            僵尸进程：进程终止，父进程尚未回收,子进程残留资源（PCB）存放于内核中，变成僵尸(Zombie)进程。
+
+
+        ```
+
+            //回收子进程的方法
+
+            #include <stdio.h>
+            #include <stdlib.h>
+            #include <unistd.h>
+            #include <sys/wait.h>
+
+            int main(void){
+                
+                pid_t pid,wpid;
+                int status;
+                pid = fork();
+                if(pid == -1){
+                    perror("fork error");
+                    exit(1);
+                }
+                else if(pid == 0){
+
+                    printf("This is child process parent = %d \n",getppid());
+                    sleep(5);
+                    printf("Child process is die! \n");
+                    exit(1);
+                
+                }
+                else if(pid > 0){
+                    wpid = wait(&status);   //调用一次wait函数，只回收一个子进程
+                    if(wpid == -1){
+                        perror("wait error:");
+                        exit(1);
+                    }
+                    if(WIFEXITED(status)){  //判断是否正常结束
+                        printf("child exit with %d \n",WEXITSTATUS(status));  //打印正常退出值
+                    }
+                    if(WIFSIGNALED(status)){  //判断是否异常终止
+                        printf("child killed with %d \n",WTERMSIG(status));  //打印异常退出值
+                    }
+                    while(1){
+                        printf("This is parent process ,pid = %d child = %d \n",getpid(),pid);
+                        sleep(1);
+                    }
+                }
+
+
+                return 0;
+            }
+
+
+
+            #include <stdio.h>
+            #include <stdlib.h>
+            #include <unistd.h>
+            #include <sys/wait.h>
+
+            int main(void){
+
+                int i;
+                int n = 20;
+                pid_t pid,q;
+                pid_t wpid;
+                for(i = 0;i < n;i++){
+                    pid = fork();
+                    if(pid == 0){
+                        break;
+                    }
+                    else if(i == 3){
+                        q = pid;
+                    }
+                }
+
+                if(i == n){
+                    sleep(n);
+                    printf("This is parent process,pid = %d \n",getpid());
+
+                    do{
+                        
+                        wpid = waitpid(-1,NULL,WNOHANG);    //非阻塞回收子进程
+                        if(wpid > 0){
+                            n--;
+                        }
+                        //if wpid == 0 说明子进程正在运行
+                        sleep(1);
+
+                    }while(n>0);
+
+                    printf("wait finish ! \n");
+                }
+                else
+                {
+                    sleep(i);
+                    printf("This is the %dth child,pid = %d,gpid = %d \n",i+1,getpid(),getgid());
+                }
+
+                return 0;
+            }
+
+
+        ```
+
+4. 进程间通信（IPC）
+
+    4.1 管道
+
+    > 管道的概念：管道是一种最基本的IPC机制，作用于有血缘关系的进程之间，完成数据传递。调用pipe系统函数即可创建一个管道。有如下特质：
+    >> a. 其本质是一个伪文件（实为内核缓冲区）。
+
+    >> b. 由两个文件描述符引用，一个表示读端，一个表示写端。
+
+    >> c. 规定数据从管道的写端流入管道，从读端流出。
+
+
 
 
 
