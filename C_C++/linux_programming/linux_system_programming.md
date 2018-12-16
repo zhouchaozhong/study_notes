@@ -301,6 +301,144 @@ linux系统编程学习笔记
 
     >> c. 规定数据从管道的写端流入管道，从读端流出。
 
+    > 管道的原理：管道实为内核使用环形队列机制，借助内核缓冲区（4k）实现。
+
+    > 管道的局限性：
+    >> a. 数据自己读，不能自己写。
+
+    >> b. 数据一旦被读走，便不在管道中存在，不可反复读取。
+
+    >> c. 由于管道采用半双工通信方式。因此，数据只能在一个方向上流动。
+
+    >> d. 只能在有公共祖先的进程间使用管道。
+
+    ```
+        /*
+            简单管道通信示例代码
+        
+        */
+
+        #include <stdio.h>
+        #include <stdlib.h>
+        #include <unistd.h>
+        #include <string.h>
+
+        int main(void){
+
+            int fd[2];
+            pid_t pid;
+
+            int ret = pipe(fd);
+            if(ret == -1){
+                perror("pipe error");
+                exit(1);
+            }
+
+            pid = fork();
+            if(pid == -1){
+                perror("pipe error");
+                exit(1);
+            }
+            else if(pid == 0){  //子进程 读数据
+                sleep(1);
+                close(fd[1]);
+                char buf[1024];
+                ret = read(fd[0],buf,sizeof(buf));
+                if(ret == 0){
+                    printf("------------ \n");
+                }
+                write(STDOUT_FILENO,buf,ret);
+            }
+            else{   //父进程  写数据
+                close(fd[0]);
+                write(fd[1],"hello pipe \n",strlen("hello pipe \n"));
+            }
+
+            return 0;
+        }
+
+
+    ```
+
+    4.2 共享存储映射
+
+    > void *mmap(void *addr,size_t length,int prot,int flags,int fd,off_t offset);
+    >> 返回： 成功：返回创建的映射区首地址；失败：MAP_FAILED宏
+    
+    >> 参数： 
+    >>> addr:建立映射区的首地址，由Linux内核指定。使用时，直接传递NULL
+
+    >>> length: 欲创建映射区的大小。
+
+    >>> prot: 映射区权限PROT_READ、PROT_WRITE、PROT_READ|PROT_WRITE
+    
+    >>> flags: 标志位参数（常用于更新设定物理区域、设置共享、创建匿名映射区）
+    >>>> MAP_SHARED:会将映射区所做的操作反映到物理设备（磁盘）上。
+
+    >>>> MAP_PRIVATE:映射区所做的修改不会反映到物理设备。
+
+    >>> fd: 用来建立映射区的文件描述符。
+
+    >>> offset: 映射文件的偏移(4k的整数倍)。
+
+    ```
+
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <fcntl.h>
+    #include <unistd.h>
+    #include <string.h>
+    #include <sys/mman.h>
+
+    int main(void){
+
+    int len,ret;
+    char * p = NULL;
+    int fd = open("mmaptest.txt",O_CREAT|O_RDWR,0644);
+    if(fd < 0){
+        perror("open error");
+        exit(1);
+    }
+    
+    len = ftruncate(fd,4);
+    if(len == -1){
+        perror("ftruncate error");
+        exit(1);
+    }
+    p = mmap(NULL,4,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0);
+    if(p == MAP_FAILED){
+        perror("mmap error");
+        exit(1);
+    }
+    strcpy(p,"abc"); //写数据
+    ret = munmap(p,4); 
+    if(ret == -1){
+        perror("munmap error");
+        exit(1);
+    } 
+
+    close(fd); 
+
+
+    return 0;
+    }
+
+
+    ```
+
+    > 总结：使用mmap时务必注意以下事项
+    >> 1. 创建映射区的过程中，隐含着一次对文件的读操作。
+    >> 2. 当MAP_SHARED时，要求：映射区的权限应 <= 文件打开的权限(出于对映射区的保护)。而MAP_PRIVATE则无所谓,
+    >> 因为mmap中的权限是对内存的限制。
+    >> 3. 映射区的释放与文件关闭无关。只要映射建立成功,文件可以立即关闭。
+    >> 4. 特别注意,当映射文件大小为0时，不能创建映射区。所以：用于映射的文件必须要有实际大小!
+    >> mmap使用时常常会出现总线错误,通常是由于共享文件存储空间大小引起的。
+    >> 5. munmap传入的地址一定是mmap的返回地址，坚决杜绝指针++操作。
+    >> 6. 文件偏移量必须为4k的整数倍。
+    >> 7. mmap创建映射区出错概率非常高，一定要检查返回值，确保映射区建立成功再进行后续操作。
+
+
+    
 
 
 
