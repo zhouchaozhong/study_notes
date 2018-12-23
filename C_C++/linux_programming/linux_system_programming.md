@@ -389,38 +389,51 @@ linux系统编程学习笔记
     #include <unistd.h>
     #include <string.h>
     #include <sys/mman.h>
+    #include <sys/wait.h>
+
+    int var = 100;
 
     int main(void){
 
-    int len,ret;
-    char * p = NULL;
-    int fd = open("mmaptest.txt",O_CREAT|O_RDWR,0644);
-    if(fd < 0){
-        perror("open error");
-        exit(1);
-    }
-    
-    len = ftruncate(fd,4);
-    if(len == -1){
-        perror("ftruncate error");
-        exit(1);
-    }
-    p = mmap(NULL,4,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0);
-    if(p == MAP_FAILED){
-        perror("mmap error");
-        exit(1);
-    }
-    strcpy(p,"abc"); //写数据
-    ret = munmap(p,4); 
-    if(ret == -1){
-        perror("munmap error");
-        exit(1);
-    } 
+        pid_t pid;
+        int *p;
+        int fd = open("temp",O_RDWR|O_CREAT|O_TRUNC,0644);
+        if(fd < 0){
+            perror("open error");
+            exit(1);
+        }
 
-    close(fd); 
+        unlink("temp");
+        ftruncate(fd,4);
+        p = (int *)mmap(NULL,4,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0);
+        //匿名映射区
+        //p = (int *)mmap(NULL,4,PROT_READ|PROT_WRITE,MAP_SHARED|MAP_ANON,-1,0);
+        //MAP_ANONYMOUS 和 MAP_ANON这两个宏是Linux操作系统特有的宏，unix下可以通过关联/dev/zero 文件 来实现映射
+        if(p == MAP_FAILED){
+            perror("mmap error");
+            exit(1);
+        }
 
+        close(fd); 
+        pid = fork();
+        if(pid == 0){
+            *p = 2000;
+            var = 1000;
+            printf("child ,*p = %d,var = %d \n",*p,var);
+        }
+        else{
+            sleep(1);
+            printf("parent ,*p = %d,var = %d \n",*p,var);
+            wait(NULL);
 
-    return 0;
+            int ret = munmap(p,4);  //释放映射区
+            if(ret == -1){
+                perror("munmap error");
+                exit(1);
+            }
+        }
+
+        return 0;
     }
 
 
@@ -433,12 +446,347 @@ linux系统编程学习笔记
     >> 3. 映射区的释放与文件关闭无关。只要映射建立成功,文件可以立即关闭。
     >> 4. 特别注意,当映射文件大小为0时，不能创建映射区。所以：用于映射的文件必须要有实际大小!
     >> mmap使用时常常会出现总线错误,通常是由于共享文件存储空间大小引起的。
-    >> 5. munmap传入的地址一定是mmap的返回地址，坚决杜绝指针++操作。
+    >> 5. munmap传入的地址一定是mmap的返回地址，坚决杜绝指针++/--操作。
     >> 6. 文件偏移量必须为4k的整数倍。
     >> 7. mmap创建映射区出错概率非常高，一定要检查返回值，确保映射区建立成功再进行后续操作。
 
 
+5. 信号
     
+    5.1 信号的概念
+    
+    > 基本的属性
+
+    > 信号四要素
+
+    > 信号的处理方式
+    >> 1. 执行默认动作  2. 忽略（丢弃） 3. 捕捉（调用户处理函数）
+
+    5.2 产生5种信号
+    >> 1.按键产生(如:ctrl+c ,ctrl+z)   2.系统调用产生(如：kill,raise) 3. 软件条件产生(如：定时器 alarm)  4. 硬件异常产生(非法访问内存)  5.命令产生(如：kill命令)
+
+    > kill
+    
+    ```
+        #include <stdio.h>
+        #include <stdlib.h>
+        #include <unistd.h>
+        #include <signal.h>
+
+        #define N 5
+
+        int main(void){
+            
+            int i;
+            pid_t pid,q;
+
+            for(i = 0;i < N;i++){
+                pid = fork();
+                if(pid == 0) break;
+                if(i == 2) q = pid;
+            }
+
+            if(i < 5){
+                while(1){
+                    printf("I'm child %d ,getpid = %u \n",i,getpid());
+                    sleep(1);
+                }
+            }
+            else{
+                sleep(1);
+                kill(q,SIGKILL);
+                while(1);
+            }
+
+            return 0;
+        }
+
+    ```
+
+    > alarm函数
+
+    ```
+        //每个进程都有且只有一个定时器
+        // unsigned int alarm(unsigned int seconds);  返回0 或剩余的秒数，无失败。
+        //常用，取消定时器 alarm(0);
+        #include <stdio.h>
+        #include <stdlib.h>
+        #include <unistd.h>
+        #include <signal.h>
+
+        #define N 5
+
+        int main(void){
+            
+            int i;
+            alarm(1);
+            for(i = 0;;i++)
+                printf("%d \n",i);
+
+            return 0;
+        }
+
+    ```
+
+    > setitimer函数
+    >> int setitimer(int which,const struct itimerval *new_value,struct itimerval *old_value);
+    >>> 参数: which 指定定时方式
+
+    >>> a. 自然定时: ITIMER_REAL  -> 14 (SIGLARM)    计算自然时间
+
+    >>> b. 虚拟空间计时(用户空间)：  ITIMER_VIRTUAL  -> 26 ） SIGVTALRM   只计算进程占用cpu的时间
+
+    >>> c. 运行时计时（用户+内核）：ITIMER_PROF   -> 27 ) SIGPROF  计算占用cpu及执行系统调用的时间
+
+    ```
+
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <unistd.h>
+    #include <signal.h>
+    #include <sys/time.h>
+
+    unsigned int my_alarm(unsigned int sec){
+
+        struct itimerval it,oldit;
+        int ret;
+
+        it.it_value.tv_sec = sec;
+        it.it_value.tv_usec = 0;
+        it.it_interval.tv_sec = 0;
+        it.it_interval.tv_usec = 0;
+
+        ret = setitimer(ITIMER_REAL,&it,&oldit);
+        if(ret == -1){
+            perror("setitimer");
+            exit(1);
+        }
+
+        return oldit.it_value.tv_sec;
+    }
+
+    int main(void){
+        
+        int i;
+        my_alarm(1);
+        for(i = 0;;i++)
+            printf("%d \n",i);
+
+        return 0;
+    }
+
+    ```
+
+    5.3 信号集操作函数
+
+    > 信号屏蔽字
+
+    > 未决信号集
+
+    ```
+        //打印未决信号集
+        #include <stdio.h>
+        #include <signal.h>
+
+        void printped(sigset_t *ped){
+            int i;
+            for(i = 1;i < 32;i++){
+                if(sigismember(ped,i) == 1) {
+                    putchar('1');
+                }
+                else{
+                    putchar('0');
+                }
+            }
+
+            printf("\n");
+
+        }
+
+        int main(void){
+            
+            sigset_t myset,oldset,ped;
+
+            sigemptyset(&myset);
+            sigaddset(&myset,SIGQUIT);
+            sigaddset(&myset,SIGTSTP);
+            sigprocmask(SIG_BLOCK,&myset,&oldset);
+
+            while(1){
+                sigpending(&ped);
+                printped(&ped);
+
+                sleep(1);
+            }
+            
+
+            return 0;
+        }
+
+
+    ```
+
+    5.4 信号的捕捉
+
+    > 注册信号捕捉函数
+
+    ```
+        #include <stdio.h>
+        #include <sys/time.h>
+        #include <signal.h>
+
+        void myfunc(int signo){
+            printf("hello world \n");
+        }
+
+        int main(void){
+            
+            struct itimerval it,oldit;
+            signal(SIGALRM,myfunc); //注册SIGALRM信号的捕捉处理函数
+
+            it.it_value.tv_sec = 5;
+            it.it_value.tv_usec = 0;
+
+            it.it_interval.tv_sec = 3;
+            it.it_interval.tv_usec = 0;
+
+            if(setitimer(ITIMER_REAL,&it,&oldit) == -1){
+                perror("setitimer error");
+                return -1;
+            }
+
+            while(1);
+            
+            return 0;
+        }
+
+
+
+
+        #include <stdio.h>
+        #include <stdlib.h>
+        #include <signal.h>
+        #include <unistd.h>
+
+        typedef void (*sighandler_t)(int);
+
+        void myfunc(int signo){
+        printf("catch sigint !");
+        }
+
+        int main(void){
+            sighandler_t handler;
+            handler = signal(SIGINT,myfunc);
+
+            if(handler == SIG_ERR){
+                perror("signal error");
+                exit(1);
+            }
+
+            while(1);
+            return 0;
+        }
+
+    ```
+
+    > sigaction函数
+
+    ```
+
+        #include <stdio.h>
+        #include <stdlib.h>
+        #include <signal.h>
+        #include <unistd.h>
+
+        void docatch(int signo){
+            printf("%d signal is catched \n",signo);
+        }
+
+        int main(void){
+            
+            int ret;
+
+            struct sigaction act;
+            act.sa_handler = docatch;
+            sigemptyset(&act.sa_mask);
+            sigaddset(&act.sa_mask,SIGQUIT);
+            act.sa_flags = 0;   //默认属性 信号捕捉函数执行期间，自动屏蔽本信号
+
+            ret = sigaction(SIGINT,&act,NULL);
+            if(ret < 0){
+                perror("sigaction error");
+                exit(1);
+            }
+
+            while(1);
+
+            return 0;
+        }
+
+    ```
+
+6. 竟态条件（时序竟态）
+
+    6.1 pause函数
+
+    > 调用该函数可以造成进程主动挂起，等待信号唤醒。调用该系统调用的进程将处于阻塞状态（主动放弃cpu）直到有信号递达将其唤醒。
+    >> a. 如果信号的默认处理动作是终止进程，则进程终止，pause函数没有机会返回。
+
+    >> b. 如果信号的默认处理动作是忽略，进程继续处于挂起状态,pause函数不返回。
+
+    >> c. 如果信号的处理动作是捕捉，则【调用完信号处理函数之后，pause返回-1】 errno设置为EINTR，表示“被信号中断”。
+
+    >> d. pause收到的信号不能被屏蔽，如果被屏蔽，那么pause就不能被唤醒。
+
+    ```
+        #include <stdio.h>
+        #include <stdlib.h>
+        #include <signal.h>
+        #include <unistd.h>
+        #include <errno.h>
+
+        void catch_sigalrm(int signo){
+
+        }
+
+        unsigned int mysleep(unsigned int seconds){
+
+            int ret;
+            struct sigaction act,oldact;
+            act.sa_handler = catch_sigalrm;
+            sigemptyset(&act.sa_mask);
+            act.sa_flags = 0;
+
+            ret = sigaction(SIGALRM,&act,&oldact);
+            if(ret == -1){
+                perror("sigaction error");
+                exit(1);
+            }
+
+            alarm(seconds);
+            ret = pause();  //主动挂起，等信号
+            if(ret == -1 && errno == EINTR){
+                printf("pause success \n");
+            }
+
+            ret = alarm(0);
+            sigaction(SIGALRM,&oldact,NULL); //恢复SIGALRM信号旧有的处理方式。
+
+            return ret;
+        }
+
+        int main(void){
+            
+            while(1){
+                mysleep(3);
+                printf("----------------------------------\n");
+            }
+            
+            return 0;
+        }
+
+    ```
+
 
 
 
