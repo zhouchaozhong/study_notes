@@ -787,6 +787,225 @@ linux系统编程学习笔记
 
     ```
 
+    6.2 注意事项
+
+    > 定义可重入函数,函数内不能含有全局变量及static变量,不能使用malloc,free
+
+    > 信号捕捉函数应设计为可重入函数。
+
+    > 信号处理程序可以调用的可重入函数可参阅man 7 signal
+
+    > 没有包含在上述列表中的函数大多是不可重入的，其原因为：
+    >> a. 使用静态数据结构
+
+    >> b. 调用了malloc或free
+
+    >> c. 是标准I/O函数
+
+
+
+7. 信号传参
+
+    > sigqueue函数对应kill函数，但可在向指定进程发送信号的同时携带参数。
+    >> int sigqueue(pid_t pid,int sig,const union sigval value);   成功:0;  失败：-1；设置errno
+
+    ```
+        union sigval{
+            int sival_int;
+            void *sival_ptr;
+        }
+
+    ```
+
+    >>> 向指定进程发送指定信号的同时，携带数据。但,如传地址,需注意,不同进程之间虚拟地址空间各自独立,将当前进程地址传递给另一个进程没有实际意义。
+
+
+8. 中断系统调用
+
+    > 系统调用可分为两类:慢速系统调用和其他系统调用。
+    >> a. 慢速系统调用:可能会使进程永远阻塞的一类。如果在阻塞期间收到一个信号,该系统调用就被中断,不再继续执行（早期）；也可以设定系统调用是否重启。如，read,write,pause,wait...
+
+    >> b. 其他系统调用：getpid,getppid,fork...
+
+9. 创建会话
+
+    > 创建一个会话需要注意一下6点注意事项：
+    >> a. 调用进程不能是进程组组长，该进程变成新会话首进程
+
+    >> b. 该进程成为一个新进程组的组长进程。
+
+    >> c. 需有root权限（ubuntu不需要）。
+
+    >> d. 新会话丢弃原有的控制终端，该会话没有控制终端
+
+    >> e. 该调用进程是组长进程，则出错返回。
+
+    >> f. 建立新会话时，先调用fork，父进程终止，子进程调用setsid
+
+10. 创建守护进程
+
+    > a. 创建子进程 fork
+
+    > b. 子进程创建新会话 setsid()
+
+    > c. 改变进程的工作目录 chdir()
+
+    > d. 指定文件掩码  umask()
+
+    > e. 将文件描述符（0/1/2）重定向  /dev/null  dup2()
+
+    > f. 守护进程主逻辑
+
+    > g. 退出
+
+
+    ```
+        #include <stdio.h>
+        #include <stdlib.h>
+        #include <fcntl.h>
+        #include <sys/stat.h>
+        #include <unistd.h>
+
+        void mydaemond(void){
+            pid_t pid,sid;
+            int ret;
+            pid = fork();
+            if(pid > 0){
+                exit(1);
+            }
+
+            sid = setsid();
+            ret = chdir("/");
+            if(ret < 0){
+                perror("chdir error");
+                exit(1);
+            }
+
+            umask(0002);
+            close(STDIN_FILENO);
+            open("/dev/null",O_RDWR);
+            dup2(0,STDOUT_FILENO);
+            dup2(0,STDERR_FILENO);
+        }
+
+        int main(void){
+            
+            mydaemond();
+            while(1){
+
+            }
+            return 0;
+        }
+
+    ```
+
+11. 线程
+
+    11.1 线程概念
+
+    > 什么是线程
+    >> LWP:light weight process 轻量级的进程，本质仍是进程(Linux环境下)
+
+    >> 进程：独立地址空间，拥有PCB
+
+    >> 线程：也有PCB，但没有独立的地址空间（共享）
+
+    >> 区别：在于是否共享地址空间
+
+    >> Linux下：线程：最小的执行单位  进程：最小分配资源单位，可看成是只有一个线程的进程
+
+
+    > 线程与进程关系。
+
+    > 线程之间共享、非共享。
+
+    > 优缺点
+
+    11.2 线程控制原语
+
+        pthread_self
+        create
+        exit
+        join
+
+    11.3 线程属性
+
+        修改线程属性的方法
+
+    11.4 注意的事项
+
+    > 线程共享资源
+    >> a. 文件描述符表
+
+    >> b. 每种信号的处理方式
+
+    >> c. 当前工作目录
+
+    >> d. 用户ID和组ID
+
+    >> e. 内存地址空间（.text/.data/.bss/heap/共享库）
+
+    > 线程非共享资源
+    >> a. 线程ID
+
+    >> b. 处理器现场和栈指针（内核栈）
+
+    >> c. 独立的栈空间（用户空间栈）
+
+    >> d. errno变量
+
+    >> e. 信号屏蔽字
+
+    >> f. 调度优先级
+
+    > 线程优缺点
+    >> 优点：1.提高程序并发性 2.开销小  3. 数据通信、共享数据方便。
+
+    >> 缺点：1. 库函数，不稳定 2. 调试、编写困难、gdb不支持 3. 对信号支持不好
+
+    >> 优点相对突出，缺点均不是硬伤。Linux下由于实现方法导致进程、线程差别不是很大。
+
+    11.5 线程控制原语
+
+    ```
+
+    #include <stdio.h>
+    #include <unistd.h>
+    #include <pthread.h>
+    #include <stdlib.h>
+
+    void *thrd_func(void *arg){
+        printf("In thread:thread id = %lu,pid = %u \n",pthread_self(),getpid());
+        return NULL;
+    }
+
+    int main(void){
+    pthread_t tid;
+    int ret;
+
+    printf("In main 1: thread id = %lu,pid = %u \n",pthread_self(),getpid());
+    ret = pthread_create(&tid,NULL,thrd_func,NULL);
+    if(ret != 0){
+        printf("pthread_create error \n");
+        exit(1);
+    }
+
+    printf("In main 2: thread id = %lu,pid = %u \n",pthread_self(),getpid());
+    sleep(1);
+    
+
+    return 0;
+    }
+
+    /*
+        由于是非系统调用，是库函数。编译时需要加上-lpthread选项
+        gcc test.c -o test -Wall -lpthread
+    
+    */
+
+    ```
+
+
 
 
 
