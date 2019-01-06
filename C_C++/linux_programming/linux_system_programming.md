@@ -1003,11 +1003,308 @@ linux系统编程学习笔记
     
     */
 
+
+
+    //循环创建线程
+    #include <stdio.h>
+    #include <string.h>
+    #include <unistd.h>
+    #include <pthread.h>
+    #include <stdlib.h>
+
+    void *thrd_func(void *arg){
+        int i = (int)arg;
+        sleep(i);
+        printf("%dth thread:thread id = %lu,pid = %u \n",i+1,pthread_self(),getpid());
+        return NULL;
+    }
+
+    int main(void){
+        pthread_t tid;
+        int ret,i;
+
+        for(i = 0;i < 5;i++){
+            ret = pthread_create(&tid,NULL,thrd_func,(void *)i);
+            if(ret != 0){
+                fprintf(stderr,"pthread_create error: %s \n",strerror(ret));
+                exit(1);
+            }
+        }
+    
+        sleep(i);
+        
+
+        return 0;
+    }
+
+
+    //线程共享全局变量
+
+    #include <stdio.h>
+    #include <unistd.h>
+    #include <pthread.h>
+    #include <stdlib.h>
+
+    int var = 100;
+
+    void *tfn(void *arg){
+        var = 200;
+        printf("thread \n");
+        return NULL;
+    }
+
+    int main(void){
+        pthread_t tid;
+
+        printf("At first var = %d \n",var);
+        pthread_create(&tid,NULL,tfn,NULL);
+        sleep(1);
+
+        printf("after pthread_create var = %d \n",var);
+        
+        return 0;
+    }
+
+
+    // pthread_exit(NULL)  线程退出
+    // pthread_join() 线程回收
+    // pthread_detach()  线程分离   --自动退出，无系统残留资源
+    // pthread_cancel() 杀死线程 线程的取消不是实时的，它必须要到达一个取消点（系统调用）
+
+
+
+    //设置线程属性分离线程
+    
+    #include <stdio.h>
+    #include <string.h>
+    #include <unistd.h>
+    #include <pthread.h>
+    #include <stdlib.h>
+
+    void *tfn(void *arg){
+        pthread_exit((void *)77);
+    }
+
+    int main(void){
+        pthread_t tid;
+        int ret;
+        pthread_attr_t attr;
+        ret = pthread_attr_init(&attr);
+        if(ret != 0){
+            fprintf(stderr,"pthread_init error:%s \n",strerror(ret));
+            exit(1);
+        }
+        pthread_attr_setdetachstate(&attr,PTHREAD_CREATE_DETACHED);
+
+        ret = pthread_create(&tid,&attr,tfn,NULL);
+        if(ret != 0){
+            fprintf(stderr,"pthread_create error:%s \n",strerror(ret));
+            exit(1);
+        }
+        ret = pthread_join(tid,NULL);
+        if(ret != 0){
+            fprintf(stderr,"pthread_join error:%s \n",strerror(ret));
+            exit(1);
+        }
+        pthread_exit((void *)1);
+        
+        return 0;
+    }
+
+
     ```
 
+    11.6 互斥量的应用
+
+    ```
+
+        //互斥量应用代码示例
+
+        #include <stdio.h>
+        #include <unistd.h>
+        #include <pthread.h>
+        #include <string.h>
+        #include <stdlib.h>
+
+        pthread_mutex_t mutex;      //定义锁
+
+        void *tfn(void *arg){
+            srand(time(NULL));
+            while(1){
+                pthread_mutex_lock(&mutex); //加锁
+                printf("hello ");
+                sleep(rand() % 3);  /*模拟长时间操作共享资源，导致cpu易主，产生与时间有关的错误*/
+                printf("world \n");
+                pthread_mutex_unlock(&mutex);   //解锁
+                sleep(rand() % 3);
+            }
+
+            return NULL;
+        }
+
+        int main(void){
+        
+            pthread_t tid;
+            srand(time(NULL));
+            pthread_mutex_init(&mutex,NULL); //一旦成功 ，mutex值变为1
+
+            pthread_create(&tid,NULL,tfn,NULL);
+
+            while(1){
+                    pthread_mutex_lock(&mutex); //加锁
+                    printf("HELLO ");
+                    sleep(rand() % 3);  /*模拟长时间操作共享资源，导致cpu易主，产生与时间有关的错误*/
+                    printf("WORLD \n");
+                    pthread_mutex_unlock(&mutex);   //解锁
+                    sleep(rand() % 3);
+            }
+
+            pthread_mutex_destroy(&mutex);
+        
+            return 0;
+        }
 
 
+        //结论： 在访问共享资源前加锁，访问结束后立即解锁。锁的粒度应该越小越好。否则其他线程很难抢到锁。
 
 
+    ```
+
+    11.6 读写锁
+
+    ```
+
+    #include <stdio.h>
+    #include <unistd.h>
+    #include <pthread.h>
+    #include <string.h>
+    #include <stdlib.h>
+    
+    /* 3个线程不定时 "写" 全局资源，5个线程不定时 "读" 同一全局资源 */
+    /* 读写锁：写时独占，读时共享 写锁优先级比读锁高 */
+
+    int counter;
+    pthread_rwlock_t rwlock;      //定义锁
+
+    void *th_write(void *arg){
+        int t;
+        int i = (int)arg;
+
+        while(1){
+            t = counter;
+            usleep(1000);
+            pthread_rwlock_wrlock(&rwlock); //写锁
+            printf("=================write %d : %lu : counter = %d ++counter = %d \n ",i,pthread_self(),t,++counter);
+            pthread_rwlock_unlock(&rwlock);
+            usleep(5000);
+        }
+
+        return NULL;
+    }
+
+    void *th_read(void *arg){
+        int i = (int)arg;
+
+        while(1){
+            pthread_rwlock_rdlock(&rwlock); //读锁
+            printf("=================read %d : %lu : %d \n ",i,pthread_self(),counter);
+            pthread_rwlock_unlock(&rwlock);
+            usleep(900);
+        }
+
+        return NULL;
+    }
+
+    int main(void){
+        int i;
+        pthread_t tid[8];
+        pthread_rwlock_init(&rwlock,NULL);
+        for(i = 0;i < 3;i++){
+            pthread_create(&tid[i],NULL,th_write,(void *)i);
+        }
+        for(i = 0;i < 5;i++){
+            pthread_create(&tid[i+3],NULL,th_read,(void *)i);
+        }
+        for(i = 0;i < 8;i++){
+            pthread_join(tid[i],NULL);   //回收子线程
+        }
+
+        pthread_rwlock_destroy(&rwlock); //释放读写锁
+        
+
+        return 0;
+    }
+    
+
+    ```
+
+    11.7 条件变量生产者模型
+
+
+    ```
+
+    /* 借助条件变量模拟 生产者-消费者问题 */
+    #include <stdio.h>
+    #include <unistd.h>
+    #include <pthread.h>
+    #include <stdlib.h>
+    
+    /* 链表作为共享数据，需被互斥量保护 */
+    struct msg{
+        struct msg *next;
+        int num;
+    };
+
+    struct msg *head;
+    struct msg *mp;
+
+    /* 静态初始化一个条件变量和一个互斥量 */
+    pthread_cond_t has_product = PTHREAD_COND_INITIALIZER;
+    pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+
+    void *consumer(void *p){
+        for(;;){
+            pthread_mutex_lock(&lock);
+            while(head == NULL){    //头指针为空，说明没有节点
+                pthread_cond_wait(&has_product,&lock);
+            }
+            mp = head;
+            head = mp->next;    //模拟消费掉一个产品
+            pthread_mutex_unlock(&lock);
+            printf("-Consumer --- %d \n",mp->num);
+            free(mp);
+            sleep(rand() % 5);
+        }
+    }
+
+    void *producer(void *p){
+        for(;;){
+            mp = malloc(sizeof(struct msg));
+            mp->num = rand() % 1000 + 1;    //模拟生产一个产品
+            printf("-Produce --- %d \n",mp->num);
+            pthread_mutex_lock(&lock);
+            mp->next = head;
+            head = mp;
+            pthread_mutex_unlock(&lock);
+
+            pthread_cond_signal(&has_product);  //将等待在该条件变量上的一个线程唤醒
+            sleep(rand() % 5);
+        }
+    }
+
+    int main(int argc,char *argv[]){
+        pthread_t pid,cid;
+        srand(time(NULL));
+        pthread_create(&pid,NULL,producer,NULL);
+        pthread_create(&cid,NULL,consumer,NULL);
+
+        pthread_join(pid,NULL);
+        pthread_join(cid,NULL);
+
+        return 0;
+    }
+
+
+    ```
 
 
