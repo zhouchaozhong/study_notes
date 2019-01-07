@@ -1308,3 +1308,122 @@ linux系统编程学习笔记
     ```
 
 
+    11.8 信号量
+
+
+    ```
+
+    /* 信号量实现 生产者 消费者问题 */
+    #include <stdio.h>
+    #include <unistd.h>
+    #include <pthread.h>
+    #include <stdlib.h>
+    #include <semaphore.h>
+
+    #define NUM 5
+
+    int queue[NUM];     //全局数组实现环形队列
+    sem_t blank_number,product_number;  //空格子信号量，产品信号量
+
+    void *producer(void *arg){
+        int i = 0;
+
+        while(1){
+            sem_wait(&blank_number);    //生产者将空格子数-- ，为0则阻塞等待
+            queue[i] = rand() % 1000 + 1;   //生产一个产品
+            printf("----------Produce--------%d \n",queue[i]);
+            sem_post(&product_number);  //将产品数++
+
+            i = (i+1) % NUM;    //借助下标实现环形
+            sleep(rand() % 1);
+        }
+    }
+
+    void *consumer(void *arg){
+        int i = 0;
+
+        while(1){
+            sem_wait(&product_number);      //消费者将产品数-- 为0则阻塞等待
+            printf("----------Consumer------------------%d \n",queue[i]);
+            queue[i] = 0;   //消费一个产品
+            sem_post(&blank_number);    //消费掉以后，将空格子数++
+
+            i = (i+1) % NUM;
+            sleep(rand() % 3);
+
+        }
+    }
+
+    int main(int argc,char * argv[]){
+        pthread_t pid,cid;
+        sem_init(&blank_number,0,NUM);      //初始化空格子信号量为5
+        sem_init(&product_number,0,0);      //产品数为0
+        pthread_create(&pid,NULL,producer,NULL);
+        pthread_create(&cid,NULL,consumer,NULL);
+
+        pthread_join(pid,NULL);
+        pthread_join(cid,NULL);
+
+        sem_destroy(&blank_number);
+        sem_destroy(&product_number);
+        
+        return 0;
+    }
+
+
+    ```
+
+    11.9 文件锁
+
+    ```
+
+    #include <stdio.h>
+    #include <sys/types.h>
+    #include <sys/stat.h>
+    #include <fcntl.h>
+    #include <unistd.h>
+    #include <stdlib.h>
+
+    void sys_err(char *str){
+        perror(str);
+        exit(1);
+    }
+
+    int main(int argc,char * argv[]){
+        int fd;
+        struct flock f_lock;
+
+        if(argc < 2){
+            printf("./a.out filename\n");
+            exit(1);
+        }
+
+        if((fd = open(argv[1],O_RDWR)) < 0){
+            sys_err("open");
+        }
+
+        f_lock.l_type = F_WRLCK;    /* 选用写锁 */
+        // f_lock.l_type = F_RDLCK;    /* 选用读锁 */
+        f_lock.l_whence = SEEK_SET;
+        f_lock.l_start = 0;
+        f_lock.l_len = 0;       /* 0表示整个文件加锁 */
+
+        fcntl(fd,F_SETLKW,&f_lock);
+        printf("get flock \n");
+
+        sleep(10);  //模拟对文件操作
+
+        f_lock.l_type = F_UNLCK;    /* 解锁 */
+        fcntl(fd,F_SETLKW,&f_lock);
+        printf("un flock \n");
+        close(fd);
+
+        
+        return 0;
+    }
+
+    //多线程间共享文件描述符，而给文件加锁，是通过修改文件描述符所指向的文件结构体中的成员变量来实现的。
+    // 因此，多线程中无法使用文件锁。
+
+
+    ```
