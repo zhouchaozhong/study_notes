@@ -6,7 +6,7 @@ import (
 )
 
 type Monster struct {
-	Name string `json:"name"`
+	Name string `json:"name"` //tag标签
 	Age int `json:"age"`
 	Birthday string `json:"birth"`
 	Sal float64	`json:"sal"`
@@ -83,6 +83,44 @@ func testSlice(){
 }
 
 
+//将json字符串反序列化成struct
+func unmarshalStruct() {
+	str := "{\"name\":\"牛魔王\",\"age\":500,\"birth\":\"1900-11-11\",\"sal\":8000,\"skill\":\"芭蕉扇\"}"
+	var monster Monster
+	err := json.Unmarshal([]byte(str),&monster)
+	if err != nil {
+		fmt.Printf("unmarshal err = %v \n",err)
+	}
+
+	fmt.Printf("反序列化后 struct = %v  monster.Skill = %v \n",monster,monster.Skill)
+}
+
+//将json字符串反序列化成map
+func unmarshalMap() {
+	str := "{\"address\":\"火云洞\",\"age\":30,\"name\":\"红孩儿\"}"
+	var a map[string]interface{}
+	err := json.Unmarshal([]byte(str),&a)
+	if err != nil {
+		fmt.Printf("unmarshal err = %v \n",err)
+	}
+
+	fmt.Printf("反序列化后 map = %v \n",a)
+}
+
+//将json字符串反序列化成切片
+func unmarshalSlice() {
+	str := "[{\"address\":\"London\",\"age\":7,\"name\":\"jack\"},{\"address\":[\"Tokyo\",\"Beijing\"],\"age\":16,\"name\":\"tom\"}]"
+	var slice []map[string]interface{}
+	//反序列化不需要make，因为make操作被封装到Unmarshal方法里
+	err := json.Unmarshal([]byte(str),&slice)
+	if err != nil {
+		fmt.Printf("unmarshal err = %v \n",err)
+	}
+
+	fmt.Printf("反序列化后 slice = %v \n",slice)
+
+}
+
 func main() {
 
 	//演示将结构体,map，切片进行序列化
@@ -95,6 +133,15 @@ func main() {
 
 	//切片进行序列化
 	testSlice()
+
+	//json反序列化成结构体
+	unmarshalStruct()
+
+	//json反序列化成map
+	unmarshalMap()
+
+	//json反序列化成切片
+	unmarshalSlice()
 	
 
 }
