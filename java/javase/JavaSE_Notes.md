@@ -2087,5 +2087,69 @@
 
 ### 泛型
 
-
+> ```java
+> package com.gene;
+> import org.junit.Test;
+> import java.util.ArrayList;
+> import java.util.Iterator;
+> 
+> public class GenericTest {
+> 
+>     @Test
+>     public void test() {
+> 
+>         // 泛型是一个类型，不能是基础数据类型，要用基础数据类型的包装类
+>         ArrayList<Integer> list = new ArrayList<Integer>();
+>         list.add(12);
+>         list.add(34);
+>         list.add(56);
+> 
+>         Iterator<Integer> iterator = list.iterator();
+>         while(iterator.hasNext()){
+>             System.out.println(iterator.next().getClass());
+>         }
+>     }
+> 
+>     @Test
+>     public void test1() {
+>         // 如果定义了泛型类，实例化没有指明类的泛型，则认为此泛型类型为Object类型
+>         // 静态方法不能使用泛型
+>         Order<String> o = new Order<String>("Tom",1,"order info");
+>         System.out.println(o);
+>     }
+> 
+> }
+> 
+> // Order.java
+> package com.gene;
+> public class Order<T> {
+>     String orderName;
+>     int orderId;
+>     // 类的内部结构就可以使用泛型
+>     T orderT;
+> 
+>     public Order() {}
+>     public Order(String orderName,int orderId,T orderT) {
+>         this.orderName = orderName;
+>         this.orderId = orderId;
+>         this.orderT = orderT;
+>     }
+>     public T getOrderT() {
+>         return orderT;
+>     }
+>     public void setOrderT(T orderT) {
+>         this.orderT = orderT;
+>     }
+>     @Override
+>     public String toString() {
+>         return "Order{" +
+>                 "orderName='" + orderName + '\'' +
+>                 ", orderId=" + orderId +
+>                 ", orderT=" + orderT +
+>                 '}';
+>     }
+> }
+> ```
+>
+> 
 
