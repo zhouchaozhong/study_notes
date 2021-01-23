@@ -11,4 +11,8 @@
 5. 综合平台类项目-Cloud-Platform(脚手架)https://gitee.com/geek_qi/cloud-platform?_from=gitee_search
 6. 若依：https://gitee.com/y_project/RuoYi?_from=gitee_search
 7. XMall：https://gitee.com/Exrick/xmall?_from=gitee_search
+8. Halo个人博客：https://halo.run/
+9. Hutool Java工具包： https://www.hutool.cn/
+10. PiggyMetrics（SpringCloud微服务）：https://github.com/sqshq/piggymetrics
+11. HanLP：https://github.com/hankcs/HanLP
 
