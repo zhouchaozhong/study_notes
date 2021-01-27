@@ -2095,58 +2095,537 @@
 > 
 > public class GenericTest {
 > 
->     @Test
->     public void test() {
+> @Test
+> public void test() {
 > 
->         // 泛型是一个类型，不能是基础数据类型，要用基础数据类型的包装类
->         ArrayList<Integer> list = new ArrayList<Integer>();
->         list.add(12);
->         list.add(34);
->         list.add(56);
+>   // 泛型是一个类型，不能是基础数据类型，要用基础数据类型的包装类
+>   ArrayList<Integer> list = new ArrayList<Integer>();
+>   list.add(12);
+>   list.add(34);
+>   list.add(56);
 > 
->         Iterator<Integer> iterator = list.iterator();
->         while(iterator.hasNext()){
->             System.out.println(iterator.next().getClass());
->         }
->     }
+>   Iterator<Integer> iterator = list.iterator();
+>   while(iterator.hasNext()){
+>       System.out.println(iterator.next().getClass());
+>   }
+> }
 > 
->     @Test
->     public void test1() {
->         // 如果定义了泛型类，实例化没有指明类的泛型，则认为此泛型类型为Object类型
->         // 静态方法不能使用泛型
->         Order<String> o = new Order<String>("Tom",1,"order info");
->         System.out.println(o);
->     }
+> @Test
+> public void test1() {
+>   // 如果定义了泛型类，实例化没有指明类的泛型，则认为此泛型类型为Object类型
+>   // 静态方法不能使用泛型
+>   Order<String> o = new Order<String>("Tom",1,"order info");
+>   System.out.println(o);
+> }
 > 
 > }
 > 
 > // Order.java
 > package com.gene;
 > public class Order<T> {
->     String orderName;
->     int orderId;
->     // 类的内部结构就可以使用泛型
->     T orderT;
+> String orderName;
+> int orderId;
+> // 类的内部结构就可以使用泛型
+> T orderT;
 > 
->     public Order() {}
->     public Order(String orderName,int orderId,T orderT) {
->         this.orderName = orderName;
->         this.orderId = orderId;
->         this.orderT = orderT;
+> public Order() {}
+> public Order(String orderName,int orderId,T orderT) {
+>   this.orderName = orderName;
+>   this.orderId = orderId;
+>   this.orderT = orderT;
+> }
+> public T getOrderT() {
+>   return orderT;
+> }
+> public void setOrderT(T orderT) {
+>   this.orderT = orderT;
+> }
+> @Override
+> public String toString() {
+>   return "Order{" +
+>           "orderName='" + orderName + '\'' +
+>           ", orderId=" + orderId +
+>           ", orderT=" + orderT +
+>           '}';
+> }
+> }
+> ```
+>
+> **泛型方法**
+>
+> ```java
+> package generic;
+> 
+> import java.util.ArrayList;
+> import java.util.List;
+> 
+> public class GenericTest {
+>  public static void main(String[] args) {
+>      Order o = new Order();
+>      Integer[] arr = new Integer[]{1,2,3,4,5};
+>      System.out.println(o.copyFromArrayToList(arr));
+>    	List<Object> list1 = null;
+>    	List<String> list2 = null;
+>    	list1 = list2;	// 这里会报错，list1和list2的类型不是子父类的关系，不能赋值
+>  }
+> }
+> 
+> // 泛型方法：在方法中出现了泛型结构，泛型参数与类的泛型参数没有任何关系
+> // 换句话说，泛型方法所属的类是不是泛型类都没有关系
+> // 泛型方法，可以声明为静态的，原因：泛型参数是在调用方法的时候确定的，并非在实例化类的时候确定的
+> // 泛型在继承方面的体现：
+> // 类A是类B的父类，G<A>和G<B>之间不具备子父类关系，二者是并列关系
+> class Order {
+> 
+>  public void show(){
+> 
+>  }
+> 
+>  public <E> List<E> copyFromArrayToList(E[] arr){
+>      ArrayList<E> list = new ArrayList<>();
+>      for(E e : arr){
+>          list.add(e);
+>      }
+>      return list;
+>  }
+> }
+> ```
+>
+> **通配符**
+>
+> ```java
+> package generic;
+> 
+> import org.junit.Test;
+> 
+> import java.util.ArrayList;
+> import java.util.Iterator;
+> import java.util.List;
+> 
+> public class GenericTest2 {
+>     @Test
+>     public void test3(){
+>         List<Object> list1 = null;
+>         List<String> list2 = new ArrayList<String>();
+>         List<?> list = null;
+>         list2.add("AA");
+>         list2.add("BB");
+>         list = list2;
+>         // 对于List<?>不能向其内部添加数据
+> //        list.add("CC");  // 这句会报错
+>         // 允许读取数据，读取的数据类型为Object
+>         Object o = list.get(0);
+>         System.out.println(o);
+> 
 >     }
->     public T getOrderT() {
->         return orderT;
+> 
+>     public void print(List<?> list){
+>         Iterator<?> iterator = list.iterator();
+>         while(iterator.hasNext()){
+>             Object obj = iterator.next();
+>             System.out.println(obj);
+>         }
 >     }
->     public void setOrderT(T orderT) {
->         this.orderT = orderT;
+> }
+> 
+> ```
+>
+> **有限制条件的通配符**
+>
+> 1. ? extends A: 	G<? extends A>可以作为G<A>和G<B>的父类，其中B是A的子类
+> 2. ? super A:     G<? super A>可以作为G<A>和G<B>的父类，其中B是A的父类
+
+### IO流
+
+##### File类
+
+> **File类的构造器和常用方法**
+>
+> ```java
+> package IOTest;
+> import org.junit.Test;
+> import java.io.File;
+> import java.io.IOException;
+> 
+> /**
+>  *  File类的使用
+>  *  1. File类的一个对象代表一个文件或一个文件目录
+>  *  2. File类声明在java.io包下
+>  *  如何创建File实例
+>  *  File(String filePath)
+>  *  File(String parentPath,String childPath)
+>  *  File(File parentFile,String childPath)
+>  */
+> public class FileTest {
+> 
+>     @Test
+>     public void test1(){
+>         File file1 = new File("hello.txt");
+>         System.out.println(File.separator);
+>         System.out.println(file1);
 >     }
->     @Override
->     public String toString() {
->         return "Order{" +
->                 "orderName='" + orderName + '\'' +
->                 ", orderId=" + orderId +
->                 ", orderT=" + orderT +
->                 '}';
+> 
+>     @Test
+>     public void test2(){
+>         // public File getAbsoluteFile()  获取绝对路径
+>         File file = new File("hello.txt");
+>         File path = file.getAbsoluteFile();
+>         System.out.println(path);
+>         // public String getPath() 获取路径
+>         String path2 = file.getPath();
+>         System.out.println(path2);
+>         // public String getName() 获取名称
+>         String name = file.getName();
+>         System.out.println(name);
+>         // public String getParent() 获取上层文件目录路径，若无则返回null
+>         String parent = file.getParent();
+>         System.out.println(parent);
+>         // public long length() 获取文件长度（即字节数），不能获取目录的长度
+>         long length = file.length();
+>         System.out.println(length);
+>         //public long lastModified(): 获取最后一次的修改时间，毫秒值
+>         long modifiedTime = file.lastModified();
+>         System.out.println(modifiedTime);
+>         // public String[] list() 获取指定目录下的所有文件或者文件目录的名称数组(适用于文件目录)
+>         File file1 = new File("/Users/charles/Development/java");
+>         String[] list = file1.list();
+>         for(String f : list){
+>             System.out.println(f);
+>         }
+>         // public File[] listFiles() 获取指定目录下的所有文件或者文件目录的File数组（适用于文件目录）
+>         File[] files = file1.listFiles();
+>         for(File f : files){
+>             System.out.println(f);
+>         }
+>     }
+> 
+>     @Test
+>     public void test3(){
+>         File file = new File("hello.txt");
+>         File file1 = new File("hi.txt");
+>         // rename 重命名，要想保证true，要求file存在，且file1不能存在
+>         boolean b = file.renameTo(file1);
+>         System.out.println(b);
+>         // isDirectory 判断是否是目录
+>         boolean directory = file.isDirectory();
+>         System.out.println(directory);
+>         // isFile 判断是否是文件
+>         boolean isF = file1.isFile();
+>         System.out.println(isF);
+>         // exists 判断文件是否存在
+>         boolean isE = file1.exists();
+>         System.out.println(isE);
+>         // canRead 判断是否可读
+>         boolean b1 = file1.canRead();
+>         System.out.println(b1);
+>         // canWrite 判断是否可写
+>         boolean b2 = file1.canWrite();
+>         // isHidden 判断是否隐藏
+>         boolean hidden = file1.isHidden();
+>         System.out.println(hidden);
+>     }
+> 
+>     @Test
+>     public void test4(){
+>         // public boolean createNewFile() 创建文件，若文件存在则不创建，返回false
+>         File file = new File("hello.txt");
+>         if(!file.exists()){
+>             try {
+>                 file.createNewFile();
+>             } catch (IOException e) {
+>                 e.printStackTrace();
+>             }
+>         }else{
+>             // public boolean delete() 删除文件或者文件夹
+>             file.delete();
+>         }
+> 
+>         // public boolean mkdir() 创建文件目录，若文件目录存在则不创建，如果上层文件目录不存在也不创建
+>         File file1 = new File("/Users/charles/Development/java/javase/io1");
+>         file1.mkdir();
+>         // public boolean mkdirs() 创建文件目录，如果上层文件目录不存在则一并创建
+>         File file2 = new File("/Users/charles/Development/java/javase/io2/test3");
+>         file2.mkdirs();
+>     }
+> }
+> ```
+
+##### 流的分类
+
+> - 按操作*数据单位*不同分为：==字节流==（8bit）、==字符流==（16bit）
+> - 按数据流的*流向*分为：==输入流==、==输出流==
+> - 按流的*角色*不同分为：==节点流==、==处理流==
+>
+> Java的IO流涉及40多个类，但都是由以下四个抽象基类派生的：
+>
+> | 抽象基类 |    字节流    | 字符流 |
+> | :------: | :----------: | :----: |
+> |  输入流  | InputStream  | Reader |
+> |  输出流  | OutputStream | Writer |
+>
+> 流的体系结构
+>
+> | 抽象基类     | 节点流（或文件流） | 缓冲流（处理流的一种） |
+> | ------------ | ------------------ | ---------------------- |
+> | InputStream  | FileInputStream    | BufferedInputStream    |
+> | OutputStream | FileOutputStream   | BufferedOutputStream   |
+> | Reader       | FileReader         | BufferedReader         |
+> | Writer       | FileWriter         | BufferedWriter         |
+>
+
+##### FileReader
+
+> ```java
+> package IOTest;
+> import org.junit.Test;
+> import java.io.File;
+> import java.io.FileReader;
+> import java.io.IOException;
+> 
+> public class FileReaderWriterTest {
+> 
+>     @Test
+>     public void testFileReader(){
+>         // 实例化File类对象，指明要操作的文件
+>         File file = new File("hello.txt");
+>         FileReader fr = null;
+>         try {
+>             // 提供具体的流
+>            fr = new FileReader(file);
+>             // 数据的读入
+>             // read() 返回读入的一个字符，如果到达文件末尾，返回-1
+> //            int data = fr.read();
+> //            while(data != -1){
+> //                System.out.print((char) data);
+> //                data = fr.read();
+> //            }
+>             int data;
+>             while((data = fr.read()) != -1){
+>                 System.out.print((char) data);
+>             }
+>         } catch (IOException e) {
+>             e.printStackTrace();
+>         }finally {
+>             // 流的关闭操作
+>             try {
+>                 if(fr != null)
+>                     fr.close();
+>             } catch (IOException e) {
+>                 e.printStackTrace();
+>             }
+>         }
+>     }
+> 
+>     @Test
+>     public void testFileReader1(){
+>         // File类的实例化
+>         File file = new File("hello.txt");
+>         // FileReader流的实例化
+>         FileReader fr = null;
+>         try {
+>             fr = new FileReader(file);
+>             // 读入的操作
+>             char[] cbuf = new char[5];
+>             int len;
+>             // read(char[] cbuf) 返回每次读入数组中的字符个数
+>             while((len = fr.read(cbuf)) != -1){
+>                 // 错误的写法
+> //                for (int i = 0; i < cbuf.length; i++) {
+> //                    System.out.print(cbuf[i]);
+> //                }
+>                 // 正确的写法
+> //                for (int i = 0; i < len; i++) {
+> //                    System.out.print(cbuf[i]);
+> //                }
+>                 // 方式二
+>                 String str = new String(cbuf,0,len);
+>                 System.out.print(str);
+>             }
+>         } catch (IOException e) {
+>             e.printStackTrace();
+>         }finally {
+>             // 资源的关闭
+>             if(fr != null){
+>                 try {
+>                     fr.close();
+>                 } catch (IOException e) {
+>                     e.printStackTrace();
+>                 }
+>             }
+>         }
+>     }
+> }
+> ```
+>
+> 
+
+##### FileWriter
+
+> ```java
+> package IOTest;
+> import org.junit.Test;
+> import java.io.File;
+> import java.io.FileReader;
+> import java.io.FileWriter;
+> import java.io.IOException;
+> 
+> public class FileWriterTest {
+> 
+>     @Test
+>     public void testFileWriter() throws IOException {
+>         // 提供File类的对象，指明写出到的文件
+>         File file = new File("hello1.txt");
+>         // 提供FileWriter的对象，用于数据的写出
+>         FileWriter fw = new FileWriter(file,true);
+>         // 写出的操作
+>         fw.write("I have a dream!\n");
+>         fw.write("you need a dream!");
+>         // 流的关闭
+>         fw.close();
+>     }
+> 
+>     @Test
+>     public void testFileReaderWriter(){
+>         FileReader fr = null;
+>         FileWriter fw = null;
+>         try {
+>             File srcFile = new File("hello.txt");
+>             File destFile = new File("hello1.txt");
+>             fr = new FileReader(srcFile);
+>             fw = new FileWriter(destFile);
+>             char[] cbuf = new char[10];
+>             int len;
+>             while((len = fr.read(cbuf)) != -1){
+>                 fw.write(cbuf,0,len);
+>             }
+>         } catch (IOException e) {
+>             e.printStackTrace();
+>         } finally {
+>             try {
+>                 fr.close();
+>             } catch (IOException e) {
+>                 e.printStackTrace();
+>             }
+>             try {
+>                 fw.close();
+>             } catch (IOException e) {
+>                 e.printStackTrace();
+>             }
+>         }
+>     }
+> }
+> ```
+
+##### FileInputStream和FileOutputStream
+
+> ```java
+> package IOTest;
+> import org.junit.Test;
+> import java.io.File;
+> import java.io.FileInputStream;
+> import java.io.FileOutputStream;
+> import java.io.IOException;
+> 
+> public class FileInputStreamTest {
+> 
+>     /**
+>      * 对于文本文件使用字符流处理
+>      * 对于非文本文件使用字节流处理
+>      */
+>     @Test
+>     public void testFileInputOutputStream(){
+>         FileInputStream fis = null;
+>         FileOutputStream fos = null;
+>         try {
+>             File srcFile = new File("1.png");
+>             File destFile = new File("2.png");
+>             fis = new FileInputStream(srcFile);
+>             fos = new FileOutputStream(destFile);
+>             byte[] buffer = new byte[5];
+>             int len;
+>             while((len = fis.read(buffer)) != -1){
+>                 fos.write(buffer,0,len);
+>             }
+>         } catch (IOException e) {
+>             e.printStackTrace();
+>         } finally {
+>             if(fis != null){
+>                 try {
+>                     fis.close();
+>                 } catch (IOException e) {
+>                     e.printStackTrace();
+>                 }
+>             }
+>             if(fos != null){
+>                 try {
+>                     fos.close();
+>                 } catch (IOException e) {
+>                     e.printStackTrace();
+>                 }
+>             }
+>         }
+>     }
+> }
+> ```
+
+##### 缓冲流
+
+> BufferedInputStream和BufferedOutputStream
+>
+> ```java
+> package IOTest;
+> import org.junit.Test;
+> import java.io.*;
+> 
+> public class BufferedTest {
+> 
+>     // 缓冲流是为了提高文件的读取和写入速度的
+>     @Test
+>     public void testBufferedStream(){
+>         long start = System.currentTimeMillis();
+>         BufferedInputStream bis = null;
+>         BufferedOutputStream bos = null;
+>         try {
+>             // 文件对象
+>             File srcFile = new File("1.avi");
+>             File destFile = new File("2.avi");
+>             // 字节流
+>             FileInputStream fis = new FileInputStream(srcFile);
+>             FileOutputStream fos = new FileOutputStream(destFile);
+>             // 缓冲流
+>             bis = new BufferedInputStream(fis);
+>             bos = new BufferedOutputStream(fos);
+>             // 复制细节：读取，写入
+>             byte[] buffer = new byte[1024];
+>             int len;
+>             while((len = bis.read(buffer)) != -1){
+>                 bos.write(buffer,0,len);
+>             }
+>         } catch (IOException e) {
+>             e.printStackTrace();
+>         } finally {
+>             // 资源关闭
+>             // 要求：先关闭外层的流，再关闭外层的流
+>             if(bis != null){
+>                 try {
+>                     bis.close();
+>                 } catch (IOException e) {
+>                     e.printStackTrace();
+>                 }
+>             }
+>             if(bos != null){
+>                 try {
+>                     bos.close();
+>                 } catch (IOException e) {
+>                     e.printStackTrace();
+>                 }
+>             }
+>             // 关闭外层流的同时会自动关闭内层流，所以关于内层流的关闭可以省略
+> //        fis.close();
+> //        fos.close();
+>         }
+>         long end = System.currentTimeMillis();
+>         System.out.println("cost time: " + (end-start));
 >     }
 > }
 > ```
