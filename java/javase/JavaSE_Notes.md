@@ -2579,54 +2579,299 @@
 > 
 > public class BufferedTest {
 > 
->     // 缓冲流是为了提高文件的读取和写入速度的
+>  // 缓冲流是为了提高文件的读取和写入速度的
+>  @Test
+>  public void testBufferedStream(){
+>      long start = System.currentTimeMillis();
+>      BufferedInputStream bis = null;
+>      BufferedOutputStream bos = null;
+>      try {
+>          // 文件对象
+>          File srcFile = new File("1.avi");
+>          File destFile = new File("2.avi");
+>          // 字节流
+>          FileInputStream fis = new FileInputStream(srcFile);
+>          FileOutputStream fos = new FileOutputStream(destFile);
+>          // 缓冲流
+>          bis = new BufferedInputStream(fis);
+>          bos = new BufferedOutputStream(fos);
+>          // 复制细节：读取，写入
+>          byte[] buffer = new byte[1024];
+>          int len;
+>          while((len = bis.read(buffer)) != -1){
+>              bos.write(buffer,0,len);
+>          }
+>      } catch (IOException e) {
+>          e.printStackTrace();
+>      } finally {
+>          // 资源关闭
+>          // 要求：先关闭外层的流，再关闭外层的流
+>          if(bis != null){
+>              try {
+>                  bis.close();
+>              } catch (IOException e) {
+>                  e.printStackTrace();
+>              }
+>          }
+>          if(bos != null){
+>              try {
+>                  bos.close();
+>              } catch (IOException e) {
+>                  e.printStackTrace();
+>              }
+>          }
+>          // 关闭外层流的同时会自动关闭内层流，所以关于内层流的关闭可以省略
+> //        fis.close();
+> //        fos.close();
+>      }
+>      long end = System.currentTimeMillis();
+>      System.out.println("cost time: " + (end-start));
+>  }
+> }
+> ```
+>
+> BufferedReader和BufferedWriter
+>
+> ```java
+> @Test
+> public void testBufferedReaderWriter(){
+>   BufferedReader br = null;
+>   BufferedWriter bw = null;
+>   try {
+>     // 创建文件和相应的流
+>     br = new BufferedReader(new FileReader(new File("hello.txt")));
+>     bw = new BufferedWriter(new FileWriter(new File("hello1.txt")));
+>     // 读写操作
+>     // 方式一
+>     //            char[] cbuf = new char[1024];
+>     //            int len;
+>     //            while((len = br.read(cbuf)) != -1){
+>     //                bw.write(cbuf,0,len);
+>     //            }
+>     // 方式二
+>     String data;
+>     while((data = br.readLine()) != null){
+>       bw.write(data); // data不包含换行符
+>       bw.newLine();   // 加上换行符
+>     }
+>   } catch (IOException e) {
+>     e.printStackTrace();
+>   } finally {
+>     // 关闭资源
+>     if(br != null){
+>       try {
+>         br.close();
+>       } catch (IOException e) {
+>         e.printStackTrace();
+>       }
+>     }
+>     if(bw != null){
+>       try {
+>         bw.close();
+>       } catch (IOException e) {
+>         e.printStackTrace();
+>       }
+>     }
+>   }
+> }
+> ```
+
+##### 转换流
+
+> ```java
+> package IOTest;
+> import org.junit.Test;
+> import java.io.*;
+> 
+> public class InputStreamReaderTest {
 >     @Test
->     public void testBufferedStream(){
->         long start = System.currentTimeMillis();
->         BufferedInputStream bis = null;
->         BufferedOutputStream bos = null;
+>     public void test(){
+>         // InputStreamReader ： 实现字节输入流到字符输入流的转换
+>         InputStreamReader isr = null;
 >         try {
->             // 文件对象
->             File srcFile = new File("1.avi");
->             File destFile = new File("2.avi");
->             // 字节流
->             FileInputStream fis = new FileInputStream(srcFile);
->             FileOutputStream fos = new FileOutputStream(destFile);
->             // 缓冲流
->             bis = new BufferedInputStream(fis);
->             bos = new BufferedOutputStream(fos);
->             // 复制细节：读取，写入
->             byte[] buffer = new byte[1024];
+>             FileInputStream fis = new FileInputStream("hello.txt");
+>             isr = new InputStreamReader(fis,"UTF-8");
+>             char[] cbuf = new char[10];
 >             int len;
->             while((len = bis.read(buffer)) != -1){
->                 bos.write(buffer,0,len);
+>             while((len = isr.read(cbuf)) != -1){
+>                 String str = new String(cbuf,0,len);
+>                 System.out.print(str);
 >             }
 >         } catch (IOException e) {
 >             e.printStackTrace();
 >         } finally {
->             // 资源关闭
->             // 要求：先关闭外层的流，再关闭外层的流
->             if(bis != null){
+>             if(isr != null){
 >                 try {
->                     bis.close();
+>                     isr.close();
 >                 } catch (IOException e) {
 >                     e.printStackTrace();
 >                 }
 >             }
->             if(bos != null){
->                 try {
->                     bos.close();
->                 } catch (IOException e) {
->                     e.printStackTrace();
->                 }
->             }
->             // 关闭外层流的同时会自动关闭内层流，所以关于内层流的关闭可以省略
-> //        fis.close();
-> //        fos.close();
 >         }
->         long end = System.currentTimeMillis();
->         System.out.println("cost time: " + (end-start));
 >     }
+> 
+>     @Test
+>     public void test1(){
+>         InputStreamReader isr = null;
+>         OutputStreamWriter osw = null;
+>         try {
+>             File srcFile = new File("hello.txt");
+>             File destFile = new File("hello_gbk.txt");
+>             FileInputStream fis = new FileInputStream(srcFile);
+>             FileOutputStream fos = new FileOutputStream(destFile);
+>             isr = new InputStreamReader(fis,"UTF-8");
+>             osw = new OutputStreamWriter(fos,"GBK");
+>             char[] cbuf = new char[10];
+>             int len;
+>             while((len = isr.read(cbuf)) != -1){
+>                 osw.write(cbuf,0,len);
+>             }
+>         } catch (IOException e) {
+>             e.printStackTrace();
+>         } finally {
+>             if(isr != null){
+>                 try {
+>                     isr.close();
+>                 } catch (IOException e) {
+>                     e.printStackTrace();
+>                 }
+>             }
+>             if(osw != null){
+>                 try {
+>                     osw.close();
+>                 } catch (IOException e) {
+>                     e.printStackTrace();
+>                 }
+>             }
+>         }
+>     }
+> }
+> ```
+
+##### 标准输入输出流
+
+> **标准输入、输出流**
+>
+> - System.in : 标准的输入流，默认从键盘输入
+> - System.out : 标准的输出流，默认从控制台输出
+> - System类的setIn/setOut方法重新指定输入和输出的流
+>
+> ```java
+> package IOTest;
+> import org.junit.Test;
+> import java.io.BufferedReader;
+> import java.io.IOException;
+> import java.io.InputStreamReader;
+> 
+> public class StdStreamTest {
+> 
+>     @Test
+>     public void test(){
+>         BufferedReader br = null;
+>         try {
+>             InputStreamReader isr = new InputStreamReader(System.in);
+>             br = new BufferedReader(isr);
+>             while(true){
+>                 System.out.println("请输入字符串：");
+>                 String data = br.readLine();
+>                 if("e".equalsIgnoreCase(data) || "exit".equalsIgnoreCase(data)){
+>                     System.out.println("程序结束");
+>                     break;
+>                 }
+>                 String upperCase = data.toUpperCase();
+>                 System.out.println(upperCase);
+>             }
+>         } catch (IOException e) {
+>             e.printStackTrace();
+>         } finally {
+>             if(br != null){
+>                 try {
+>                     br.close();
+>                 } catch (IOException e) {
+>                     e.printStackTrace();
+>                 }
+>             }
+>         }
+>     }
+> }
+> ```
+
+##### 打印流
+
+> - 实现将==基本数据==类型的数据格式转换为==字符串==输出
+>
+> - 打印流：PrintStream和PrintWriter
+>
+>   * 提供了一系列重载的print()和println()方法，用于多种数据类型的输出
+>   * PrintStream和PrintWriter的输出，不会抛出IOException异常
+>   * PrintStream和PrintWriter有自动flush功能
+>   * PrintStream打印的所有字符都使用平台默认的字符编码转换为字节，在需要写入字符而不是写入字节的情况下，应该使用PrintWriter类
+>   * System.out 返回的是PrintStream的实例
+>
+>   ```java
+>   public void test1(){
+>     PrintStream ps = null;
+>     try {
+>       FileOutputStream fos = new FileOutputStream(new File("hello.txt"));
+>       // 创建打印流，设置为自动刷新模式（写入换行符或字符"\n",时，都会刷新输出缓冲区）
+>       ps = new PrintStream(fos,true);
+>       if(ps != null){
+>         System.setOut(ps);  // 把标准输出流（控制台输出）改成文件
+>       }
+>       for (int i = 0; i < 255; i++) {
+>         System.out.print((char) i);
+>         if(i % 50 == 0){    // 每50个数据换一行
+>           System.out.println();
+>         }
+>       }
+>     } catch (FileNotFoundException e) {
+>       e.printStackTrace();
+>     } finally {
+>       if(ps != null){
+>         ps.close();
+>       }
+>     }
+>   }
+>   ```
+
+##### 数据流
+
+> - 为了方便操作Java语言的基本数据类型和String的数据，可以使用数据流
+> - 数据流有两个类（用于读取和写出基本数据类型、String）
+>   * DataInputStream和DataOutputStream
+>   * 分别“套接”在InputStream和OutputStream子类的流上
+> - DataInputStream中的方法
+>   * boolean readBoolean()		byte readByte()
+>   * char readChar()                    float readFloat()
+>   * double readDouble()           short readShort()
+>   * long readLong()                    int readInt()
+>   * String readUTF()                    void readFully(byte[] b)
+> - DataOutputStream中的方法
+>   * 把上述方法read改成相应write即可
+>
+> ```java
+> // 将内存中的基本数据类型、字符串写出到文件中
+> @Test
+> public void test3() throws IOException {
+>   DataOutputStream dos = new DataOutputStream(new FileOutputStream("data.txt"));
+>   dos.writeUTF("张三");
+>   dos.flush();
+>   dos.writeInt(23);
+>   dos.flush();
+>   dos.writeBoolean(true);
+>   dos.flush();
+>   dos.close();
+> }
+> // 读取数据的顺序要与写入的顺序一致
+> @Test
+> public void test4() throws IOException {
+>   DataInputStream dis = new DataInputStream(new FileInputStream("data.txt"));
+>   String name = dis.readUTF();
+>   int age = dis.readInt();
+>   boolean b = dis.readBoolean();
+>   System.out.println("name = " + name);
+>   System.out.println("age = " + age);
+>   System.out.println("b = " + b);
 > }
 > ```
 >
