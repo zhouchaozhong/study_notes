@@ -2875,5 +2875,966 @@
 > }
 > ```
 >
+
+##### 对象流
+
+> - ObjectInputStream和ObjectOutputStream
+> - 用于存储或读取基本数据类型数据或对象的处理流，它的强大之处就是可以把Java中的对象写入到数据源中，也能把对象从数据源中还原回来
+> - 序列化：用ObjectOutputStream类==保存==基本数据类型数据或对象的机制
+> - 反序列化：用ObjectOutputStream类==读取==基本数据类型数据或对象的机制
+> - ObjectOutputStream和ObjectInputStream不能序列化==static==和==transient==修饰的成员变量
+>
+> **对象序列化**
+>
+> - 对象序列化机制允许把内存中的Java对象转换成平台无关的二进制流，从而允许把这种二进制流持久地保存在磁盘上，或通过网络将这种二进制流传输到另一个网络节点。当其他程序获取了这种二进制流，就可以恢复成原来的Java对象
+> - 序列化的好处在于可以将任何实现了Serializable接口的对象转换为==字节数据==，使其保存或传输时可被还原
+> - 序列化是RMI（Remote Method Invoke - 远程方法调用）过程的方法和返回值都必须实现的机制，而RMI是JavaEE的基础。因此序列化机制是JavaEE平台的基础
+> - 如果需要让某个对象支持序列化机制，则必须让对象所属的类及其属性是可序列化的，为了让某个类是可序列化的，该类必须实现如下两个接口之一，否则会抛出NotSerializableException异常
+>   * Serializable
+>   * Externalizable
+>
+> ```java
+> package IOTest;
+> import org.junit.Test;
+> import java.io.*;
+> 
+> public class ObjectStreamTest {
+> 
+>     // 序列化过程：将内存中的Java对象保存到磁盘中或通过网络传输出去
+>     // 使用ObjectOutputStream实现
+>     @Test
+>     public void testObjectOutputStream(){
+>         ObjectOutputStream oos = null;
+>         try {
+>             oos = new ObjectOutputStream(new FileOutputStream("object.dat"));
+>             oos.writeObject(new String("I believe I can fly!"));
+>             oos.flush();
+>             oos.writeObject(new Person("Mike",20));
+>             oos.flush();
+>         } catch (IOException e) {
+>             e.printStackTrace();
+>         } finally {
+>             if(oos != null){
+>                 try {
+>                     oos.close();
+>                 } catch (IOException e) {
+>                     e.printStackTrace();
+>                 }
+>             }
+>         }
+>     }
+>     // 反序列化（将磁盘文件中的对象，或者网络流中的对象还原为内存中的一个Java对象）
+>     @Test
+>     public void testObjectInputStream(){
+>         ObjectInputStream ois = null;
+>         try {
+>             ois = new ObjectInputStream(new FileInputStream("object.dat"));
+>             Object obj = ois.readObject();
+>             String str = (String) obj;
+>             System.out.println(str);
+>             Person p = (Person) ois.readObject();
+>             System.out.println(p);
+>         } catch (IOException e) {
+>             e.printStackTrace();
+>         } catch (ClassNotFoundException e) {
+>             e.printStackTrace();
+>         } finally {
+>             try {
+>                 ois.close();
+>             } catch (IOException e) {
+>                 e.printStackTrace();
+>             }
+>         }
+>     }
+> }
+> 
+> //============================================================
+> // Person.java
+> package IOTest;
+> import java.io.Serializable;
+> 
+> public class Person implements Serializable {
+>     // Person 类需要满足如下要求方可实现序列化
+>     // 1.需要实现接口Serializable
+>     // 2.当前类提供一个全局常量：serialVersionUID
+>     // 3.当前类的所有属性也必须是可序列化的(默认情况下，基本数据类型都是可序列化的)
+>     public static final long serialVersionUID = 422377328766409L;
+>     private String name;
+>     private int age;
+> 
+>     public Person() {
+>     }
+> 
+>     public Person(String name, int age) {
+>         this.name = name;
+>         this.age = age;
+>     }
+> 
+>     public String getName() {
+>         return name;
+>     }
+> 
+>     public void setName(String name) {
+>         this.name = name;
+>     }
+> 
+>     public int getAge() {
+>         return age;
+>     }
+> 
+>     public void setAge(int age) {
+>         this.age = age;
+>     }
+> 
+>     @Override
+>     public String toString() {
+>         return "Person{" +
+>                 "name='" + name + '\'' +
+>                 ", age=" + age +
+>                 '}';
+>     }
+> }
+> ```
+
+##### 随机存取文件流
+
+> **RandomAccessFile类**
+>
+> - RandomAccessFile声明在java.io包下，但直接继承于java.lang.Object类。并且它实现了DataInput和DataOutput这两个接口，也就意味着这个类既可以读也可以写
+> - RandomAccessFile类支持“随机访问”的方式，程序可以直接跳到文件的任意地方来读、写文件
+>   * 支持只访问文件的部分内容
+>   * 可以向已存在的文件后追加内容
+> - RandomAccessFile对象包含一个记录指针，用以标示当前读写处的位置，RandomAccessFile类对象可以自由移动记录指针：
+>   * long getFilePointer()：获取文件记录指针的当前位置
+>   * void seek(long pos)：将文件记录指针定位到pos位置
+> - 构造器
+>   * public RandomAccessFile(File file,String mode)
+>   * public RandomAccessFile(String name,String mode)
+> - 创建RandomAccessFile类实例需要指定一个mode参数，该参数指定RandomAccessFile的访问模式
+>   * r : 以只读方式打开
+>   * rw : 打开以便读取和写入
+>   * rwd : 打开以便读取和写入；同步文件内容的更新
+>   * rws : 打开以便读取和写入；同步文件内容和原数据的更新
+> - 如果模式为只读r。则不会创建文件，而是去读取一个已经存在的文件，如果读取的文件不存在则会出现异常。如果模式为rw读写。如果文件不存在则会去创建文件，如果存在则不会创建，会对原有文件内容进行覆盖，默认从文件开头进行覆盖
+>
+> ```java
+> package IOTest;
+> import org.junit.Test;
+> import java.io.File;
+> import java.io.IOException;
+> import java.io.RandomAccessFile;
+> 
+> public class RandomAccessFileTest {
+>     @Test
+>     public void test(){
+>         RandomAccessFile raf1 = null;
+>         RandomAccessFile raf2 = null;
+>         try {
+>             raf1 = new RandomAccessFile(new File("1.png"), "r");
+>             raf2 = new RandomAccessFile(new File("2.png"), "rw");
+>             byte[] buffer = new byte[1024];
+>             int len;
+>             while((len = raf1.read(buffer)) != -1){
+>                 raf2.write(buffer,0,len);
+>             }
+>         } catch (IOException e) {
+>             e.printStackTrace();
+>         } finally {
+>             if(raf1 != null){
+>                 try {
+>                     raf1.close();
+>                 } catch (IOException e) {
+>                     e.printStackTrace();
+>                 }
+>             }
+>             if(raf2 != null){
+>                 try {
+>                     raf2.close();
+>                 } catch (IOException e) {
+>                     e.printStackTrace();
+>                 }
+>             }
+>         }
+>     }
+> 
+>     @Test
+>     public void test1(){
+>         RandomAccessFile raf = null;
+>         try {
+>             raf = new RandomAccessFile(new File("hello.txt"), "rw");
+>             raf.seek(3);    // 将文件指针指向3这个位置
+>             raf.write("xyz".getBytes());
+>         } catch (IOException e) {
+>             e.printStackTrace();
+>         } finally {
+>             if(raf != null){
+>                 try {
+>                     raf.close();
+>                 } catch (IOException e) {
+>                     e.printStackTrace();
+>                 }
+>             }
+>         }
+>     }
+> }
+> ```
+>
+
+##### 网络编程
+
+> ```java
+> package IOTest;
+> 
+> import org.junit.Test;
+> import java.io.*;
+> import java.net.InetAddress;
+> import java.net.ServerSocket;
+> import java.net.Socket;
+> 
+> public class TCPTest {
+> 
+>     @Test
+>     public void client() throws IOException {
+>         Socket socket = new Socket(InetAddress.getByName("127.0.0.1"), 9090);
+>         OutputStream os = socket.getOutputStream();
+>         FileInputStream fis = new FileInputStream(new File("1.png"));
+>         byte[] buffer = new byte[1024];
+>         int len;
+>         while((len = fis.read(buffer)) != -1){
+>             os.write(buffer,0,len);
+>         }
+>         // 关闭数据的输出
+>         socket.shutdownOutput();
+>         InputStream is = socket.getInputStream();
+>         ByteArrayOutputStream baos = new ByteArrayOutputStream();
+>         byte[] buffer1 = new byte[20];
+>         int len1;
+>         while((len1 = is.read(buffer1)) != -1){
+>             baos.write(buffer1,0,len1);
+>         }
+>         System.out.println(baos.toString());
+>         fis.close();
+>         os.close();
+>         socket.close();
+>     }
+> 
+>     @Test
+>     public void server() throws IOException {
+>         ServerSocket ss = new ServerSocket(9090);
+>         Socket socket = ss.accept();
+>         InputStream is = socket.getInputStream();
+>         FileOutputStream fos = new FileOutputStream(new File("2.png"));
+>         byte[] buffer = new byte[1024];
+>         int len;
+>         while((len = is.read(buffer)) != -1){
+>             fos.write(buffer,0,len);
+>         }
+>         System.out.println("Image transfer completed!");
+>         OutputStream os = socket.getOutputStream();
+>         os.write("Image is received!".getBytes());
+>         fos.close();
+>         is.close();
+>         socket.close();
+>     }
+> }
+> ```
+>
+> ```java
+> package IOTest;
+> 
+> import org.junit.Test;
+> 
+> import java.io.IOException;
+> import java.net.DatagramPacket;
+> import java.net.DatagramSocket;
+> import java.net.InetAddress;
+> 
+> public class UDPTest {
+>     // 发送端
+>     @Test
+>     public void sender() throws IOException {
+>         DatagramSocket socket = new DatagramSocket();
+>         String str = "UDP test data!";
+>         byte[] data = str.getBytes();
+>         InetAddress inet = InetAddress.getByName("127.0.0.1");
+>         DatagramPacket packet = new DatagramPacket(data,0,data.length,inet,9090);
+>         socket.send(packet);
+>         socket.close();
+>     }
+>     // 接收端
+>     @Test
+>     public void receiver() throws IOException {
+>         DatagramSocket socket = new DatagramSocket(9090);
+>         byte[] buffer = new byte[100];
+>         DatagramPacket packet = new DatagramPacket(buffer,0,buffer.length);
+>         socket.receive(packet);
+>         System.out.println(new String(packet.getData(),0,packet.getLength()));
+>         socket.close();
+>     }
+> }
+> ```
+>
+> **URL**
+>
+> ```java
+> package IOTest;
+> 
+> import java.net.MalformedURLException;
+> import java.net.URL;
+> 
+> public class URLTest {
+>     public static void main(String[] args) {
+>         try {
+>             URL url = new URL("http://localhost:8080/example/beauty.jpg?username=tom&page=1");
+>             // 获取URL协议名
+>             System.out.println(url.getProtocol());
+>             // 获取URL主机名
+>             System.out.println(url.getHost());
+>             // 获取URL端口号
+>             System.out.println(url.getPort());
+>             // 获取URL的文件路径
+>             System.out.println(url.getPath());
+>             // 获取URL的文件名
+>             System.out.println(url.getFile());
+>             // 获取URL查询名
+>             System.out.println(url.getQuery());
+> 
+>         } catch (MalformedURLException e) {
+>             e.printStackTrace();
+>         }
+>     }
+> }
+> ```
+>
+> ```java
+> package IOTest;
+> 
+> import java.io.FileOutputStream;
+> import java.io.IOException;
+> import java.io.InputStream;
+> import java.net.HttpURLConnection;
+> import java.net.MalformedURLException;
+> import java.net.URL;
+> 
+> public class URLTest {
+>     public static void main(String[] args) {
+> 
+>         HttpURLConnection urlConnection = null;
+>         InputStream is = null;
+>         FileOutputStream fos = null;
+>         try {
+>             URL url = new URL("https://dgss2.bdstatic.com/5eR1dDebRNRTm2_p8IuM_a/her/static/indexnew/container/search/baidu-logo.ba9d667.png");
+>             urlConnection = (HttpURLConnection) url.openConnection();
+>             urlConnection.connect();
+>             is = urlConnection.getInputStream();
+>             fos = new FileOutputStream("3.png");
+>             byte[] buffer = new byte[1024];
+>             int len;
+>             while((len = is.read(buffer)) != -1){
+>                 fos.write(buffer,0,len);
+>             }
+>         } catch (IOException e) {
+>             e.printStackTrace();
+>         } finally {
+>             if(is != null){
+>                 try {
+>                     is.close();
+>                 } catch (IOException e) {
+>                     e.printStackTrace();
+>                 }
+>             }
+>             if(fos != null){
+>                 try {
+>                     fos.close();
+>                 } catch (IOException e) {
+>                     e.printStackTrace();
+>                 }
+>             }
+>             if(urlConnection != null){
+>                 urlConnection.disconnect();
+>             }
+>         }
+> 
+>     }
+> }
+> ```
+>
+
+### 反射
+
+##### 反射的基本使用
+
+> RefectionTest.java
+>
+> ```java
+> package reflect;
+> 
+> import org.junit.Test;
+> 
+> import java.lang.reflect.Constructor;
+> import java.lang.reflect.Field;
+> import java.lang.reflect.Method;
+> 
+> public class ReflectionTest {
+> 
+> // 反射之前，对于Person的操作
+> @Test
+> public void test1(){
+> // 1.创建Person类的对象
+> Person p1 = new Person("Tom", 18);
+> // 2.通过对象，调用其内部的属性和方法
+> p1.age = 10;
+> System.out.println(p1.toString());
+> p1.show();
+> // 在Person类外部，不可以通过Person类对象调用其内部的私有结构
+> }
+> // 反射之后，对于Person的操作
+> @Test
+> public void test2() throws Exception {
+> Class clazz = Person.class;
+> // 1.通过反射创建Person类对象
+> Constructor cons = clazz.getConstructor(String.class, int.class);
+> Object obj = cons.newInstance("Tom", 12);
+> Person p = (Person) obj;
+> System.out.println(p.toString());
+> // 2.通过反射，调用对象指定的属性、方法
+> // 修改属性
+> Field age = clazz.getDeclaredField("age");
+> age.set(p,10);
+> System.out.println(p.toString());
+> // 调用方法
+> Method show = clazz.getDeclaredMethod("show");
+> show.invoke(p);
+> System.out.println("*********************************");
+> // 通过反射调用类的私有结构
+> Constructor cons1 = clazz.getDeclaredConstructor(String.class);
+> cons1.setAccessible(true);
+> Person p1 = (Person) cons1.newInstance("Jerry");
+> System.out.println(p1);
+> Field name = clazz.getDeclaredField("name");
+> name.setAccessible(true);
+> name.set(p1,"HanMeimei");
+> System.out.println(p1);
+> Method showNation = clazz.getDeclaredMethod("showNation", String.class);
+> showNation.setAccessible(true);
+> String nation = (String) showNation.invoke(p1,"中国");
+> }
+> // 获取Class实例的方式
+> @Test
+> public void test3() throws ClassNotFoundException {
+> // 方式一：调用运行时类的属性
+> Class clazz1 = Person.class;
+> System.out.println(clazz1);
+> // 方式二：通过运行时类的对象
+> Person p1 = new Person();
+> Class clazz2 = p1.getClass();
+> System.out.println(clazz2);
+> // 方式三：调用Class的静态方法
+> Class clazz3 = Class.forName("reflect.Person");
+> System.out.println(clazz3);
+> System.out.println(clazz1 == clazz2);
+> System.out.println(clazz2 == clazz3);
+> // 方式四：使用类的加载器
+> ClassLoader classLoader = ReflectionTest.class.getClassLoader();
+> Class clazz4 = classLoader.loadClass("reflect.Person");
+> System.out.println(clazz4);
+> System.out.println(clazz1 == clazz4);
+> }
+> @Test
+> public void test4(){
+> int[] a = new int[10];
+> int[] b = new int[100];
+> Class c10 = a.getClass();
+> Class c11 = b.getClass();
+> // 只要元素类型与维度一样，就是同一个Class
+> System.out.println(c10 == c11);
+> }
+> }
+> ```
+>
+> Person.java
+>
+> ```java
+> package reflect;
+> 
+> public class Person {
+> private String name;
+> public int age;
+> 
+> public Person() {
+> }
+> 
+> public Person(String name, int age) {
+> this.name = name;
+> this.age = age;
+> }
+> 
+> private Person(String name) {
+> this.name = name;
+> }
+> 
+> public String getName() {
+> return name;
+> }
+> 
+> public void setName(String name) {
+> this.name = name;
+> }
+> 
+> public int getAge() {
+> return age;
+> }
+> 
+> public void setAge(int age) {
+> this.age = age;
+> }
+> 
+> public void show(){
+> System.out.println("你好，我是一个人");
+> }
+> 
+> private String showNation(String nation){
+> System.out.println("我的国籍是：" + nation);
+> return nation;
+> }
+> 
+> @Override
+> public String toString() {
+> return "Person{" +
+>     "name='" + name + '\'' +
+>     ", age=" + age +
+>     '}';
+> }
+> }
+> ```
+>
+> ClassLoader加载配置文件
+>
+> ```java
+> package reflect;
+> 
+> import org.junit.Test;
+> 
+> import java.io.IOException;
+> import java.io.InputStream;
+> import java.util.Properties;
+> 
+> public class ClassLoaderTest {
+> 
+> @Test
+> public void test1(){
+> ClassLoader classLoader = ClassLoaderTest.class.getClassLoader();
+> System.out.println(classLoader);
+> ClassLoader classLoader1 = classLoader.getParent();
+> System.out.println(classLoader1);
+> ClassLoader classLoader2 = classLoader1.getParent();
+> System.out.println(classLoader2);
+> }
+> 
+> @Test
+> public void test2() throws IOException {
+> Properties pros = new Properties();
+> ClassLoader classLoader = ClassLoaderTest.class.getClassLoader();
+> InputStream is = classLoader.getResourceAsStream("jdbc.properties");
+> pros.load(is);
+> String user = pros.getProperty("user");
+> String password = pros.getProperty("password");
+> System.out.println("user = " + user + " password = " + password);
+> }
+> }
+> ```
+>
+> 创建运行时类的对象
+>
+> ```java
+> package reflect;
+> import org.junit.Test;
+> 
+> public class NewInstanceTest {
+> 
+> @Test
+> public void test1() throws IllegalAccessException, InstantiationException {
+> Class<Person> clazz = Person.class;
+> /**
+>          *   newInstance():调用此方法，创建对应的运行时类对象。内部调用了运行时类的空参构造器
+>          *   要想此方法正常的创建运行时类的对象，要求：
+>          *   1. 运行时类必须提供空参的构造器
+>          *   2. 空参构造器的访问权限得够，通常设置为public
+>          */
+>         Person obj = clazz.newInstance();
+>         System.out.println(obj);
+>     }
+> }
+> ```
+>
+> 反射获取运行时类的属性
+>
+> Creature.java
+>
+> ```java
+> package reflect;
+> 
+> import java.io.Serializable;
+> 
+> public class Creature<T> implements Serializable {
+>     private char gender;
+>     public double weight;
+> 
+>     private void breath(){
+>         System.out.println("生物呼吸！");
+>     }
+> 
+>     public void eat(){
+>         System.out.println("生物吃东西！");
+>     }
+> }
+> ```
+>
+> MyAnnotation.java
+>
+> ```java
+> package reflect;
+> 
+> import java.lang.annotation.Retention;
+> import java.lang.annotation.RetentionPolicy;
+> import java.lang.annotation.Target;
+> import static java.lang.annotation.ElementType.*;
+> 
+> @Target({TYPE,FIELD,METHOD,PARAMETER,CONSTRUCTOR,LOCAL_VARIABLE})
+> @Retention(RetentionPolicy.RUNTIME)
+> public @interface MyAnnotation {
+>     String value() default "hello";
+> }
+> ```
+>
+> MyInterface.java
+>
+> ```java
+> package reflect;
+> 
+> public interface MyInterface {
+>     void info();
+> }
+> ```
+>
+> Person.java
+>
+> ```java
+> package reflect;
+> 
+> public class Person extends Creature<String> implements Comparable<String>,MyInterface{
+>     private String name;
+>     int age;
+>     public int id;
+> 
+>     public Person() {
+>     }
+> 
+>     Person(String name, int age) {
+>         this.name = name;
+>         this.age = age;
+>     }
+> 
+>     @MyAnnotation(value = "hi")
+>     private Person(String name) {
+>         this.name = name;
+>     }
+> 
+>     @MyAnnotation
+>     private String show(String nation){
+>         System.out.println("我的国籍是：" + nation);
+>         return nation;
+>     }
+> 
+>     public String display(String hobby){
+>         return hobby;
+>     }
+> 
+>     @Override
+>     public int compareTo(String o) {
+>         return 0;
+>     }
+> 
+>     @Override
+>     public void info() {
+>         System.out.println("我是一个人");
+>     }
+> }
+> ```
+>
+> FieldTest.java
+>
+> ```java
+> package reflect;
+> 
+> import org.junit.Test;
+> 
+> import java.lang.reflect.Field;
+> import java.lang.reflect.Modifier;
+> 
+> /**
+>  *  获取当前运行时类的属性结构
+>  */
+> public class FieldTest {
+> 
+>     @Test
+>     public void test1(){
+>         Class clazz = Person.class;
+>         // 获取属性结构
+>         // getFields() : 获取当前运行时类及其父类中声明为public访问权限的属性
+>         Field[] fields = clazz.getFields();
+>         for(Field f : fields){
+>             System.out.println(f);
+>         }
+>         // getDeclaredFields(): 获取当前运行时类声明的所有属性（不包含父类中声明的属性）
+>         Field[] declaredFields = clazz.getDeclaredFields();
+>         for(Field f : declaredFields){
+>             System.out.println(f);
+>         }
+>     }
+> 
+>     @Test
+>     public void test2(){
+>         Class clazz = Person.class;
+>         Field[] declaredFields = clazz.getDeclaredFields();
+>         for(Field f : declaredFields){
+>             // 权限修饰符
+>             int modifiers = f.getModifiers();
+>             System.out.print(Modifier.toString(modifiers) + "\t");
+>             // 数据类型
+>             Class type = f.getType();
+>             System.out.print(type.getName() + "\t");
+>             // 属性名
+>             String fName = f.getName();
+>             System.out.print(fName);
+>             System.out.println();
+>         }
+>     }
+> }
+> ```
+>
+> 反射获取运行时类的方法
+>
+> ```java
+> package reflect;
+> 
+> import org.junit.Test;
+> 
+> import java.lang.annotation.Annotation;
+> import java.lang.reflect.Method;
+> import java.lang.reflect.Modifier;
+> 
+> public class MethodTest {
+> 
+>     @Test
+>     public void test1(){
+>         Class clazz = Person.class;
+>         // getMethods() : 获取当前运行时类及其所有父类中声明为public权限的方法
+>         Method[] methods = clazz.getMethods();
+>         for(Method m : methods){
+>             System.out.println(m);
+>         }
+>         System.out.println();
+>         // getDeclaredMethods() : 获取当前运行时类的所有方法（不包含父类中声明的方法）
+>         Method[] declaredMethods = clazz.getDeclaredMethods();
+>         for(Method m : declaredMethods){
+>             System.out.println(m);
+>         }
+>     }
+> 
+>     /**
+>      * @Xxxx
+>      *  权限修饰符  返回值类型  方法名（参数类型1 形参名1,...）throws xxxException{}
+>      */
+>     @Test
+>     public void test2(){
+>         Class clazz = Person.class;
+>         Method[] declaredMethods = clazz.getDeclaredMethods();
+>         for(Method m : declaredMethods){
+>             // 1.获取声明方法的注解
+>             Annotation[] annotations = m.getAnnotations();
+>             for(Annotation a : annotations){
+>                 System.out.println(a);
+>             }
+>             // 2. 权限修饰符
+>             System.out.print(Modifier.toString(m.getModifiers()) + "\t");
+>             // 3.返回值类型
+>             System.out.print(m.getReturnType().getName() + "\t");
+>             // 4.方法名
+>             System.out.print(m.getName() + "\t");
+>             // 5.形参列表
+>             System.out.print("(");
+>             Class[] parameterTypes = m.getParameterTypes();
+>             if(!(parameterTypes == null || parameterTypes.length == 0)){
+>                 for(int i = 0;i < parameterTypes.length;i++){
+>                     if(i == parameterTypes.length - 1){
+>                         System.out.print(parameterTypes[i].getName() + " args_" + i);
+>                         break;
+>                     }
+>                     System.out.print(parameterTypes[i].getName() + " args_" + i + ",");
+>                 }
+>             }
+> 
+>             System.out.print(")");
+>             // 6.抛出的异常
+>             Class[] exceptionTypes = m.getExceptionTypes();
+>             if(!(exceptionTypes == null || exceptionTypes.length == 0)){
+>                 System.out.print(" throws ");
+>                 for(int i = 0;i < exceptionTypes.length;i++){
+>                     if(i == exceptionTypes.length - 1){
+>                         System.out.print(exceptionTypes[i].getName());
+>                         break;
+>                     }
+>                     System.out.print(exceptionTypes[i].getName() + ",");
+>                 }
+>             }
+>             System.out.println();
+>         }
+>     }
+> }
+> ```
+>
+> **获取运行时类的构造器结构**
+>
+> ```java
+> package reflect;
+> 
+> import org.junit.Test;
+> 
+> import java.lang.reflect.Constructor;
+> import java.lang.reflect.ParameterizedType;
+> import java.lang.reflect.Type;
+> 
+> public class ConstructorTest {
+> 
+>     /**
+>      *   获取构造器结构
+>      *
+>      */
+>     @Test
+>     public void test1(){
+>         Class clazz = Person.class;
+>         // getConstructors(): 获取当前运行时类中声明为public的构造器
+>         Constructor[] constructors = clazz.getConstructors();
+>         for(Constructor c : constructors){
+>             System.out.println(c);
+>         }
+>         System.out.println();
+>         // getDeclaredConstructors(): 获取当前运行时类中声明的所有的构造器
+>         Constructor[] declaredConstructors = clazz.getDeclaredConstructors();
+>         for(Constructor c : declaredConstructors){
+>             System.out.println(c);
+>         }
+>     }
+> 
+>     /**
+>      *  获取运行时类的父类
+>      */
+>     @Test
+>     public void test2(){
+>         Class clazz = Person.class;
+>         Class superclass = clazz.getSuperclass();
+>         System.out.println(superclass);
+>     }
+>     /**
+>      *  获取运行时类带泛型的父类
+>      */
+>     @Test
+>     public void test3(){
+>         Class clazz = Person.class;
+>         Type genericSuperclass = clazz.getGenericSuperclass();
+>         System.out.println(genericSuperclass);
+>         // 获取泛型类型
+>         ParameterizedType paramType = (ParameterizedType) genericSuperclass;
+>         Type[] actualTypeArguments = paramType.getActualTypeArguments();
+>         System.out.println(actualTypeArguments[0].getTypeName());
+>         System.out.println(((Class)actualTypeArguments[0]).getTypeName());
+>     }
+> }
+> ```
+>
+> **其他用法**
+>
+> ```java
+> package reflect;
+> 
+> import org.junit.Test;
+> 
+> import java.lang.annotation.Annotation;
+> import java.lang.reflect.Field;
+> import java.lang.reflect.Method;
+> 
+> public class OtherTest {
+> 
+>     @Test
+>     public void test1(){
+>         // 获取运行时类实现的接口
+>         Class clazz = Person.class;
+>         Class[] interfaces = clazz.getInterfaces();
+>         for(Class c : interfaces){
+>             System.out.println(c);
+>         }
+>         System.out.println();
+>         // 获取运行时类父类实现的接口
+>         Class[] interfaces1 = clazz.getSuperclass().getInterfaces();
+>         for(Class c : interfaces1){
+>             System.out.println(c);
+>         }
+>     }
+> 
+>     @Test
+>     public void test2(){
+>         // 获取运行时类所在的包
+>         Class clazz = Person.class;
+>         Package pack = clazz.getPackage();
+>         System.out.println(pack);
+>     }
+> 
+>     @Test
+>     public void test3(){
+>         // 获取运行时类声明的注解
+>         Class clazz = Person.class;
+>         Annotation[] annotations = clazz.getAnnotations();
+>         for(Annotation annos : annotations){
+>             System.out.println(annos);
+>         }
+>     }
+> 
+>     /**
+>      *  调用运行时类中指定的结构：属性，方法，构造器
+>      */
+>     @Test
+>     public void test4() throws Exception {
+>         Class clazz = Person.class;
+>         // 创建运行时类的对象
+>         Person p = (Person) clazz.newInstance();
+>         // 获取指定的属性，要求当前运行时类的属性声明为public
+>         Field id = clazz.getField("id");
+>         // 设置当前属性的值
+>         id.set(p,1001);
+>         // 获取当前属性的值
+>         int pId = (int)id.get(p);
+>         System.out.println(pId);
+>         Field name = clazz.getDeclaredField("name");
+>         name.setAccessible(true);
+>         name.set(p,"Tom");
+>         String pName = (String) name.get(p);
+>         System.out.println(pName);
+>         // 获取指定的某个方法
+>         Method show = clazz.getDeclaredMethod("show", String.class);
+>         show.setAccessible(true);
+>         System.out.println(show);
+>         // invoke的返回值即为对应类中调用的方法的返回值
+>         String info = (String) show.invoke(p, "China");
+>         System.out.println(info);
+>         // 调用静态方法
+>         Method showDesc = clazz.getDeclaredMethod("showDesc");
+>         showDesc.setAccessible(true);
+>         showDesc.invoke(Person.class);
+>         showDesc.invoke(null);
+>     }
+> }
+> ```
+>
 > 
 
