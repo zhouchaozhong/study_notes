@@ -1410,5 +1410,439 @@
 > }
 > ```
 >
+> ![](./images/session.jpg)
+
+### Filter过滤器
+
+##### Filter过滤器概念
+
+> 1. Filter过滤器是JavaWeb的三大组件之一，三大组件分别是：Servlet程序、Listener监听器、Filter过滤器
+> 2. Filter过滤器是JavaEE的规范，也就是接口
+> 3. Filter过滤器的作用：拦截请求，过滤响应
+>
+> 拦截请求常见的应用场景有：
+>
+> 1. 权限检查
+> 2. 日志操作
+> 3. 事务管理
+
+##### Filter基本使用
+
+> ```java
+> package com.atguigu.filter;
+> import javax.servlet.*;
+> import javax.servlet.http.HttpServletRequest;
+> import javax.servlet.http.HttpSession;
+> import java.io.IOException;
 > 
+> public class AdminFilter implements Filter {
+>  @Override
+>  public void init(FilterConfig filterConfig) throws ServletException {
+> 
+>  }
+> 
+>  /**
+>      * doFilter方法，专门用于拦截请求，可以做权限检查
+>      * @param servletRequest
+>      * @param servletResponse
+>      * @param filterChain
+>      * @throws IOException
+>      * @throws ServletException
+>      */
+>     @Override
+>     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+>         HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
+>         HttpSession session = httpServletRequest.getSession();
+>         Object user = session.getAttribute("user");
+>         // 如果等于null，说明还没有登录
+>         if(user == null){
+>             servletRequest.getRequestDispatcher("/").forward(servletRequest,servletResponse);
+>         }else {
+>             // 让程序继续往下访问用户的目标资源
+>             filterChain.doFilter(servletRequest,servletResponse);
+>         }
+>     }
+> 
+>     @Override
+>     public void destroy() {
+> 
+>     }
+> }
+> ```
+>
+> ```xml
+> <?xml version="1.0" encoding="UTF-8"?>
+> <web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+>          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+>          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
+>          version="4.0">
+>     <filter>
+>         <!--给filter起别名-->
+>         <filter-name>AdminFilter</filter-name>
+>         <!--配置全类名-->
+>         <filter-class>com.atguigu.filter.AdminFilter</filter-class>
+>     </filter>
+>     <!--配置Filter过滤器的拦截路径-->
+>     <filter-mapping>
+>         <!--表示当前拦截路径给哪个filter使用-->
+>         <filter-name>AdminFilter</filter-name>
+>         <!--配置拦截路径-->
+>         <url-pattern>/admin/*</url-pattern>
+>     </filter-mapping>
+> </web-app>
+> ```
+>
+> 
+
+##### Filter生命周期
+
+> Filter的生命周期包含几个方法：
+>
+> 1. 构造器方法
+> 2. init初始化方法（第1,2步在web工程启动的时候执行【Filter已经创建】）
+> 3. doFilter过滤方法（第3步每次拦截到请求，就会执行）
+> 4. destroy销毁（第4步，停止web工程的时候就会执行【停止web工程，也会销毁Filter过滤器】）
+
+##### FilterConfig类
+
+> FilterConfig类是Filter过滤器的配置文件类，Tomcat每次创建Filter的时候，也会同时创建一个FilterConfig类，这里包含了Filter配置文件的配置信息。
+>
+> FilterConfig类的作用是获取filter过滤器的配置内容
+>
+> 1. 获取Filter的名称filter-name的内容
+> 2. 获取在web.xml中配置的init-param初始化参数
+> 3. 获取ServletContext对象
+>
+> ```java
+> public void init(FilterConfig filterConfig) throws ServletException {
+>     //  1. 获取Filter的名称filter-name的内容
+>     System.out.println(filterConfig.getFilterName());
+>     // 2. 获取在web.xml中配置的init-param初始化参数
+>     System.out.println("username : " + filterConfig.getInitParameter("username"));
+>     System.out.println("url : " + filterConfig.getInitParameter("url"));
+>     // 3. 获取ServletContext对象
+>     System.out.println(filterConfig.getServletContext());
+> }
+> ```
+>
+> ```xml
+> <?xml version="1.0" encoding="UTF-8"?>
+> <web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+>          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+>          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
+>          version="4.0">
+> <filter>
+>     <!--给filter起别名-->
+>     <filter-name>AdminFilter</filter-name>
+>     <!--配置全类名-->
+>     <filter-class>com.atguigu.filter.AdminFilter</filter-class>
+>     <init-param>
+>         <param-name>username</param-name>
+>         <param-value>admin</param-value>
+>     </init-param>
+>     <init-param>
+>         <param-name>url</param-name>
+>         <param-value>jdbc:mysql://localhost:3306/test</param-value>
+>     </init-param>
+> </filter>
+> <!--配置Filter过滤器的拦截路径-->
+> <filter-mapping>
+>     <!--表示当前拦截路径给哪个filter使用-->
+>     <filter-name>AdminFilter</filter-name>
+>     <!--配置拦截路径-->
+>     <url-pattern>/admin/*</url-pattern>
+> </filter-mapping>
+> </web-app>
+> ```
+
+##### FilterChain过滤器链
+
+> FilterChain.doFilter()方法的作用：
+>
+> 1. 执行下一个Filter过滤器（如果有下一个Filter）
+> 2. 执行目标资源（没有下一个Filter）
+>
+> 在多个Filter过滤器执行的时候，它们执行的优先顺序是由它们在web.xml中从上到下的配置的顺序决定
+>
+> 多个Filter过滤器执行的特点：
+>
+> 1. 所有Filter和目标资源默认都执行在同一个线程中
+> 2. 多个Filter共同执行的时候，它们都使用同一个Request对象
+>
+> 多个Filter执行的流程图如下：
+>
+> ![](./images/filter.jpg)
+>
+> 代码示例：
+>
+> ```java
+> package com.atguigu.filter;
+> 
+> import javax.servlet.*;
+> import java.io.IOException;
+> 
+> public class Filter1 implements Filter {
+> 
+>     @Override
+>     public void init(FilterConfig filterConfig) throws ServletException {
+> 
+>     }
+> 
+>     @Override
+>     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+>         System.out.println("Filter1 前置代码！");
+>         filterChain.doFilter(servletRequest,servletResponse);
+>         System.out.println("Filter1 后置代码！");
+>     }
+> 
+>     @Override
+>     public void destroy() {
+> 
+>     }
+> }
+> ```
+>
+> ```java
+> package com.atguigu.filter;
+> 
+> import javax.servlet.*;
+> import java.io.IOException;
+> 
+> public class Filter2 implements Filter {
+> 
+>     @Override
+>     public void init(FilterConfig filterConfig) throws ServletException {
+> 
+>     }
+> 
+>     @Override
+>     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+>         System.out.println("Filter2 前置代码！");
+>         filterChain.doFilter(servletRequest,servletResponse);
+>         System.out.println("Filter2 后置代码！");
+>     }
+> 
+>     @Override
+>     public void destroy() {
+> 
+>     }
+> }
+> ```
+>
+> ```xml
+> <?xml version="1.0" encoding="UTF-8"?>
+> <web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+>          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+>          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
+>          version="4.0">
+> <filter>
+>     <!--给filter起别名-->
+>     <filter-name>Filter1</filter-name>
+>     <!--配置全类名-->
+>     <filter-class>com.atguigu.filter.Filter1</filter-class>
+> </filter>
+> <!--配置Filter过滤器的拦截路径-->
+> <filter-mapping>
+>     <!--表示当前拦截路径给哪个filter使用-->
+>     <filter-name>Filter1</filter-name>
+>     <!--配置拦截路径-->
+>     <url-pattern>/target.jsp</url-pattern>
+> </filter-mapping>
+> <filter>
+>     <!--给filter起别名-->
+>     <filter-name>Filter2</filter-name>
+>     <!--配置全类名-->
+>     <filter-class>com.atguigu.filter.Filter2</filter-class>
+> </filter>
+> <!--配置Filter过滤器的拦截路径-->
+> <filter-mapping>
+>     <!--表示当前拦截路径给哪个filter使用-->
+>     <filter-name>Filter2</filter-name>
+>     <!--配置拦截路径-->
+>     <url-pattern>/target.jsp</url-pattern>
+> </filter-mapping>
+> </web-app>
+> ```
+>
+> ```jsp
+> <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+> <html>
+> <head>
+>     <title>Title</title>
+> </head>
+> <body>
+>     <%
+>         System.out.println("target.jsp页面执行了！");
+>     %>
+> </body>
+> </html>
+> ```
+>
+> 运行结果如下图：
+>
+> ![](./images/filterflow.jpg)
+
+##### Filter的拦截路径
+
+> - 精确匹配    <url-pattern>/target.jsp</url-pattern>    配置的路径，表示的请求地址必须为：http://ip:port/工程路径/target.jsp
+> - 目录匹配    <url-pattern>/admin/* </url-pattern>   配置的路径，表示请求的地址必须为：http://ip:port/工程路径/admin/*
+> - 后缀名匹配    <url-pattern>*.html</url-pattern>    配置的路径，表示请求的地址必须以.html结尾才会拦截到
+
+### ThreadLocal
+
+> ThreadLocal的作用：
+>
+> 1. 可以解决多线程的数据安全问题
+> 2. 可以给当前线程关联一个数据（可以是普通变量，对象，数组，集合等）
+>
+> ThreadLocal的特点：
+>
+> 1. 可以为当前线程关联一个数据。（可以像Map一样存取数据，key为当前线程）
+> 2. 每一个ThreadLocal对象，只能为当前线程关联一个数据，如果要为当前线程关联多个数据，就需要使用多个ThreadLocal对象实例
+> 3. 每个ThreadLocal对象实例定义的时候，一般都是static类型
+> 4. ThreadLocal中保存的数据，在线程销毁后，会由JVM虚拟机自动释放
+>
+> ```java
+> package com.atguigu.threadlocal;
+> 
+> import java.util.Map;
+> import java.util.Random;
+> import java.util.concurrent.ConcurrentHashMap;
+> 
+> public class ThreadLocalTest {
+> 
+> //    public final static Map<String,Object> data = new ConcurrentHashMap<>();
+>     public static ThreadLocal<Object> threadLocal = new ThreadLocal<Object>();
+>     private static Random random = new Random();
+> 
+>     public static class Task implements Runnable{
+>         @Override
+>         public void run() {
+>             // 在run方法中，随机生成一个变量（线程要关联的数据），然后以当前线程为key保存到map中
+>             int i = random.nextInt(1000);
+>             // 获取当前线程名
+>             String name = Thread.currentThread().getName();
+>             System.out.println("线程[" + name + "] 生成的随机数是：" + i);
+> //            data.put(name,i);
+>             threadLocal.set(i);
+>             try {
+>                 Thread.sleep(5000);
+>             } catch (InterruptedException e) {
+>                 e.printStackTrace();
+>             }
+>             // 在run方法结束之前，以当前线程名获取出数据并打印，查看是否可以取出
+> //            Object o = data.get(name);
+>             Object o = threadLocal.get();
+>             System.out.println("线程[" + name + "] 快结束时，取出的数据是：" + o);
+>         }
+>     }
+> 
+>     public static void main(String[] args) {
+>         for (int i = 0; i < 3; i++) {
+>             new Thread(new Task()).start();
+>         }
+>     }
+> }
+> ```
+
+### tomcat配置错误页面
+
+> 在web.xml中做如下配置
+>
+> ```xml
+> <error-page>
+>     <!--错误码-->
+>     <error-code>500</error-code>
+>     <!--错误页面-->
+>     <location>/pages/error/error500.jsp</location>
+> </error-page>
+> ```
+>
+> 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
