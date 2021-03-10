@@ -1758,6 +1758,208 @@
 > </error-page>
 > ```
 >
+
+### JSON
+
+> **什么是JSON**
+>
+> JSON(Javascript Object Notation) 是一种轻量级的数据交换格式，易于人阅读和编写，同时也易于机器解析和生成。JSON采用完全独立于语言的文本格式，而且很多语言都提供了对JSON的支持（包括C，C++，C#，Java，JavaScript，Perl，Python等）。这样就使得JSON成为理想的数据交换格式。
+>
+> **JavaBean和JSON的转换**
+>
+> ```java
+> 导入的包：
+> package com.atguigu.json;
+> import com.atguigu.pojo.Person;
+> import com.google.gson.Gson;
+> import com.google.gson.reflect.TypeToken;
+> import org.junit.Test;
+> import java.util.ArrayList;
+> import java.util.HashMap;
+> import java.util.List;
+> import java.util.Map;
+> @Test
+> public void test1(){
+>     // JavaBean和json的转换
+>     Person p = new Person(1, "乔峰");
+>     // 创建Gson对象实例
+>     Gson gson = new Gson();
+>     // toJson方法，可以把java对象转换成为json字符串
+>     String jsonString = gson.toJson(p);
+>     System.out.println(jsonString);
+>     // fromJson可以把json字符串转换回java对象
+>     // 第一个参数是json字符串
+>     // 第二个参数是转换回去的java对象类型
+>     Person p1 = gson.fromJson(jsonString, Person.class);
+>     System.out.println(p1);
+> }
+> ```
+>
+> **List和JSON的转换**
+>
+> ```java
+> @Test
+> public void test2(){
+>     // List和json的转换
+>     List<Person> personList = new ArrayList<>();
+>     personList.add(new Person(1,"乔峰"));
+>     personList.add(new Person(2,"段誉"));
+>     personList.add(new Person(1,"虚竹"));
+>     Gson gson = new Gson();
+>     // List转换为json字符串
+>     String jsonString = gson.toJson(personList);
+>     System.out.println(jsonString);
+>     List<Person> list = gson.fromJson(jsonString, new PersonListType().getType());
+>     System.out.println(list);
+> }
+> ```
+>
+> ```java
+> package com.atguigu.pojo;
+> public class Person {
+>     private Integer id;
+>     private String name;
+> 
+>     public Person() {
+>     }
+> 
+>     public Person(Integer id, String name) {
+>         this.id = id;
+>         this.name = name;
+>     }
+> 
+>     public Integer getId() {
+>         return id;
+>     }
+> 
+>     public void setId(Integer id) {
+>         this.id = id;
+>     }
+> 
+>     public String getName() {
+>         return name;
+>     }
+> 
+>     public void setName(String name) {
+>         this.name = name;
+>     }
+> 
+>     @Override
+>     public String toString() {
+>         return "Person{" +
+>                 "id=" + id +
+>                 ", name='" + name + '\'' +
+>                 '}';
+>     }
+> }
+> ```
+>
+> ```java
+> package com.atguigu.json;
+> import com.atguigu.pojo.Person;
+> import com.google.gson.reflect.TypeToken;
+> import java.util.ArrayList;
+> 
+> public class PersonListType extends TypeToken<ArrayList<Person>> {
+> }
+> ```
+>
+> **Map和JSON的转换**
+>
+> ```java
+> @Test
+> public void test3(){
+>     // Map和json的转换
+>     Map<Integer,Person> personMap = new HashMap<>();
+>     personMap.put(1,new Person(1,"乔峰"));
+>     personMap.put(2,new Person(2,"段誉"));
+>     personMap.put(3,new Person(3,"虚竹"));
+>     Gson gson = new Gson();
+>     String jsonString = gson.toJson(personMap);
+>     System.out.println(jsonString);
+>     //        Map<Integer,Person> map = gson.fromJson(jsonString, new PersonMapType().getType());
+>     // 第二种写法，匿名实现类
+>     Map<Integer,Person> map = gson.fromJson(jsonString, new TypeToken<HashMap<Integer,Person>>(){}.getType());
+>     System.out.println(map);
+> }
+> ```
+>
+> ```java
+> package com.atguigu.json;
+> import com.atguigu.pojo.Person;
+> import com.google.gson.reflect.TypeToken;
+> import java.util.HashMap;
+> 
+> public class PersonMapType extends TypeToken<HashMap<Integer,Person>> {
+> }
+> ```
+
+### i18n国际化
+
+> i18n_en_US.properties
+>
+> ```properties
+> username=username
+> password=password
+> gender=gender
+> age=age
+> ```
+>
+> i18n_zh_CN.properties
+>
+> ```properties
+> username=用户名
+> password=密码
+> gender=性别
+> age=年龄
+> ```
+>
+> ```java
+> package com.atguigu.i18n;
+> import org.junit.Test;
+> import java.util.Locale;
+> import java.util.ResourceBundle;
+> 
+> public class I18nTest {
+> 
+>     @Test
+>     public void testLocale(){
+>         Locale locale = Locale.getDefault();
+>         System.out.println(locale);
+>         System.out.println(Locale.CHINA);
+>         System.out.println(Locale.US);
+>     }
+> 
+>     @Test
+>     public void testI18n(){
+>         Locale locale = Locale.CHINA;
+>         ResourceBundle bundle = ResourceBundle.getBundle("i18n", locale);
+>         System.out.println(bundle.getString("username"));
+>         System.out.println(bundle.getString("password"));
+>         System.out.println(bundle.getString("gender"));
+>         System.out.println(bundle.getString("age"));
+>     }
+> }
+> ```
+>
+> 获取请求头语言信息
+>
+> ```java
+> <%@ page import="java.util.Locale" %>
+> <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+> <html>
+>   <head>
+>     <title>$Title$</title>
+>   </head>
+>   <body>
+>     <%
+>       Locale locale = request.getLocale();
+>       System.out.println(locale.getClass());
+>     %>
+>   </body>
+> </html>
+> ```
+>
 > 
 
 
