@@ -105,11 +105,11 @@
 >
 > ```java
 > class UserFactory {
->     public static UserDao getDao(){
->         String classValue = class属性值;  // xml解析
->         Class clazz = Class.forName(classValue);	// 通过反射创建对象
->         return (UserDao)clazz.newInstance();
->     }
+>  public static UserDao getDao(){
+>      String classValue = class属性值;  // xml解析
+>      Class clazz = Class.forName(classValue);	// 通过反射创建对象
+>      return (UserDao)clazz.newInstance();
+>  }
 > }
 > ```
 >
@@ -158,34 +158,34 @@
 >    ```java
 >    package com.atguigu.spring5;
 >    public class Book {
->    
+>
 >        private String bname;
 >        private String bauthor;
->    
+>
 >        public Book() {
 >        }
->    
+>
 >        public Book(String bname, String bauthor) {
 >            this.bname = bname;
 >            this.bauthor = bauthor;
 >        }
->    
+>
 >        public String getBname() {
 >            return bname;
 >        }
->    
+>
 >        public void setBname(String bname) {
 >            this.bname = bname;
 >        }
->    
+>
 >        public String getBauthor() {
 >            return bauthor;
 >        }
->    
+>
 >        public void setBauthor(String bauthor) {
 >            this.bauthor = bauthor;
 >        }
->    
+>
 >        public void test(){
 >            System.out.println(bname + "::" + bauthor);
 >        }
@@ -194,15 +194,15 @@
 >
 >    ```java
 >    package com.atguigu.spring5.test;
->    
+>
 >    import com.atguigu.spring5.Book;
 >    import com.atguigu.spring5.User;
 >    import org.junit.Test;
 >    import org.springframework.context.ApplicationContext;
 >    import org.springframework.context.support.ClassPathXmlApplicationContext;
->    
+>
 >    public class TestSpring5 {
->    
+>
 >        @Test
 >        public void testAdd(){
 >            // 1.加载Spring配置文件
@@ -212,7 +212,7 @@
 >            System.out.println(user);
 >            user.add();
 >        }
->    
+>
 >        @Test
 >        public void testBook1(){
 >            ApplicationContext context = new ClassPathXmlApplicationContext("bean1.xml");
@@ -237,7 +237,7 @@
 >            <property name="bname" value="易筋经"></property>
 >            <property name="bauthor" value="达摩老祖"></property>
 >        </bean>-->
->    
+>
 >        <!--有参构造注入属性-->
 >        <bean id="book" class="com.atguigu.spring5.Book">
 >            <constructor-arg name="bname" value="北冥神功"></constructor-arg>
@@ -267,7 +267,7 @@
 >    <beans xmlns="http://www.springframework.org/schema/beans"
 >           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 >           xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
->        
+>
 >        <bean id="book" class="com.atguigu.spring5.Book">
 >            <property name="bname">
 >                <null></null>
@@ -287,7 +287,7 @@
 >           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 >           xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 >    <!--第一种方式：使用转义字符-->
->    
+>
 >    <!--第二种方式，使用CDATA-->
 >    <bean id="book" class="com.atguigu.spring5.Book">
 >        <property name="bname">
@@ -308,20 +308,20 @@
 >
 >    ```java
 >    package com.atguigu.spring5.service;
->    
+>
 >    import com.atguigu.spring5.dao.UserDao;
->    
+>
 >    public class UserService {
 >        private UserDao userDao;
->    
+>
 >        public UserDao getUserDao() {
 >            return userDao;
 >        }
->    
+>
 >        public void setUserDao(UserDao userDao) {
 >            this.userDao = userDao;
 >        }
->    
+>
 >        public void add(){
 >            System.out.println("service add ...");
 >            userDao.update();
@@ -333,7 +333,7 @@
 >
 >    ```java
 >    package com.atguigu.spring5.dao;
->    
+>
 >    public interface UserDao {
 >        public void update();
 >    }
@@ -343,7 +343,7 @@
 >
 >    ```java
 >    package com.atguigu.spring5.dao;
->    
+>
 >    public class UserDaoImpl implements UserDao {
 >        @Override
 >        public void update() {
@@ -359,7 +359,7 @@
 >    <beans xmlns="http://www.springframework.org/schema/beans"
 >           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 >           xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
->    
+>
 >        <bean id="userService" class="com.atguigu.spring5.service.UserService">
 >            <property name="userDao" ref="userDaoImpl"></property>
 >        </bean>
@@ -371,12 +371,12 @@
 >
 >    ```java
 >    package com.atguigu.spring5.test;
->    
+>
 >    import com.atguigu.spring5.service.UserService;
 >    import org.junit.Test;
 >    import org.springframework.context.ApplicationContext;
 >    import org.springframework.context.support.ClassPathXmlApplicationContext;
->    
+>
 >    public class TestBean {
 >        @Test
 >        public void testAdd(){
@@ -387,7 +387,374 @@
 >    }
 >    ```
 >
->    (2) 基于注解方式实现
->
+>    内部bean
 >    
+>    ```xml
+>    <?xml version="1.0" encoding="UTF-8"?>
+>    <beans xmlns="http://www.springframework.org/schema/beans"
+>           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+>           xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+>        <!--内部bean-->
+>        <bean id="emp" class="com.atguigu.spring5.bean.Emp">
+>            <property name="ename" value="lucy"></property>
+>            <property name="gender" value="女"></property>
+>            <!--设置对象类型属性-->
+>            <property name="dept">
+>                <bean id="dept" class="com.atguigu.spring5.bean.Dept">
+>                    <property name="dname" value="客服部"></property>
+>                </bean>
+>            </property>
+>        </bean>
+>    </beans>
+>    ```
+>    
+>    级联赋值
+>    
+>    第一种写法
+>    
+>    ```xml
+>    <?xml version="1.0" encoding="UTF-8"?>
+>    <beans xmlns="http://www.springframework.org/schema/beans"
+>           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+>           xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+>        <!--内部bean-->
+>        <bean id="emp" class="com.atguigu.spring5.bean.Emp">
+>            <property name="ename" value="lucy"></property>
+>            <property name="gender" value="女"></property>
+>            <!--设置对象类型属性-->
+>            <property name="dept" ref="dept"></property>
+>        </bean>
+>        <bean id="dept" class="com.atguigu.spring5.bean.Dept">
+>            <property name="dname" value="财务部"></property>
+>        </bean>
+>    </beans>
+>    ```
+>    
+>    第二种写法
+>    
+>    ```xml
+>    <?xml version="1.0" encoding="UTF-8"?>
+>    <beans xmlns="http://www.springframework.org/schema/beans"
+>           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+>           xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+>        <!--内部bean-->
+>        <bean id="emp" class="com.atguigu.spring5.bean.Emp">
+>            <property name="ename" value="lucy"></property>
+>            <property name="gender" value="女"></property>
+>            <!--设置对象类型属性-->
+>            <property name="dept" ref="dept"></property>
+>            <!--需要在Emp类中生成dept的get方法getDept()-->
+>            <property name="dept.dname" value="销售部"></property>
+>        </bean>
+>        <bean id="dept" class="com.atguigu.spring5.bean.Dept">
+>            <property name="dname" value="财务部"></property>
+>        </bean>
+>    </beans>
+>    ```
+>    
+>    xml注入集合属性
+>    
+>    ```xml
+>    <?xml version="1.0" encoding="UTF-8"?>
+>    <beans xmlns="http://www.springframework.org/schema/beans"
+>           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+>           xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+>        <!--集合类型属性注入-->
+>        <bean id="stu" class="com.atguigu.spring5.collecttype.Stu">
+>            <!--数组类型注入-->
+>            <property name="courses">
+>                <array>
+>                    <value>英语</value>
+>                    <value>数学</value>
+>                </array>
+>            </property>
+>            <!--List类型注入-->
+>            <property name="list">
+>                <list>
+>                    <value>宁毅</value>
+>                    <value>宁立恒</value>
+>                    <value>血手人屠</value>
+>                </list>
+>            </property>
+>            <!--Map类型注入-->
+>            <property name="maps">
+>                <map>
+>                    <entry key="java" value="java课程"></entry>
+>                    <entry key="dbms" value="数据库课程"></entry>
+>                </map>
+>            </property>
+>            <!--Set类型注入-->
+>            <property name="sets">
+>                <set>
+>                    <value>MySQL</value>
+>                    <value>Redis</value>
+>                </set>
+>            </property>
+>            <!--注入list集合类型，值是对象-->
+>            <property name="courseList">
+>                <list>
+>                    <ref bean="course1"></ref>
+>                    <ref bean="course2"></ref>
+>                </list>
+>            </property>
+>        </bean>
+>        <!--创建多个course对象-->
+>        <bean id="course1" class="com.atguigu.spring5.collecttype.Course">
+>            <property name="cno" value="1"></property>
+>            <property name="cname" value="Spring5框架"></property>
+>        </bean>
+>        <bean id="course2" class="com.atguigu.spring5.collecttype.Course">
+>            <property name="cno" value="2"></property>
+>            <property name="cname" value="MyBatis框架"></property>
+>        </bean>
+>    </beans>
+>    ```
+>    
+>    抽取集合公共部分
+>    
+>    ```xml
+>    <?xml version="1.0" encoding="UTF-8"?>
+>    <beans xmlns="http://www.springframework.org/schema/beans"
+>           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+>           xmlns:util="http://www.springframework.org/schema/util"
+>           xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+>                               http://www.springframework.org/schema/util  http://www.springframework.org/schema/util/spring-util.xsd">
+>        <!--提取list集合类型属性注入-->
+>        <util:list id="bookList">
+>            <value>易筋经</value>
+>            <value>九阴真经</value>
+>            <value>九阳神功</value>
+>        </util:list>
+>        <!--提取list集合类型属性注入-->
+>        <bean id="book" class="com.atguigu.spring5.collecttype.Book">
+>            <property name="list" ref="bookList"></property>
+>        </bean>
+>    </beans>
+>    ```
+>    
+>    工厂Bean
+>    
+>    ```java
+>    package com.atguigu.spring5.factorybean;
+>    
+>    import com.atguigu.spring5.collecttype.Course;
+>    import org.springframework.beans.factory.FactoryBean;
+>    
+>    public class MyBean implements FactoryBean<Course> {
+>        @Override
+>        public Course getObject() throws Exception {
+>            // 定义返回的bean
+>            Course course = new Course();
+>            course.setCno(1);
+>            course.setCname("数学");
+>            return course;
+>        }
+>    
+>        @Override
+>        public Class<?> getObjectType() {
+>            return null;
+>        }
+>    
+>        @Override
+>        public boolean isSingleton() {
+>            return false;
+>        }
+>    }
+>    ```
+>    
+>    ```java
+>    package com.atguigu.spring5.collecttype;
+>    
+>    public class Course {
+>    
+>        private Integer cno;
+>        private String cname;
+>    
+>        public void setCname(String cname) {
+>            this.cname = cname;
+>        }
+>    
+>        public void setCno(Integer cno) {
+>            this.cno = cno;
+>        }
+>    
+>        @Override
+>        public String toString() {
+>            return "Course{" +
+>                    "cno=" + cno +
+>                    ", cname='" + cname + '\'' +
+>                    '}';
+>        }
+>    }
+>    ```
+>    
+>    ```java
+>    public void test5(){
+>        ApplicationContext context = new ClassPathXmlApplicationContext("bean3.xml");
+>        Course course = context.getBean("myBean", Course.class);
+>        System.out.println(course);
+>    }
+>    ```
+>    
+>    ```xml
+>    <?xml version="1.0" encoding="UTF-8"?>
+>    <beans xmlns="http://www.springframework.org/schema/beans"
+>           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+>           xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+>        <bean id="myBean" class="com.atguigu.spring5.factorybean.MyBean"></bean>
+>    </beans>
+>    ```
+>    
+>    如何设置bean是单实例还是多实例
+>    
+>    a. 在Spring配置文件bean标签里面有属性（scope）用于设置单实例还是多实例
+>    
+>    b. scope属性值
+>    
+>    第一个值：默认值，singleton，表示单实例对象（加载配置文件时，创建对象）
+>    
+>    第二个值：prototype，表示多实例对象（获取对象的时候创建）
+>    
+>    bean生命周期
+>    
+>    a. 通过构造器创建bean实例（无参构造）
+>    
+>    b. 为bean的属性设置值和对其他bean引用（调用set方法）
+>    
+>    c. 把bean实例传递给bean前置处理器的方法
+>    
+>    d. 调用bean的初始化方法（需要进行配置初始化方法）
+>    
+>    e. 把bean实例传递给bean后置处理器的方法
+>    
+>    f. bean可以使用了（对象获取到了）
+>    
+>    g. 当容器关闭的时候，调用bean的销毁方法（需要进行配置销毁的方法） 
+>    
+>    xml自动装配
+>    
+>    什么是自动装配
+>    
+>    a. 根据指定装配规则（属性名称或者属性类型）,Spring自动将匹配的属性值进行注入
+>    
+>    bean标签属性autowire，配置自动装配
+>    
+>    autowire属性常用两个值：
+>    
+>    ​	byName根据属性名称注入，注入值bean的id值和类属性名称一样
+>    
+>    ​	byType根据属性类型注入
+>    
+>    ```xml
+>    <?xml version="1.0" encoding="UTF-8"?>
+>    <beans xmlns="http://www.springframework.org/schema/beans"
+>           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+>           xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+>        <bean id="emp" class="com.atguigu.spring5.autowire.Emp" autowire="byType"></bean>
+>        <bean id="dept" class="com.atguigu.spring5.autowire.Dept"></bean>
+>    </beans>
+>    ```
+>    
+>    引入外部属性文件
+>    
+>    ```xml
+>    <?xml version="1.0" encoding="UTF-8"?>
+>    <beans xmlns="http://www.springframework.org/schema/beans"
+>           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+>           xmlns:util="http://www.springframework.org/schema/util"
+>           xmlns:context="http://www.springframework.org/schema/context"
+>           xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+>                               http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+>                               http://www.springframework.org/schema/context  http://www.springframework.org/schema/context/spring-context.xsd">
+>        <!-- 直接配置 -->
+>        <!--<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">-->
+>            <!--<property name="driverClassName" value="com.alibaba.druid.pool.DruidDataSource"></property>-->
+>            <!--<property name="url" value="jdbc:mysql://localhost:3306/userDb"></property>-->
+>            <!--<property name="username" value="root"></property>-->
+>            <!--<property name="password" value="root"></property>-->
+>        <!--</bean>-->
+>        <!--引入外部属性文件-->
+>        <context:property-placeholder location="classpath:jdbc.properties" />
+>        <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+>            <property name="driverClassName" value="${prop.driverClass}"></property>
+>            <property name="url" value="${prop.url}"></property>
+>            <property name="username" value="${prop.userName}"></property>
+>            <property name="password" value="${prop.password}"></property>
+>        </bean>
+>    </beans>
+>    ```
+>    
+>    ```properties
+>    prop.driverClass=com.mysql.jdbc.Driver
+>    prop.url=jdbc:mysql://localhost:3306/userDb
+>    prop.userName=root
+>    prop.password=root
+>    ```
+>    
+>    (2) 基于注解方式实现
+>    
+>    Spring针对Bean管理中创建对象提供注解
+>    
+>    a. @Component
+>    
+>    b. @Service
+>    
+>    c. @Controller
+>    
+>    d. @Repository
+>    
+>    上面四个注解功能是一样的，都可以用来创建bean实例
+>    
+>    注解方式创建对象示例：
+>    
+>    ```xml
+>    <?xml version="1.0" encoding="UTF-8"?>
+>    <beans xmlns="http://www.springframework.org/schema/beans"
+>           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+>           xmlns:context="http://www.springframework.org/schema/context"
+>           xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+>                               http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+>        <!--开启组件扫描
+>            1. 如果扫描多个包，多个包使用逗号隔开
+>            2. 扫描包上层目录
+>        -->
+>        <context:component-scan base-package="com.atguigu.spring5.dao,com.atguigu.spring5.service"></context:component-scan>
+>    </beans>
+>    ```
+>    
+>    ```java
+>    package com.atguigu.spring5.service;
+>    
+>    import org.springframework.stereotype.Component;
+>    
+>    // 在注解里面value属性值可以省略不写
+>    // 默认值是类名称，首字母小写
+>    @Component(value = "userService")
+>    public class UserService {
+>        public void add(){
+>            System.out.println("service add...");
+>        }
+>    }
+>    ```
+>    
+>    ```java
+>    package com.atguigu.spring5.test;
+>    
+>    import com.atguigu.spring5.service.UserService;
+>    import org.junit.Test;
+>    import org.springframework.context.ApplicationContext;
+>    import org.springframework.context.support.ClassPathXmlApplicationContext;
+>    
+>    public class TestDemo {
+>        @Test
+>        public void test(){
+>            ApplicationContext context = new ClassPathXmlApplicationContext("bean1.xml");
+>            UserService userService = context.getBean("userService", UserService.class);
+>            userService.add();
+>        }
+>    }
+>    ```
+>    
+>    
+>
 
