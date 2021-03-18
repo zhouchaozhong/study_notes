@@ -880,5 +880,192 @@
 >  <mvc:default-servlet-handler/>
 >  ```
 >
->  
+
+##### 文件上传
+
+> **浏览器端要求**
+>
+> - 表单提交方式`post`(get有文件大小限制)
+> - 提供文件上传框 `input type="file"`
+> - 表单的`entype`属性必须为`multipart/form-data`
+>
+> **服务器端要求**
+>
+> - 使用`request.getInputStream()`获取数据
+> - springmvc底层封装了commons-fileupload文件上传工具包
+>
+> **传统方式上传**
+>
+> 导入依赖坐标
+>
+> ```xml
+> <dependency>
+>     <groupId>commons-fileupload</groupId>
+>     <artifactId>commons-fileupload</artifactId>
+>     <version>1.3</version>
+> </dependency>
+> ```
+>
+> 控制器方法
+>
+> ```java
+> @Controller
+> @RequestMapping("/file")
+> public class FileController {
+> 
+>     @RequestMapping("/upload1")
+>     public String upload1(MultipartFile file, HttpSession session) throws IOException {
+>         String filename = file.getOriginalFilename();//获取文件名
+>         String path = session.getServletContext().getRealPath("upload");//获取文件目录路径
+>         File targetFile = new File(path + "/" + filename);
+>         file.transferTo(targetFile);//上传
+>         return "success";
+>     }
+> }
+> ```
+>
+> 在springmvc.xml中配置文件上传解析器
+>
+> ```xml
+> <!-- 配置文件上传解析器 bean的id必须为multipartResolver-->
+> <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+>     <!-- 限制文件大小为5MB 1024*1024*5-->
+>     <property name="maxUploadSize" value="5242880"/>
+> </bean>
+> ```
+>
+> ```jsp
+> <h1>文件上传</h1>
+> <form action="file/upload1" method="post" enctype="multipart/form-data">
+>     文件：<input type="file" name="file"><br>
+>     <input type="submit">
+> </form>
+> ```
+>
+> 在webapp目录下新建一个upload文件夹保存上传的文件（如果文件夹为空可能会出现问题，随便建立一个文件）。
+
+##### 自定义异常处理器
+
+> **springmvc自定义异常处理器**
+>
+> ```java
+> @RequestMapping("/save")
+> public String save(HttpServletRequest request){
+>     System.out.println("save方法执行了");
+>     userService.save();
+>     return "success";
+> }
+> ```
+>
+> 自定义异常处理器类
+>
+> ```java
+> public class ExceptionHandler implements HandlerExceptionResolver {
+>     @Override
+>     public ModelAndView resolveException(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o, Exception e) {
+>         ModelAndView mv=new ModelAndView();
+>         mv.setViewName("error");
+>         mv.addObject("msg",e.getMessage());
+>         return mv;
+>     }
+> }
+> ```
+>
+> 方式一：在springmvc.xml中配置异常处理器
+>
+> ```xml
+> <!-- 注册异常处理器 -->
+> <bean id="exceptionHandler" class="com.exp.ExceptionHandler"/>
+> ```
+>
+> 方式二：或者在自定义异常处理类上加@Component注解也可以）
+
+### 拦截器
+
+> > Spring MVC 的拦截器类似于 Servlet 中的过滤器 Filter，用于对处理器进行预处理和后处理，用户可以自己定义一些拦截器来实现特定的功能。
+> >
+> > 拦截器链：将拦截器按一定的顺序联结成一条链，在访问被拦截的方法或字段时，拦截器链中的拦截器就会按其之前定义的顺序被调用。
+> >
+> > 它和过滤器相似，但是也有区别：
+> >
+> > 过滤器是 servlet 规范中的一部分，任何 java web 工程都可以使用。
+> > 拦截器是 SpringMVC 框架自己的，只有使用了 SpringMVC 框架的工程才能用。
+> > 过滤器在 url-pattern 中配置了/*之后，可以对所有要访问的资源拦截。
+> > 拦截器它是只会拦截访问的控制器方法，如果访问的是 jsp，html,css,image 或者 js 是不会进行拦截的。
+> > 它也是 AOP 思想的具体应用。
+> > 我们要想自定义拦截器， 要求必须实现：HandlerInterceptor 接口。
+> >
+> > | 类别   | 使用范围    | 拦截范围                               |
+> > | ------ | ----------- | -------------------------------------- |
+> > | 拦截器 | SpringMVC   | 只会拦截访问的控制器方法               |
+> > | 过滤器 | 任何Web项目 | 任何资源（servlet，控制器，jsp，html） |
+>
+> 拦截器类
+>
+> ```java
+> public class CustomIntercept implements HandlerInterceptor {
+> 
+>     @Override
+>     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+>         System.out.println("拦截器pre方法执行了");
+>         return true;//返回值true表示放行，false表示不放行
+>     }
+> 
+>     @Override
+>     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+>         System.out.println("拦截器post方法执行了");
+>     }
+> 
+>     @Override
+>     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+>         System.out.println("拦截器after方法执行了");
+>     }
+> }
+> ```
+>
+> 在springmvc.xml中配置拦截器
+>
+> ```xml
+> <mvc:interceptors>
+>     <mvc:interceptor>
+>         <mvc:mapping path="/**"/>
+>         <bean id="customIntercept" class="com.intercept.CustomIntercept"/>
+>     </mvc:interceptor>
+> </mvc:interceptors>
+> ```
+>
+> 拦截器方法的说明
+>
+> * preHandle
+>
+>   >* 在被拦截的目标方法执行之前执行
+>   >* 按拦截器定义顺序调用
+>   >* 只要配置了都会调用
+>   >* 如果程序员决定该拦截器对请求进行拦截处理后还要调用其他的拦截器，或者是业务处理器去进行处理，则返回 true。如果程序员决定不需要再调用其他的组件去处理请求，则返回 false。
+>
+> * postHandle
+>
+>   > * 在被拦截的目标方法执行完毕获得了返回值后执行
+>   > * 按拦截器定义逆序调用
+>   > * 在拦截器链内所有拦截器返回成功时调用
+>   > * 在业务处理器处理完请求后，但是 DispatcherServlet 向客户端返回响应前被调用， 在该方法中对用户请求 request 进行处理。
+>
+> * afterCompletion
+>
+>   >* 在目标方法完成视图层渲染后执行
+>   >* 按拦截器定义逆序调用
+>   >* 只有 preHandle 返回 true 才调用
+>   >* 在 DispatcherServlet 完全处理完请求后被调用，可以在该方法中进行一些资源清理的操作。
+>
+> **单个拦截器执行流程图**
+>
+> ![](./images/interceptor1.webp)
+>
+> **多个拦截器执行流程图**
+>
+> ![](./images/interceptor2.webp)
+>
+> ==注意：== 我们可以配置多个拦截器，所以就存在一个优先级的问题，多个拦截器的优先级是按照配置的顺序决定的
+>
+> 
 
