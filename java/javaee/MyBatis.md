@@ -917,5 +917,263 @@
 >
 > ![](./images/tbl_dept.jpg)
 >
+> **association定义关联对象封装规则**
+>
+> 接口方法定义
+>
+> ```java
+> public Employee getEmpAndDept(Integer id);
+> ```
+>
+> sql映射文件定义
+>
+> ```xml
+> <resultMap id="MyComplexEmp2" type="com.example.mybatis.bean.Employee">
+>     <id column="id" property="id"/>
+>     <result column="last_name" property="lastName"/>
+>     <result column="gender" property="gender"/>
+>     <!--association可以指定联合的JavaBean
+>             property="dept"：指定哪个属性是联合的对象
+>             javaType：指定这个属性对象的类型【不能省略】
+>         -->
+>     <association property="dept" javaType="com.example.mybatis.bean.Department">
+>         <id column="did" property="id"/>
+>         <result column="dept_name" property="departmentName"/>
+>     </association>
+> </resultMap>
+> <select id="getEmpAndDept" resultMap="MyComplexEmp2">
+>     select e.id id,e.last_name last_name,e.gender gender,e.dept_id dept_id,d.id did,d.dept_name dept_name
+>     from tbl_employee e,tbl_dept d where e.dept_id = d.id and e.id = 1
+> </select>
+> ```
+>
+> 其他文件跟上面的例子一样
+>
+> **使用association进行分步查询**
+>
+> 接口方法定义
+>
+> EmployeeMapperPlus.java
+>
+> ```java
+> public Employee getEmpByIdStep(Integer id);
+> ```
+>
+> DepartmentMapper.java
+>
+> ```java
+> package com.example.mybatis.dao;
+> import com.example.mybatis.bean.Department;
+> public interface DepartmentMapper {
+>     public Department getDeptById(Integer id);
+> }
+> ```
+>
+> sql映射文件
+>
+> EmployeeMapperPlus.xml
+>
+> ```xml
+> <!--使用association分步查询
+>         1.先按照员工id查出员工信息
+>         2.根据查询员工信息中的dept_id值，去部门表查出部门信息
+>         3.部门设置到员工中
+>     -->
+> <resultMap id="MyEmpByStep" type="com.example.mybatis.bean.Employee">
+>     <id column="id" property="id"/>
+>     <result column="last_name" property="lastName"/>
+>     <result column="email" property="email"/>
+>     <result column="gender" property="gender"/>
+>     <!--association定义关联对象的封装规则
+>             select：表明当前属性是调用select指定的方法查出的结果
+>             column：指定将哪一列的值传给这个方法
+>             流程：使用select指定的方法（传入column指定的这列参数的值）查出对象，并封装给property指定的属性
+>         -->
+>     <association property="dept" select="com.example.mybatis.dao.DepartmentMapper.getDeptById" column="dept_id"></association>
+> </resultMap>
+> <select id="getEmpByIdStep" resultMap="MyEmpByStep">
+>     select * from tbl_employee where id=#{id}
+> </select>
+> ```
+>
+> DepartmentMapper.xml
+>
+> ```xml
+> <?xml version="1.0" encoding="UTF-8" ?>
+> <!DOCTYPE mapper
+>         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+>         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+> <mapper namespace="com.example.mybatis.dao.DepartmentMapper">
+>     <select id="getDeptById" resultType="com.example.mybatis.bean.Department">
+>         select id,dept_name departmentName from tbl_dept where id=#{id}
+>     </select>
+> </mapper>
+> ```
+>
+> **延迟加载**
+>
+> 在分步查询的基础之上，在全局配置上添加以下配置，关联属性会延迟加载
+>
+> * lazyLoadingEnabled：延迟加载的全局开关。当开启时，所有关联对象都会延迟加载。 特定关联关系中可通过设置 `fetchType` 属性来覆盖该项的开关状态。
+> * aggressiveLazyLoading：开启时，任一方法的调用都会加载该对象的所有延迟加载属性。 否则，每个延迟加载属性会按需加载（参考 lazyLoadTriggerMethods)。
+>
+> **collection定义关联集合封装规则**
+>
+> 类定义
+>
+> ```java
+> package com.example.mybatis.bean;
+> import java.util.List;
+> public class Department {
+>     private Integer id;
+>     private String departmentName;
+>     private List<Employee> emps;
+>     ......
+> }
+> ```
+>
+> ```java
+> package com.example.mybatis.bean;
+> public class Employee {
+>     private Integer id;
+>     private String lastName;
+>     private String email;
+>     private String gender;
+>     private Department dept;
+>     ......
+> }
+> ```
+>
+> 接口方法定义
+>
+> ```java
+> public Department getDeptByIdPlus(Integer id);
+> ```
+>
+> sql映射文件
+>
+> ```xml
+> <resultMap id="MyDept" type="com.example.mybatis.bean.Department">
+>     <id column="did" property="id"/>
+>     <result column="dept_name" property="departmentName"/>
+>     <!--collection嵌套结果集的方式，定义关联的集合类型元素的封装规则
+>             collection：定义关联的集合类型的属性的封装
+>                 ofType：指定集合里面元素的类型
+>         -->
+>     <collection property="emps" ofType="com.example.mybatis.bean.Employee">
+>         <!--定义这个集合中元素的封装规则-->
+>         <id column="eid" property="id"/>
+>         <result column="last_name" property="lastName"/>
+>         <result column="email" property="email"/>
+>         <result column="gender" property="gender" />
+>     </collection>
+> </resultMap>
+> <select id="getDeptByIdPlus" resultMap="MyDept">
+>     select d.id did,d.dept_name dept_name,e.id eid,e.last_name last_name,e.email email,e.gender gender
+>     from tbl_dept d left join tbl_employee e on d.id=e.dept_id where d.id=#{id}
+> </select>
+> ```
+>
+> 测试文件
+>
+> ```java
+> DepartmentMapper mapper = openSession.getMapper(DepartmentMapper.class);
+> Department dept = mapper.getDeptByIdPlus(1);
+> System.out.println(dept);
+> ```
+>
+> **collection分步查询**
+>
+> 类文件定义和上面的上面的collection定义关联结果一样
+>
+> 接口方法定义
+>
+> EmployeeMapperPlus.java
+>
+> ```java
+> public List<Employee> getEmpsByDeptId(Integer deptId);
+> ```
+>
+> DepartmentMapper.java
+>
+> ```java
+> public Department getDeptByIdStep(Integer id);
+> ```
+>
+> sql映射文件
+>
+> DepartmentMapper.xml
+>
+> ```xml
+> <resultMap id="MyDeptStep" type="com.example.mybatis.bean.Department">
+>     <id column="id" property="id"/>
+>     <result column="dept_name" property="departmentName"/>
+>     <collection property="emps" select="com.example.mybatis.dao.EmployeeMapperPlus.getEmpsByDeptId" column="id" 			fetchType="lazy"></collection>
+> </resultMap>
+> <select id="getDeptByIdStep" resultMap="MyDeptStep">
+>     select * from tbl_dept where id=#{id}
+> </select>
+> ```
+>
+> EmployeeMapperPlus.xml
+>
+> ```xml
+> <select id="getEmpsByDeptId" resultType="com.example.mybatis.bean.Employee">
+>     select * from tbl_employee where dept_id=#{deptId}
+> </select>
+> ```
+>
+> 测试文件
+>
+> ``` java
+> DepartmentMapper mapper = openSession.getMapper(DepartmentMapper.class);
+> Department dept = mapper.getDeptByIdStep(1);
+> System.out.println(dept);
+> ```
+>
+> 扩展：多列的值传递过去，将多列的值封装map传递
+>
+> column="{key1=column1,key2=column2}"
+>
+> fetchType="lazy" ：表示使用延迟加载
+>
+> **discriminator鉴别器**
+>
+> 鉴别器：mybatis可以使用discriminator判断某列的值，然后根据某列的值改变封装行为
+>
+> sql映射文件
+>
+> ```xml
+> <!--封装Employee:
+>         如果查出的是女生：就把部门信息查询出来，否则不查询
+>         如果是男生，就把last_name这一列的值赋值给email-->
+> <resultMap id="MyEmpDis" type="com.example.mybatis.bean.Employee">
+>     <id column="id" property="id"/>
+>     <result column="last_name" property="lastName"/>
+>     <result column="email" property="email"/>
+>     <result column="gender" property="gender"/>
+>     <!--column：指定要判断的列名
+>             javaType：列值对应的java类型
+>         -->
+>     <discriminator javaType="string" column="gender">
+>         <!--女生 resultType：指定封装的结果类型，不能省略，或者可以用resultMap-->
+>         <case value="0" resultType="com.example.mybatis.bean.Employee">
+>             <association property="dept" select="com.example.mybatis.dao.DepartmentMapper.getDeptById" column="dept_id">			</association>
+>         </case>
+>         <!--男生-->
+>         <case value="1" resultType="com.example.mybatis.bean.Employee">
+>             <id column="id" property="id"/>
+>             <result column="last_name" property="lastName"/>
+>             <result column="last_name" property="email"/>
+>             <result column="gender" property="gender"/>
+>         </case>
+>     </discriminator>
+> </resultMap>
+> 
+> <select id="getEmpByIdStep" resultMap="MyEmpDis">
+>     select * from tbl_employee where id=#{id}
+> </select>
+> ```
+>
 > 
 
