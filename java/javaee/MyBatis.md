@@ -9,24 +9,24 @@
 > ```xml
 > <?xml version="1.0" encoding="UTF-8" ?>
 > <!DOCTYPE configuration
->      PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
->      "http://mybatis.org/dtd/mybatis-3-config.dtd">
+>   PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+>   "http://mybatis.org/dtd/mybatis-3-config.dtd">
 > <configuration>
->  <environments default="development">
->      <environment id="development">
->          <transactionManager type="JDBC"/>
->          <dataSource type="POOLED">
->              <property name="driver" value="com.mysql.jdbc.Driver"/>
->              <property name="url" value="jdbc:mysql://192.168.100.199/test"/>
->              <property name="username" value="root"/>
->              <property name="password" value="root"/>
->          </dataSource>
->      </environment>
->  </environments>
->  <!--将我们写好的sql映射文件一定要注册到全局配置文件中-->
->  <mappers>
->      <mapper resource="EmployeeMapper.xml"/>
->  </mappers>
+> <environments default="development">
+>   <environment id="development">
+>       <transactionManager type="JDBC"/>
+>       <dataSource type="POOLED">
+>           <property name="driver" value="com.mysql.jdbc.Driver"/>
+>           <property name="url" value="jdbc:mysql://192.168.100.199/test"/>
+>           <property name="username" value="root"/>
+>           <property name="password" value="root"/>
+>       </dataSource>
+>   </environment>
+> </environments>
+> <!--将我们写好的sql映射文件一定要注册到全局配置文件中-->
+> <mappers>
+>   <mapper resource="EmployeeMapper.xml"/>
+> </mappers>
 > </configuration>
 > ```
 >
@@ -35,18 +35,18 @@
 > ```xml
 > <?xml version="1.0" encoding="UTF-8" ?>
 > <!DOCTYPE mapper
->      PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
->      "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+>   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+>   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 > <mapper namespace="com.example.mybatis.EmployeeMapper">
->  <!--
->      namespace：名称空间（随便起）
->      id：唯一标识
->      resultType：返回值类型
->      #{id}：从传递过来的参数中取出id值【占位符】
->  -->
->  <select id="selectEmp" resultType="com.example.mybatis.bean.Employee">
->    select id,last_name as lastName,email,gender from tbl_employee where id = #{id}
->  </select>
+> <!--
+>   namespace：名称空间（随便起）
+>   id：唯一标识
+>   resultType：返回值类型
+>   #{id}：从传递过来的参数中取出id值【占位符】
+> -->
+> <select id="selectEmp" resultType="com.example.mybatis.bean.Employee">
+> select id,last_name as lastName,email,gender from tbl_employee where id = #{id}
+> </select>
 > </mapper>
 > ```
 >
@@ -62,7 +62,7 @@
 > import java.io.InputStream;
 > 
 > public class MyBatisTest {
->  /**
+> /**
 >      *  1.根据xml配置文件（全局配置文件）创建一个SqlSessionFactory对象，有数据源一些运行环境信息
 >      *  2.sql映射文件，配置了每一个sql，以及sql的封装规则
 >      *  3.将sql的映射文件注册在全局配置文件中
@@ -249,10 +249,10 @@
 > <environment id="development">
 > <transactionManager type="JDBC"/>
 > <dataSource type="POOLED">
->     <property name="driver" value="${jdbc.driver}"/>
->     <property name="url" value="${jdbc.url}"/>
->     <property name="username" value="${jdbc.username}"/>
->     <property name="password" value="${jdbc.password}"/>
+>  <property name="driver" value="${jdbc.driver}"/>
+>  <property name="url" value="${jdbc.url}"/>
+>  <property name="username" value="${jdbc.username}"/>
+>  <property name="password" value="${jdbc.password}"/>
 > </dataSource>
 > </environment>
 > </environments>
@@ -320,10 +320,10 @@
 > name：指定包名（为当前包以及下面所有的包的每一个类都起一个默认别名）
 > 每一个在包 com.example.mybatis.bean 中的 Java Bean，在没有注解的情况下，会使用 Bean 的首字母小写的非限定类名来作为它的别名。
 > 比如 com.example.mybatis.bean.Author 的别名为 author；若有注解，则别名为其注解值。
->  @Alias("author")
->  public class Author {
->     ...
->  }
+> @Alias("author")
+> public class Author {
+>  ...
+> }
 > -->
 > <package name="com.example.mybatis.bean" />
 > </typeAliases>
@@ -334,32 +334,32 @@
 > ```xml
 > <!--environments：mybatis可以配置多种环境，default指定使用某种环境
 > environment：配置一个具体的环境信息；必须有两个标签,id代表当前环境的唯一标识
->    transactionManager：事务管理器
->        type：事务管理器类型；JDBC(JdbcTransactionFactory)   |   MANAGED(ManagedTransactionFactory)
->              自定义事务管理器；实现TransactionFactory接口 type指定为全类名
->    dataSource：数据源
->        type：数据源类型；UNPOOLED(UnpooledDataSourceFactory) | POOLED(PooledDataSourceFactory)  |  JNDI(JndiDataSourceFactory)
->        自定义数据源：实现DataSourceFactory接口，type是全类名
+> transactionManager：事务管理器
+>     type：事务管理器类型；JDBC(JdbcTransactionFactory)   |   MANAGED(ManagedTransactionFactory)
+>           自定义事务管理器；实现TransactionFactory接口 type指定为全类名
+> dataSource：数据源
+>     type：数据源类型；UNPOOLED(UnpooledDataSourceFactory) | POOLED(PooledDataSourceFactory)  |  JNDI(JndiDataSourceFactory)
+>     自定义数据源：实现DataSourceFactory接口，type是全类名
 > -->
 > <environments default="development">
->  <environment id="test">
->      <transactionManager type="JDBC"/>
->      <dataSource type="POOLED">
->          <property name="driver" value="${jdbc.driver}"/>
->          <property name="url" value="${jdbc.url}"/>
->          <property name="username" value="${jdbc.username}"/>
->          <property name="password" value="${jdbc.password}"/>
->      </dataSource>
->  </environment>
->  <environment id="development">
->      <transactionManager type="JDBC"/>
->      <dataSource type="POOLED">
->          <property name="driver" value="${jdbc.driver}"/>
->          <property name="url" value="${jdbc.url}"/>
->          <property name="username" value="${jdbc.username}"/>
->          <property name="password" value="${jdbc.password}"/>
->      </dataSource>
->  </environment>
+> <environment id="test">
+>   <transactionManager type="JDBC"/>
+>   <dataSource type="POOLED">
+>       <property name="driver" value="${jdbc.driver}"/>
+>       <property name="url" value="${jdbc.url}"/>
+>       <property name="username" value="${jdbc.username}"/>
+>       <property name="password" value="${jdbc.password}"/>
+>   </dataSource>
+> </environment>
+> <environment id="development">
+>   <transactionManager type="JDBC"/>
+>   <dataSource type="POOLED">
+>       <property name="driver" value="${jdbc.driver}"/>
+>       <property name="url" value="${jdbc.url}"/>
+>       <property name="username" value="${jdbc.username}"/>
+>       <property name="password" value="${jdbc.password}"/>
+>   </dataSource>
+> </environment>
 > </environments>
 > ```
 >
@@ -369,14 +369,14 @@
 >
 > ```xml
 > <!--databaseIdProvider支持多数据库厂商
->      DB_VENDOR：VendorDatabaseIdProvider，作用就是得到数据库厂商标识（驱动），mybatis就能根据数据库厂商标识来执行不同的sql
->      MySQL，Oracle，SQL Server，
+>   DB_VENDOR：VendorDatabaseIdProvider，作用就是得到数据库厂商标识（驱动），mybatis就能根据数据库厂商标识来执行不同的sql
+>   MySQL，Oracle，SQL Server，
 > -->
 > <databaseIdProvider type="DB_VENDOR">
->  <!--为不同数据库厂商取别名-->
->  <property name="MySQL" value="mysql"/>
->  <property name="Oracle" value="oracle"/>
->  <property name="SQL Server" value="sqlserver"/>
+> <!--为不同数据库厂商取别名-->
+> <property name="MySQL" value="mysql"/>
+> <property name="Oracle" value="oracle"/>
+> <property name="SQL Server" value="sqlserver"/>
 > </databaseIdProvider>
 > ```
 >
@@ -385,13 +385,13 @@
 > ```xml
 > <?xml version="1.0" encoding="UTF-8" ?>
 > <!DOCTYPE mapper
->      PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
->      "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+>   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+>   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 > <mapper namespace="com.example.mybatis.dao.EmployeeMapper">
->  <!--这里databaseId的值填上面property属性的value值-->
->  <select id="getEmpById" resultType="employee" databaseId="mysql">
->    select * from tbl_employee where id = #{id}
->  </select>
+> <!--这里databaseId的值填上面property属性的value值-->
+> <select id="getEmpById" resultType="employee" databaseId="mysql">
+> select * from tbl_employee where id = #{id}
+> </select>
 > </mapper>
 > ```
 >
@@ -402,19 +402,19 @@
 > ```xml
 > <!--将我们写好的sql映射文件一定要注册到全局配置文件中-->
 > <!--mappers：将sql映射注册到全局配置中
->    resource：引用类路径下的sql映射文件
->    url：引用网络路径或者磁盘路径下的sql映射文件
->    class：引用（注册）接口
->       1.必须有sql映射文件，映射文件名必须和接口同名，并且放在与接口同一目录下
->       2.没有sql映射文件，所有的sql都是利用注解写在接口上
->           推荐：比较重要的，复杂的Dao接口我们来写sql映射文件
->           不重要Dao接口为了开发快速可以使用注解
+> resource：引用类路径下的sql映射文件
+> url：引用网络路径或者磁盘路径下的sql映射文件
+> class：引用（注册）接口
+>    1.必须有sql映射文件，映射文件名必须和接口同名，并且放在与接口同一目录下
+>    2.没有sql映射文件，所有的sql都是利用注解写在接口上
+>        推荐：比较重要的，复杂的Dao接口我们来写sql映射文件
+>        不重要Dao接口为了开发快速可以使用注解
 > -->
 > <mappers>
->     <mapper resource="EmployeeMapper.xml"/>
->     <mapper class="com.example.mybatis.dao.EmployeeMapper"/>
->     <!--批量注册，接口名和映射文件名必须相同，并且在同一目录下，或者可以使用注解-->
->     <package name="com.example.mybatis.dao"/>
+>  <mapper resource="EmployeeMapper.xml"/>
+>  <mapper class="com.example.mybatis.dao.EmployeeMapper"/>
+>  <!--批量注册，接口名和映射文件名必须相同，并且在同一目录下，或者可以使用注解-->
+>  <package name="com.example.mybatis.dao"/>
 > </mappers>
 > ```
 >
@@ -426,11 +426,11 @@
 > import org.apache.ibatis.annotations.Select;
 > 
 > public interface EmployeeMapper {
->     @Select("select * from tbl_employee where id = #{id}")
->     public Employee getEmpById(Integer id);
+>  @Select("select * from tbl_employee where id = #{id}")
+>  public Employee getEmpById(Integer id);
 > 
->     @Select("select * from tbl_employee where last_name = #{lastName}")
->     public Employee getEmpByLastName(String lastName);
+>  @Select("select * from tbl_employee where last_name = #{lastName}")
+>  public Employee getEmpByLastName(String lastName);
 > }
 > ```
 >
@@ -439,31 +439,31 @@
 > ```xml
 > <?xml version="1.0" encoding="UTF-8" ?>
 > <!DOCTYPE mapper
->         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
->         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+>      PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+>      "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 > <mapper namespace="com.example.mybatis.dao.EmployeeMapper">
->     <!--
->         namespace：名称空间指定为接口的全类名
->         id：写接口里面对应的方法名
->         resultType：返回值类型
->         #{id}：从传递过来的参数中取出id值【占位符】
->     -->
->     <select id="getEmpById" resultType="com.example.mybatis.bean.Employee">
->       select * from tbl_employee where id = #{id}
->     </select>
->     
->     <!--parameterType可以省略-->
->     <insert id="addEmp" parameterType="com.example.mybatis.bean.Employee">
->         insert into tbl_employee(last_name,email,gender) values (#{lastName},#{email},#{gender})
->     </insert>
+>  <!--
+>      namespace：名称空间指定为接口的全类名
+>      id：写接口里面对应的方法名
+>      resultType：返回值类型
+>      #{id}：从传递过来的参数中取出id值【占位符】
+>  -->
+>  <select id="getEmpById" resultType="com.example.mybatis.bean.Employee">
+>    select * from tbl_employee where id = #{id}
+>  </select>
 > 
->     <update id="updateEmp">
->         update tbl_employee set last_name=#{lastName},email=#{email},gender=#{gender} where id=#{id}
->     </update>
+>  <!--parameterType可以省略-->
+>  <insert id="addEmp" parameterType="com.example.mybatis.bean.Employee">
+>      insert into tbl_employee(last_name,email,gender) values (#{lastName},#{email},#{gender})
+>  </insert>
 > 
->     <delete id="deleteEmpById">
->         delete from tbl_employee where id=#{id}
->     </delete>
+>  <update id="updateEmp">
+>      update tbl_employee set last_name=#{lastName},email=#{email},gender=#{gender} where id=#{id}
+>  </update>
+> 
+>  <delete id="deleteEmpById">
+>      delete from tbl_employee where id=#{id}
+>  </delete>
 > </mapper>
 > ```
 >
@@ -471,21 +471,21 @@
 > package com.example.mybatis.dao;
 > import com.example.mybatis.bean.Employee;
 > public interface EmployeeMapper {
->     public Employee getEmpById(Integer id);
+>  public Employee getEmpById(Integer id);
 > 
->     public Long addEmp(Employee employee);
+>  public Long addEmp(Employee employee);
 > 
->     public Boolean updateEmp(Employee employee);
+>  public Boolean updateEmp(Employee employee);
 > 
->     public void deleteEmpById(Integer id);
+>  public void deleteEmpById(Integer id);
 > }
 > ```
 >
 > ```java
 > public SqlSessionFactory getSqlSessionFactory() throws IOException {
->     String resource = "mybatis-config.xml";
->     InputStream inputStream = Resources.getResourceAsStream(resource);
->     return new SqlSessionFactoryBuilder().build(inputStream);
+>  String resource = "mybatis-config.xml";
+>  InputStream inputStream = Resources.getResourceAsStream(resource);
+>  return new SqlSessionFactoryBuilder().build(inputStream);
 > }
 > 
 > /**
@@ -527,16 +527,16 @@
 
 > ```xml
 > <!--parameterType 参数类型，可以省略
->       useGeneratedKeys ：使用自增主键，获取主键值策略
->       keyProperty：指定对应的主键属性，也就是mybatis获取到主键值以后，将这个值封装到JavaBean指定的属性
+>    useGeneratedKeys ：使用自增主键，获取主键值策略
+>    keyProperty：指定对应的主键属性，也就是mybatis获取到主键值以后，将这个值封装到JavaBean指定的属性
 > -->
 > <insert id="addEmp" parameterType="com.example.mybatis.bean.Employee" useGeneratedKeys="true" keyProperty="id">
->     insert into tbl_employee(last_name,email,gender) values (#{lastName},#{email},#{gender})
+>  insert into tbl_employee(last_name,email,gender) values (#{lastName},#{email},#{gender})
 > </insert>
 > ```
 >
 > ```java
->  // 添加
+> // 添加
 > Employee employee1 = new Employee(null, "jerry", "jerry@gmail.com", "1");
 > Long rows = mapper.addEmp(employee1);
 > System.out.println(employee1.getId());
@@ -546,17 +546,17 @@
 
 > ```xml
 > <insert id="addEmp" parameterType="com.example.mybatis.bean.Employee" databaseId="oracle">
->  <!--
->      keyProperty：查出的主键值封装给javaBean的哪个属性
->      order="BEFORE"：当前sql在插入sql之前运行
->             AFTER：当前sql在插入sql之后运行
->      resultType：查出的数据的返回类型
+> <!--
+>   keyProperty：查出的主键值封装给javaBean的哪个属性
+>   order="BEFORE"：当前sql在插入sql之前运行
+>          AFTER：当前sql在插入sql之后运行
+>   resultType：查出的数据的返回类型
 > -->
->     <selectKey keyProperty="id" order="BEFORE" resultType="Integer">
->         <!--编写查询主键的sql语句-->
->         select EMPLOYEES_SEQ.nextval from dual
->     </selectKey>
->     insert into employees(EMPLOYEE_ID,LAST_NAME,EMAIL) values (#{id},#{lastName},#{email})
+>  <selectKey keyProperty="id" order="BEFORE" resultType="Integer">
+>      <!--编写查询主键的sql语句-->
+>      select EMPLOYEES_SEQ.nextval from dual
+>  </selectKey>
+>  insert into employees(EMPLOYEE_ID,LAST_NAME,EMAIL) values (#{id},#{lastName},#{email})
 > </insert>
 > ```
 
@@ -713,7 +713,7 @@
 > ​		由于全局配置中：jdbcTypeForNull=OTHER；oracle不支持
 >
 > 		1. #{email,jdbcType=OTHER}
->   		2. jdbcTypeForNull=NULL
+> 		2. jdbcTypeForNull=NULL
 
 ### 查询
 
@@ -730,7 +730,7 @@
 > ```xml
 > <!--resultType：如果返回的是一个集合，要写集合中元素的类型-->
 > <select id="getEmpsByLastName" resultType="com.example.mybatis.bean.Employee">
->     select * from tbl_employee where last_name like #{lastName}
+>  select * from tbl_employee where last_name like #{lastName}
 > </select>
 > ```
 >
@@ -740,7 +740,7 @@
 > EmployeeMapper mapper = openSession.getMapper(EmployeeMapper.class);
 > List<Employee> employees = mapper.getEmpsByLastName("%e%");
 > for (Employee employee : employees) {
->     System.out.println(employee);
+>  System.out.println(employee);
 > }
 > ```
 
@@ -757,7 +757,7 @@
 >
 > ```xml
 > <select id="getEmpByIdReturnMap" resultType="map">
->     select * from tbl_employee where id=#{id};
+>  select * from tbl_employee where id=#{id};
 > </select>
 > ```
 >
@@ -784,7 +784,7 @@
 >
 > ```xml
 > <select id="getEmpByLastNameLikeReturnMap" resultType="com.example.mybatis.bean.Employee">
->     select * from tbl_employee where last_name like #{lastName};
+>  select * from tbl_employee where last_name like #{lastName};
 > </select>
 > ```
 >
@@ -808,7 +808,7 @@
 > package com.example.mybatis.dao;
 > import com.example.mybatis.bean.Employee;
 > public interface EmployeeMapperPlus {
->     public Employee getEmpById(Integer id);
+>  public Employee getEmpById(Integer id);
 > }
 > ```
 >
@@ -817,31 +817,31 @@
 > ```xml
 > <?xml version="1.0" encoding="UTF-8" ?>
 > <!DOCTYPE mapper
->         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
->         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+>      PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+>      "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 > <mapper namespace="com.example.mybatis.dao.EmployeeMapperPlus">
 > 
->     <!--自定义某个javaBean封装规则
->         type：自定义规则的java类型
->         id：唯一id，方便引用
->     -->
->     <resultMap id="myEmp" type="com.example.mybatis.bean.Employee">
->         <!--指定主键列的封装规则
->             id定义主键底层会有优化
->             column：指定哪一列对应
->             property：指定对应的javaBean属性
->         -->
->         <id column="id" property="id" />
->         <!--定义普通列封装规则-->
->         <result column="last_name" property="lastName"/>
->         <!--其他不指定的列会自动封装，但是推荐写resultMap就把全部的列都写上-->
->         <result column="email" property="email"/>
->         <result column="gender" property="gender"/>
->     </resultMap>
->     <!--resultMap：自定义结果集映射-->
->     <select id="getEmpById" resultMap="myEmp">
->         select * from tbl_employee where id=#{id}
->     </select>
+>  <!--自定义某个javaBean封装规则
+>      type：自定义规则的java类型
+>      id：唯一id，方便引用
+>  -->
+>  <resultMap id="myEmp" type="com.example.mybatis.bean.Employee">
+>      <!--指定主键列的封装规则
+>          id定义主键底层会有优化
+>          column：指定哪一列对应
+>          property：指定对应的javaBean属性
+>      -->
+>      <id column="id" property="id" />
+>      <!--定义普通列封装规则-->
+>      <result column="last_name" property="lastName"/>
+>      <!--其他不指定的列会自动封装，但是推荐写resultMap就把全部的列都写上-->
+>      <result column="email" property="email"/>
+>      <result column="gender" property="gender"/>
+>  </resultMap>
+>  <!--resultMap：自定义结果集映射-->
+>  <select id="getEmpById" resultMap="myEmp">
+>      select * from tbl_employee where id=#{id}
+>  </select>
 > </mapper>
 > ```
 >
@@ -849,9 +849,9 @@
 >
 > ```xml
 > <mappers>
->     <mapper resource="EmployeeMapper.xml"/>
->     <mapper resource="EmployeeMapperPlus.xml"/>
->     <!--批量注册，接口名和映射文件名必须相同，并且在同一目录下，或者可以使用注解-->
+>  <mapper resource="EmployeeMapper.xml"/>
+>  <mapper resource="EmployeeMapperPlus.xml"/>
+>  <!--批量注册，接口名和映射文件名必须相同，并且在同一目录下，或者可以使用注解-->
 > </mappers>
 > ```
 >
@@ -864,11 +864,11 @@
 > ```java
 > package com.example.mybatis.bean;
 > public class Employee {
->     private Integer id;
->     private String lastName;
->     private String email;
->     private String gender;
->     private Department dept;   
+>  private Integer id;
+>  private String lastName;
+>  private String email;
+>  private String gender;
+>  private Department dept;   
 > 	......
 > }
 > ```
@@ -876,8 +876,8 @@
 > ```java
 > package com.example.mybatis.bean;
 > public class Department {
->     private Integer id;
->     private String departmentName;
+>  private Integer id;
+>  private String departmentName;
 > 	......
 > }
 > ```
@@ -887,15 +887,15 @@
 > ```xml
 > <!--联合查询：级联属性封装结果集-->
 > <resultMap id="MyComplexEmp" type="com.example.mybatis.bean.Employee">
->     <id column="id" property="id"/>
->     <result column="last_name" property="lastName"/>
->     <result column="gender" property="gender"/>
->     <result column="did" property="dept.id"/>
->     <result column="dept_name" property="dept.departmentName"/>
+>  <id column="id" property="id"/>
+>  <result column="last_name" property="lastName"/>
+>  <result column="gender" property="gender"/>
+>  <result column="did" property="dept.id"/>
+>  <result column="dept_name" property="dept.departmentName"/>
 > </resultMap>
 > <select id="getEmpAndDept" resultMap="MyComplexEmp">
->     select e.id id,e.last_name last_name,e.gender gender,e.dept_id dept_id,d.id did,d.dept_name dept_name
->     from tbl_employee e,tbl_dept d where e.dept_id = d.id and e.id = 1
+>  select e.id id,e.last_name last_name,e.gender gender,e.dept_id dept_id,d.id did,d.dept_name dept_name
+>  from tbl_employee e,tbl_dept d where e.dept_id = d.id and e.id = 1
 > </select>
 > ```
 >
@@ -929,21 +929,21 @@
 >
 > ```xml
 > <resultMap id="MyComplexEmp2" type="com.example.mybatis.bean.Employee">
->     <id column="id" property="id"/>
->     <result column="last_name" property="lastName"/>
->     <result column="gender" property="gender"/>
->     <!--association可以指定联合的JavaBean
->             property="dept"：指定哪个属性是联合的对象
->             javaType：指定这个属性对象的类型【不能省略】
->         -->
->     <association property="dept" javaType="com.example.mybatis.bean.Department">
->         <id column="did" property="id"/>
->         <result column="dept_name" property="departmentName"/>
->     </association>
+>  <id column="id" property="id"/>
+>  <result column="last_name" property="lastName"/>
+>  <result column="gender" property="gender"/>
+>  <!--association可以指定联合的JavaBean
+>          property="dept"：指定哪个属性是联合的对象
+>          javaType：指定这个属性对象的类型【不能省略】
+>      -->
+>  <association property="dept" javaType="com.example.mybatis.bean.Department">
+>      <id column="did" property="id"/>
+>      <result column="dept_name" property="departmentName"/>
+>  </association>
 > </resultMap>
 > <select id="getEmpAndDept" resultMap="MyComplexEmp2">
->     select e.id id,e.last_name last_name,e.gender gender,e.dept_id dept_id,d.id did,d.dept_name dept_name
->     from tbl_employee e,tbl_dept d where e.dept_id = d.id and e.id = 1
+>  select e.id id,e.last_name last_name,e.gender gender,e.dept_id dept_id,d.id did,d.dept_name dept_name
+>  from tbl_employee e,tbl_dept d where e.dept_id = d.id and e.id = 1
 > </select>
 > ```
 >
@@ -965,7 +965,7 @@
 > package com.example.mybatis.dao;
 > import com.example.mybatis.bean.Department;
 > public interface DepartmentMapper {
->     public Department getDeptById(Integer id);
+>  public Department getDeptById(Integer id);
 > }
 > ```
 >
@@ -975,24 +975,24 @@
 >
 > ```xml
 > <!--使用association分步查询
->         1.先按照员工id查出员工信息
->         2.根据查询员工信息中的dept_id值，去部门表查出部门信息
->         3.部门设置到员工中
->     -->
+>      1.先按照员工id查出员工信息
+>      2.根据查询员工信息中的dept_id值，去部门表查出部门信息
+>      3.部门设置到员工中
+>  -->
 > <resultMap id="MyEmpByStep" type="com.example.mybatis.bean.Employee">
->     <id column="id" property="id"/>
->     <result column="last_name" property="lastName"/>
->     <result column="email" property="email"/>
->     <result column="gender" property="gender"/>
->     <!--association定义关联对象的封装规则
->             select：表明当前属性是调用select指定的方法查出的结果
->             column：指定将哪一列的值传给这个方法
->             流程：使用select指定的方法（传入column指定的这列参数的值）查出对象，并封装给property指定的属性
->         -->
->     <association property="dept" select="com.example.mybatis.dao.DepartmentMapper.getDeptById" column="dept_id"></association>
+>  <id column="id" property="id"/>
+>  <result column="last_name" property="lastName"/>
+>  <result column="email" property="email"/>
+>  <result column="gender" property="gender"/>
+>  <!--association定义关联对象的封装规则
+>          select：表明当前属性是调用select指定的方法查出的结果
+>          column：指定将哪一列的值传给这个方法
+>          流程：使用select指定的方法（传入column指定的这列参数的值）查出对象，并封装给property指定的属性
+>      -->
+>  <association property="dept" select="com.example.mybatis.dao.DepartmentMapper.getDeptById" column="dept_id"></association>
 > </resultMap>
 > <select id="getEmpByIdStep" resultMap="MyEmpByStep">
->     select * from tbl_employee where id=#{id}
+>  select * from tbl_employee where id=#{id}
 > </select>
 > ```
 >
@@ -1001,12 +1001,12 @@
 > ```xml
 > <?xml version="1.0" encoding="UTF-8" ?>
 > <!DOCTYPE mapper
->         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
->         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+>      PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+>      "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 > <mapper namespace="com.example.mybatis.dao.DepartmentMapper">
->     <select id="getDeptById" resultType="com.example.mybatis.bean.Department">
->         select id,dept_name departmentName from tbl_dept where id=#{id}
->     </select>
+>  <select id="getDeptById" resultType="com.example.mybatis.bean.Department">
+>      select id,dept_name departmentName from tbl_dept where id=#{id}
+>  </select>
 > </mapper>
 > ```
 >
@@ -1174,6 +1174,357 @@
 >     select * from tbl_employee where id=#{id}
 > </select>
 > ```
+
+### 动态SQL
+
+##### if判断
+
+> 接口方法定义
 >
+> ```java
+> package com.example.mybatis.dao;
+> import com.example.mybatis.bean.Employee;
+> import java.util.List;
+> public interface EmployeeMapperDynamicSQL {
+>  public List<Employee> getEmpsByConditionIf(Employee employee);
+> }
+> ```
+>
+> sql映射文件
+>
+> ```xml
+> <?xml version="1.0" encoding="UTF-8" ?>
+> <!DOCTYPE mapper
+>      PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+>      "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+> <mapper namespace="com.example.mybatis.dao.EmployeeMapperDynamicSQL">
+>  <!--查询员工，要求携带了哪个字段查询条件就带上这个字段的值-->
+>  <select id="getEmpsByConditionIf" resultType="com.example.mybatis.bean.Employee">
+>      select * from tbl_employee where
+>      <!--test：判断表达式（OGNL）
+>          从参数中取值进行判断
+>          遇见特殊符号应该写转义字符
+>      -->
+>      <if test="id!=null">
+>          id=#{id}
+>      </if>
+>      <if test="lastName!=null and lastName!='' and id==null">
+>          last_name like #{lastName}
+>      </if>
+>      <if test="lastName!=null and lastName!='' and id!=null">
+>          and last_name like #{lastName}
+>      </if>
+>      <if test="email!=null and email.trim()!=&quot;&quot;">
+>          and email=#{email}
+>      </if>
+>      <!--OGNL会进行字符串与数字的转换判断-->
+>      <if test="gender==0 or gender==1">
+>          and gender=#{gender}
+>      </if>
+>  </select>
+> </mapper>
+> ```
+>
+> 测试文件
+>
+> ```java
+> public SqlSessionFactory getSqlSessionFactory() throws IOException {
+>     String resource = "mybatis-config.xml";
+>     InputStream inputStream = Resources.getResourceAsStream(resource);
+>     return new SqlSessionFactoryBuilder().build(inputStream);
+> }
 > 
+> @Test
+> public void test5() throws IOException {
+>     SqlSessionFactory sqlSessionFactory = getSqlSessionFactory();
+>     SqlSession openSession = sqlSessionFactory.openSession();
+> 
+>     try {
+>         EmployeeMapperDynamicSQL mapper = openSession.getMapper(EmployeeMapperDynamicSQL.class);
+>         Employee employee = new Employee(null, "%e%", "jerry@gmail.com", null);
+>         List<Employee> emps = mapper.getEmpsByConditionIf(employee);
+>         System.out.println(emps);
+>         // 手动提交数据
+>         openSession.commit();
+>     } finally {
+>         openSession.close();
+>     }
+> }
+> ```
+
+##### where查询条件
+
+> 查询的时候如果某些条件没带可能sql拼装会有问题，解决办法如下：
+>
+> 1. 给where后面加上1=1，以后的条件都and xxx.
+> 2. mybatis使用where标签来将所有的查询条件包括在内，mybatis就会将where标签中拼装的sql，多出来的and或者or去掉
+> 3. where标签只会去掉第一个多出来的and或者or
+>
+> ```xml
+> <?xml version="1.0" encoding="UTF-8" ?>
+> <!DOCTYPE mapper
+>         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+>         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+> <mapper namespace="com.example.mybatis.dao.EmployeeMapperDynamicSQL">
+> 
+>     <!--查询员工，要求携带了哪个字段查询条件就带上这个字段的值-->
+>     <select id="getEmpsByConditionIf" resultType="com.example.mybatis.bean.Employee">
+>         select * from tbl_employee
+>         <where>
+>             <!--test：判断表达式（OGNL）
+>                 从参数中取值进行判断
+>                 遇见特殊符号应该写转义字符
+>             -->
+>             <if test="id!=null">
+>                 id=#{id}
+>             </if>
+>             <if test="lastName!=null and lastName!=''">
+>                 and last_name like #{lastName}
+>             </if>
+>             <if test="email!=null and email.trim()!=&quot;&quot;">
+>                 and email=#{email}
+>             </if>
+>             <!--OGNL会进行字符串与数字的转换判断-->
+>             <if test="gender==0 or gender==1">
+>                 and gender=#{gender}
+>             </if>
+>         </where>
+>     </select>
+> </mapper>
+> ```
+
+##### trim自定义字符串截取
+
+> 接口方法定义
+>
+> ```java
+> public List<Employee> getEmpsByConditionTrim(Employee employee);
+> ```
+>
+> sql映射文件
+>
+> ```xml
+> <select id="getEmpsByConditionTrim" resultType="com.example.mybatis.bean.Employee">
+>     select * from tbl_employee
+>     <!--后面多出的and或者or where标签不能解决
+>             prefix：前缀，trim标签体中是整个字符串拼串后的结果，prefix就是给拼串后的字符串加一个前缀
+>             prefixOverrides：前缀覆盖，去掉整个字符串前面多余的字符
+>             suffix：给整个拼串后的整个字符串加后缀
+>             suffixOverrides：后缀覆盖，去掉整个字符串后面多余的字符
+>         -->
+>     <trim prefix="where" prefixOverrides="" suffix="" suffixOverrides="and">
+>         <if test="id!=null">
+>             id=#{id} and
+>         </if>
+>         <if test="lastName!=null and lastName!=''">
+>             last_name like #{lastName} and
+>         </if>
+>         <if test="email!=null and email.trim()!=&quot;&quot;">
+>             email=#{email} and
+>         </if>
+>         <!--OGNL会进行字符串与数字的转换判断-->
+>         <if test="gender==0 or gender==1">
+>             gender=#{gender}
+>         </if>
+>     </trim>
+> </select>
+> ```
+
+##### choose分支选择
+
+> 接口方法定义
+>
+> ```java
+> public List<Employee> getEmpsByConditionChoose(Employee employee);
+> ```
+>
+> sql映射文件
+>
+> ```xml
+> <select id="getEmpsByConditionChoose" resultType="com.example.mybatis.bean.Employee">
+>     select * from tbl_employee
+>     <where>
+>         <!--如果带了id，就用id查，如果带了lastName就用lastName查，只会进入其中一个-->
+>         <choose>
+>             <when test="id!=null">
+>                 id=#{id}
+>             </when>
+>             <when test="lastName!=null">
+>                 last_name like #{lastName}
+>             </when>
+>             <when test="email!=null">
+>                 email=#{email}
+>             </when>
+>             <otherwise>
+>                 gender=0
+>             </otherwise>
+>         </choose>
+>     </where>
+> </select>
+> ```
+
+##### 动态set与if结合
+
+> 接口方法定义
+>
+> ```java
+> public void updateEmp(Employee employee);
+> ```
+>
+> sql映射文件
+>
+> ```xml
+> <update id="updateEmp">
+>     update tbl_employee
+>     <set>
+>         <if test="lastName!=null">
+>             last_name=#{lastName},
+>         </if>
+>         <if test="email!=null">
+>             email=#{email},
+>         </if>
+>         <if test="gender!=null">
+>             gender=#{gender}
+>         </if>
+>     </set>
+>     where id=#{id}
+> </update>
+> ```
+
+##### foreach遍历集合
+
+> 接口方法定义
+>
+> ```java
+> public List<Employee> getEmpsByConditionForeach(@Param("ids")List<Integer> ids);
+> ```
+>
+> sql映射文件
+>
+> ```xml
+> <select id="getEmpsByConditionForeach" resultType="com.example.mybatis.bean.Employee">
+>     select * from tbl_employee where id in
+>     <!--
+>             collection：指定要遍历的集合
+>                 list类型的参数会特殊处理封装在map中，map的key就叫list
+>                 item：将当前遍历出的元素赋值给指定的变量
+>                 separator：每个元素之间的分隔符
+>                 open：遍历出所有结果，拼接一个开始字符
+>                 close：遍历出所有结果，拼接一个结束字符
+>                 index：索引，遍历list的时候是索引，遍历map的时候是map的key
+>                 #{变量名}：就能取出变量的值，也就是当前遍历出的元素
+>         -->
+>     <foreach collection="ids" item="item_id" separator="," open="(" close=")" index="">
+>         #{item_id}
+>     </foreach>
+> </select>
+> ```
+>
+> 测试文件
+>
+> ```java
+> EmployeeMapperDynamicSQL mapper = openSession.getMapper(EmployeeMapperDynamicSQL.class);
+> List<Employee> list = mapper.getEmpsByConditionForeach(Arrays.asList(1, 2, 3, 4));
+> System.out.println(list);
+> ```
+>
+> **批量插入**
+>
+> 接口方法定义
+>
+> ```java
+> public void addEmps(@Param("emps") List<Employee> emps);
+> ```
+>
+> sql映射文件
+>
+> ```xml
+> <insert id="addEmps">
+>     insert into tbl_employee(last_name,email,gender,dept_id) values
+>     <foreach collection="emps" item="emp" separator=",">
+>         (#{emp.lastName},#{emp.email},#{emp.gender},#{emp.dept.id})
+>     </foreach>
+> </insert>
+> ```
+>
+> 测试文件
+>
+> ```java
+> EmployeeMapperDynamicSQL mapper = openSession.getMapper(EmployeeMapperDynamicSQL.class);
+> List<Employee> emps = new ArrayList<>();
+> emps.add(new Employee(null,"smith","smith@icloud.com","1",new Department(1)));
+> emps.add(new Employee(null,"lucy","lucy@facebook.com","0",new Department(2)));
+> mapper.addEmps(emps);
+> ```
+
+##### 内置参数
+
+> mybatis默认还有两个内置参数：
+>
+> * _parameter：代表整个参数
+>   * 单个参数：_parameter就是这个参数
+>   * 多个参数：参数会被封装为一个map；_parameter就是代表这个map
+> * _databaseId：如果配置了DatabaseIdProvider标签
+>   * databaseId就是代表当前数据库的别名
+>
+> 接口方法定义
+>
+> ```java
+> public List<Employee> getEmpsTestInnerParameter(Employee employee);
+> ```
+>
+> sql映射文件
+>
+> ```xml
+> <select id="getEmpsTestInnerParameter" resultType="com.example.mybatis.bean.Employee">
+>     <if test="_databaseId=='mysql'">
+>         select * from tbl_employee
+>         <if test="_parameter!=null">
+>             where last_name=#{_parameter.lastName}
+>         </if>
+>     </if>
+>     <if test="_databaseId=='oracle'">
+>         select * from employees
+>     </if>
+> </select>
+> ```
+
+##### bind
+
+> 可以将OGNL表达式的值绑定到一个变量中，方便后来引用这个变量的值
+>
+> ```xml
+> <select id="getEmpsTestInnerParameter" resultType="com.example.mybatis.bean.Employee">
+>     <bind name="_lastName" value="'%'+lastName+'%'"></bind>
+>     <if test="_databaseId=='mysql'">
+>         select * from tbl_employee
+>         <if test="_parameter!=null">
+>             where last_name like #{_lastName}
+>         </if>
+>     </if>
+>     <if test="_databaseId=='oracle'">
+>         select * from employees
+>     </if>
+> </select>
+> ```
+
+##### 抽取可重用sql片段
+
+> ```xml
+> <!--抽取可重用的sql片段，方便后面引用-->
+> <sql id="insertColumn">
+>     <if test="_databaseId=='oracle'">employee_id,last_name,email </if>
+>     <if test="_databaseId=='mysql'">last_name,email,gender,dept_id </if>
+> </sql>
+> <insert id="addEmps">
+>     insert into tbl_employee(
+>     <include refid="insertColumn"/>
+>     )values
+>     <foreach separator="," item="emp" collection="emps">(#{emp.lastName},#{emp.email},#{emp.gender},#{emp.dept.id}) </foreach>
+> </insert>
+> ```
+
+### 缓存
+
+
 
