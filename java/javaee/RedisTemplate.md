@@ -479,3 +479,127 @@ Cursor<TypedTuple<Object>> scan = opsForZSet.scan("test3", ScanOptions.NONE);
         }
 ```
 
+# 整合SpringBoot
+
+> 引入依赖
+>
+> ```xml
+> <dependency>
+>     <groupId>org.springframework.boot</groupId>
+>     <artifactId>spring-boot-starter-data-redis</artifactId>
+> </dependency>
+> <dependency>
+>     <groupId>org.apache.commons</groupId>
+>     <artifactId>commons-pool2</artifactId>
+> </dependency>
+> <dependency>
+> ```
+>
+> 配置bean
+>
+> ```java
+> package com.example.demo.config;
+> 
+> import org.springframework.context.annotation.Bean;
+> import org.springframework.context.annotation.Configuration;
+> import org.springframework.data.redis.connection.RedisConnectionFactory;
+> import org.springframework.data.redis.core.RedisTemplate;
+> import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+> import org.springframework.data.redis.serializer.StringRedisSerializer;
+> 
+> @Configuration
+> public class RedisConfig {
+> 
+>     @Bean
+>     public RedisTemplate<String,Object> redisTemplate(RedisConnectionFactory redisConnectionFactory){
+> 
+>         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
+>         // key序列化
+>         redisTemplate.setKeySerializer(new StringRedisSerializer());
+>         // value序列化
+>         redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+>         // hash类型key序列化
+>         redisTemplate.setHashKeySerializer(new StringRedisSerializer());
+>         // hash类型value序列化
+>         redisTemplate.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
+>         // 注入连接工厂
+>         redisTemplate.setConnectionFactory(redisConnectionFactory);
+>         return  redisTemplate;
+>     }
+> }
+> ```
+>
+> 使用
+>
+> ```java
+> package com.example.demo.service;
+> 
+> import com.example.demo.bean.Employee;
+> import org.springframework.beans.factory.annotation.Autowired;
+> import org.springframework.data.redis.core.RedisTemplate;
+> import org.springframework.stereotype.Service;
+> 
+> import java.lang.reflect.Array;
+> import java.util.*;
+> import java.util.concurrent.TimeUnit;
+> 
+> @Service
+> public class RedisService {
+> 
+>     @Autowired
+>     private RedisTemplate<String,Object> redisTemplate;
+> 
+>     public void testSetString(){
+> //        redisTemplate.opsForValue().set("userticket","ticket102400123");
+> //        Employee employee = new Employee();
+> //        employee.setId(1);
+> //        employee.setdId(1);
+> //        employee.setLastName("令狐冲");
+> //        employee.setEmail("linhuchong@icloud.com");
+> //        employee.setGender(0);
+> //        redisTemplate.opsForValue().set("emp", employee);
+> 
+> //        List<Integer> list = Arrays.asList(1, 2, 3, 4, 5, 6);
+> //        redisTemplate.opsForValue().set("listdata", list);
+> 
+> //        HashMap<String, Object> map = new HashMap<>();
+> //        HashMap<String, Object> map2 = new HashMap<>();
+> //        map.put("arr", new int[]{1,3,5,6,8,9});
+> //        map.put("name", "tom");
+> //        map.put("age", 18);
+> //        map2.put("address", "湖南省，长沙市");
+> //        map2.put("tel","13588997788" );
+> //        map.put("info", map2);
+> //        redisTemplate.opsForValue().set("person", map);
+> 
+> //        HashMap<String,Object> person = (HashMap<String, Object>) redisTemplate.opsForValue().get("person");
+> //        System.out.println(person);
+> //        System.out.println(person.get("arr").getClass().toString());
+> 
+> //        ArrayList<String> list = new ArrayList<>();
+> //        list.add("H5GameDBConfig");
+> //        list.add("person1");
+> //        list.add("person2");
+> //        list.add("person3");
+> //        List<Object> objects = redisTemplate.opsForValue().multiGet(list);
+> //        System.out.println(objects);
+> 
+> //        Map valueMap = new HashMap();
+> //        valueMap.put("valueMap1","map1");
+> //        valueMap.put("valueMap2","map2");
+> //        valueMap.put("valueMap3","map3");
+> //        redisTemplate.opsForValue().multiSet(valueMap);
+> 
+> //        HashMap<String, Object> map = new HashMap<>();
+> //        map.put("name", "tom");
+> //        map.put("age", 18);
+> //        map.put("email", "tom@icloud.com");
+> //        redisTemplate.opsForHash().putAll("student",map);
+> 
+>         Map<Object, Object> entries = redisTemplate.opsForHash().entries("30:1");
+>         System.out.println(entries);
+>     }
+> }
+> ```
+>
+> 
