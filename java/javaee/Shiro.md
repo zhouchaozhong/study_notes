@@ -1196,7 +1196,7 @@ public Realm getRealm(){
 
 ![image-20200526204958726](./images/image-20200526204958726.png)
 
-### 6.8 授权实现
+### 6.6 授权实现
 
 ##### 0.页面资源授权
 
@@ -1254,6 +1254,8 @@ public String save(){
 
 - @RequiresRoles               用来基于角色进行授权
 - @RequiresPermissions    用来基于权限进行授权
+
+**注意事项**：权限字符串底层结构为：List<Set<String>>，shiro底层是先用冒号( : )对字符串进行分割，放入List集合，然后再对List集合中的元素进行再用逗号（ , ）分割放入Set集合，外层冒号分割比较是有顺序的，内层逗号分割比较不分顺序，所以权限字符串 ==aa,bb,cc:dd==与==bb,cc,aa:dd==相等，如果逗号分割的set集合中有一个星号 ( * ) ，则该Set集合的比较相等
 
 ```java
 @RequiresRoles(value={"admin","user"})//用来判断角色  同时具有 admin user
@@ -1441,7 +1443,7 @@ public class CustomerRealm extends AuthorizingRealm {
 
 ---
 
-### 6.9 使用CacheManager
+### 6.7 使用CacheManager
 
 #### 1.Cache 作用
 
@@ -1542,7 +1544,17 @@ public class RedisCacheManager implements CacheManager {
 ##### 5.开RedisCache实现
 
 ```java
-public class RedisCache<K,V> implements Cache<K,V> {
+package com.baizhi.springboot_jsp_shiro.shiro.cache;
+import com.baizhi.springboot_jsp_shiro.utils.ApplicationContextUtils;
+import org.apache.shiro.cache.Cache;
+import org.apache.shiro.cache.CacheException;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
+import java.util.Collection;
+import java.util.Set;
+
+//自定义redis缓存的实现
+public class RedisCache<k,v> implements Cache<k,v> {
 
     private String cacheName;
 
@@ -1554,30 +1566,28 @@ public class RedisCache<K,V> implements Cache<K,V> {
     }
 
     @Override
-    public V get(K k) throws CacheException {
-        System.out.println("获取缓存:"+ k);
-        return (V) getRedisTemplate().opsForHash().get(this.cacheName,k.toString());
+    public v get(k k) throws CacheException {
+        System.out.println("get key:"+k);
+        return (v) getRedisTemplate().opsForHash().get(this.cacheName,k.toString());
     }
 
     @Override
-    public V put(K k, V v) throws CacheException {
-        System.out.println("设置缓存key: "+k+" value:"+v);
+    public v put(k k, v v) throws CacheException {
+        System.out.println("put key: "+k);
+        System.out.println("put value:"+v);
         getRedisTemplate().opsForHash().put(this.cacheName,k.toString(),v);
         return null;
     }
 
     @Override
-    public V remove(K k) throws CacheException {
-        return (V) getRedisTemplate().opsForHash().delete(this.cacheName,k.toString());
-    }
-
-    @Override
     public v remove(k k) throws CacheException {
+        System.out.println("=============remove=============");
         return (v) getRedisTemplate().opsForHash().delete(this.cacheName,k.toString());
     }
 
     @Override
     public void clear() throws CacheException {
+        System.out.println("=============clear==============");
         getRedisTemplate().delete(this.cacheName);
     }
 
@@ -1596,15 +1606,6 @@ public class RedisCache<K,V> implements Cache<K,V> {
         return getRedisTemplate().opsForHash().values(this.cacheName);
     }
 
-    private RedisTemplate getRedisTemplate(){
-        RedisTemplate redisTemplate = (RedisTemplate) ApplicationContextUtils.getBean("redisTemplate");
-        redisTemplate.setKeySerializer(new StringRedisSerializer());
-        redisTemplate.setHashKeySerializer(new StringRedisSerializer());
-        return redisTemplate;
-    }
-
-
-    //封装获取redisTemplate
     private RedisTemplate getRedisTemplate(){
         RedisTemplate redisTemplate = (RedisTemplate) ApplicationContextUtils.getBean("redisTemplate");
         redisTemplate.setKeySerializer(new StringRedisSerializer());
