@@ -9,7 +9,7 @@ SQL基础
 * 删除数据库  drop database dbname;
 * 创建表      CREATE TABLE tablename (column_name_1 column_type_1 constraints，
   column_name_2  column_type_2  constraints ， ……column_name_n  column_type_n
-constraints）
+  constraints）
 
   create table emp(ename varchar(10),hiredate date,sal decimal(10,2),deptno int(2));
 
@@ -47,7 +47,7 @@ constraints）
 
 * 字段改名
   ALTER TABLE tablename CHANGE [COLUMN] old_col_name column_definition
-[FIRST|AFTER col_name]
+  [FIRST|AFTER col_name]
 
   alter table emp change age age1 int(4) ;
 
@@ -150,7 +150,7 @@ MySQL常用函数
   * TRIM(str)函数：去掉目标字符串的开头和结尾的空格。
 
   * SUBSTRING(str,x,y)函数：返回从字符串 str 中的第 x 位置起 y 个字符长度的字串。
-此函数经常用来对给定字符串进行字串的提取
+  此函数经常用来对给定字符串进行字串的提取
 
 
 
@@ -652,11 +652,11 @@ alter procedure 存储过程名 选项 //修改存储过程
      set global log_bin_trust_function_creators=1;
   3. 创建函数的语法
 	    create function 函数名( 变量1，变量2.....)    //它有点类似于我们的存储过程，只是多了个变量1，变量2
-	 returns 数据类型
-	begin       //函数执行体
+	     returns 数据类型
+	    begin       //函数执行体
 	   ......执行的程序代码
 	    return 数据;
-	end;
+	    end;
 
 
 * 示例：

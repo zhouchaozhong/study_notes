@@ -158,34 +158,34 @@
 >    ```java
 >    package com.atguigu.spring5;
 >    public class Book {
->
+>   
 >        private String bname;
 >        private String bauthor;
->
+>   
 >        public Book() {
 >        }
->
+>   
 >        public Book(String bname, String bauthor) {
 >            this.bname = bname;
 >            this.bauthor = bauthor;
 >        }
->
+>   
 >        public String getBname() {
 >            return bname;
 >        }
->
+>   
 >        public void setBname(String bname) {
 >            this.bname = bname;
 >        }
->
+>   
 >        public String getBauthor() {
 >            return bauthor;
 >        }
->
+>   
 >        public void setBauthor(String bauthor) {
 >            this.bauthor = bauthor;
 >        }
->
+>   
 >        public void test(){
 >            System.out.println(bname + "::" + bauthor);
 >        }
@@ -194,15 +194,15 @@
 >
 >    ```java
 >    package com.atguigu.spring5.test;
->
+>   
 >    import com.atguigu.spring5.Book;
 >    import com.atguigu.spring5.User;
 >    import org.junit.Test;
 >    import org.springframework.context.ApplicationContext;
 >    import org.springframework.context.support.ClassPathXmlApplicationContext;
->
+>   
 >    public class TestSpring5 {
->
+>   
 >        @Test
 >        public void testAdd(){
 >            // 1.加载Spring配置文件
@@ -212,7 +212,7 @@
 >            System.out.println(user);
 >            user.add();
 >        }
->
+>   
 >        @Test
 >        public void testBook1(){
 >            ApplicationContext context = new ClassPathXmlApplicationContext("bean1.xml");
@@ -237,7 +237,7 @@
 >            <property name="bname" value="易筋经"></property>
 >            <property name="bauthor" value="达摩老祖"></property>
 >        </bean>-->
->
+>   
 >        <!--有参构造注入属性-->
 >        <bean id="book" class="com.atguigu.spring5.Book">
 >            <constructor-arg name="bname" value="北冥神功"></constructor-arg>
@@ -267,7 +267,7 @@
 >    <beans xmlns="http://www.springframework.org/schema/beans"
 >           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 >           xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
->
+>   
 >        <bean id="book" class="com.atguigu.spring5.Book">
 >            <property name="bname">
 >                <null></null>
@@ -287,7 +287,7 @@
 >           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 >           xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 >    <!--第一种方式：使用转义字符-->
->
+>   
 >    <!--第二种方式，使用CDATA-->
 >    <bean id="book" class="com.atguigu.spring5.Book">
 >        <property name="bname">
@@ -308,20 +308,20 @@
 >
 >    ```java
 >    package com.atguigu.spring5.service;
->
+>   
 >    import com.atguigu.spring5.dao.UserDao;
->
+>   
 >    public class UserService {
 >        private UserDao userDao;
->
+>   
 >        public UserDao getUserDao() {
 >            return userDao;
 >        }
->
+>   
 >        public void setUserDao(UserDao userDao) {
 >            this.userDao = userDao;
 >        }
->
+>   
 >        public void add(){
 >            System.out.println("service add ...");
 >            userDao.update();
@@ -333,7 +333,7 @@
 >
 >    ```java
 >    package com.atguigu.spring5.dao;
->
+>   
 >    public interface UserDao {
 >        public void update();
 >    }
@@ -343,7 +343,7 @@
 >
 >    ```java
 >    package com.atguigu.spring5.dao;
->
+>   
 >    public class UserDaoImpl implements UserDao {
 >        @Override
 >        public void update() {
@@ -359,7 +359,7 @@
 >    <beans xmlns="http://www.springframework.org/schema/beans"
 >           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 >           xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
->
+>   
 >        <bean id="userService" class="com.atguigu.spring5.service.UserService">
 >            <property name="userDao" ref="userDaoImpl"></property>
 >        </bean>
@@ -371,12 +371,12 @@
 >
 >    ```java
 >    package com.atguigu.spring5.test;
->
+>   
 >    import com.atguigu.spring5.service.UserService;
 >    import org.junit.Test;
 >    import org.springframework.context.ApplicationContext;
 >    import org.springframework.context.support.ClassPathXmlApplicationContext;
->
+>   
 >    public class TestBean {
 >        @Test
 >        public void testAdd(){
@@ -536,10 +536,10 @@
 >
 >    ```java
 >    package com.atguigu.spring5.factorybean;
->
+>   
 >    import com.atguigu.spring5.collecttype.Course;
 >    import org.springframework.beans.factory.FactoryBean;
->
+>   
 >    public class MyBean implements FactoryBean<Course> {
 >        @Override
 >        public Course getObject() throws Exception {
@@ -549,12 +549,12 @@
 >            course.setCname("数学");
 >            return course;
 >        }
->
+>   
 >        @Override
 >        public Class<?> getObjectType() {
 >            return null;
 >        }
->
+>   
 >        @Override
 >        public boolean isSingleton() {
 >            return false;
@@ -564,20 +564,20 @@
 >
 >    ```java
 >    package com.atguigu.spring5.collecttype;
->
+>   
 >    public class Course {
->
+>   
 >        private Integer cno;
 >        private String cname;
->
+>   
 >        public void setCname(String cname) {
 >            this.cname = cname;
 >        }
->
+>   
 >        public void setCno(Integer cno) {
 >            this.cno = cno;
 >        }
->
+>   
 >        @Override
 >        public String toString() {
 >            return "Course{" +
@@ -724,9 +724,9 @@
 >
 >    ```java
 >    package com.atguigu.spring5.service;
->
+>   
 >    import org.springframework.stereotype.Component;
->
+>   
 >    // 在注解里面value属性值可以省略不写
 >    // 默认值是类名称，首字母小写
 >    @Component(value = "userService")
@@ -739,12 +739,12 @@
 >
 >    ```java
 >    package com.atguigu.spring5.test;
->
+>   
 >    import com.atguigu.spring5.service.UserService;
 >    import org.junit.Test;
 >    import org.springframework.context.ApplicationContext;
 >    import org.springframework.context.support.ClassPathXmlApplicationContext;
->
+>   
 >    public class TestDemo {
 >        @Test
 >        public void test(){
@@ -764,7 +764,7 @@
 >           xmlns:context="http://www.springframework.org/schema/context"
 >           xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 >                               http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
->
+>   
 >        <!--示例1
 >            use-default-filters="false" 表示现在不使用默认filter，自己配置filter
 >            context:include-filter： 设置扫描哪些内容
@@ -775,7 +775,7 @@
 >            <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"></context:include-filter>
 >        </context:component-scan>
 >        -->
->
+>   
 >        <!--示例2
 >            下面配置扫描包的所有内容
 >            context:exclude-filter：设置哪些内容不进行扫描
@@ -801,14 +801,14 @@
 >    import com.atguigu.spring5.dao.UserDao;
 >    import org.springframework.beans.factory.annotation.Autowired;
 >    import org.springframework.stereotype.Service;
->
+>   
 >    // 在注解里面value属性值可以省略不写
 >    // 默认值是类名称，首字母小写
 >    @Service
 >    public class UserService {
 >        @Autowired	// 根据类型注入
 >        private UserDao userDao;
->
+>   
 >        public void add(){
 >            System.out.println("service add...");
 >            userDao.add();
@@ -822,7 +822,7 @@
 >    import org.springframework.beans.factory.annotation.Autowired;
 >    import org.springframework.beans.factory.annotation.Qualifier;
 >    import org.springframework.stereotype.Service;
->
+>   
 >    // 在注解里面value属性值可以省略不写
 >    // 默认值是类名称，首字母小写
 >    @Service
@@ -830,7 +830,7 @@
 >        @Autowired
 >        @Qualifier(value = "userDaoImpl1")  // 根据属性名称注入，使用Qualifier注解时，@Autowired也要一起使用
 >        private UserDao userDao;
->
+>   
 >        public void add(){
 >            System.out.println("service add...");
 >            userDao.add();
@@ -901,6 +901,10 @@
 >    }
 >    ```
 
+### Spring生命周期
+
+> ![](./images/spring_period.png)
+
 ### AOP
 
 ##### AOP基本概念
@@ -944,9 +948,9 @@
 >       import java.lang.reflect.Method;
 >       import java.lang.reflect.Proxy;
 >       import java.util.Arrays;
->       
+>             
 >       public class JDKProxy {
->       
+>             
 >           public static void main(String[] args) {
 >               // 创建接口实现类代理对象
 >               Class[] interfaces = {UserDao.class};
@@ -964,25 +968,25 @@
 >               System.out.println("result : " + result);
 >           }
 >       }
->       
+>             
 >       class UserDaoProxy implements InvocationHandler{
->       
+>             
 >           // 把创建的是谁的代理对象，就把谁传递过来
 >           // 有参构造传递
 >           private Object obj;
 >           public UserDaoProxy(Object obj){
 >               this.obj = obj;
 >           }
->       
+>             
 >           // 增强的逻辑
 >           @Override
 >           public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
->       
+>             
 >               // 方法之前执行
 >               System.out.println("方法之前执行......" + method.getName() + " : " + Arrays.toString(args));
->       
+>             
 >               Object res = method.invoke(obj,args);
->       
+>             
 >               // 方法之后执行
 >               System.out.println("方法之后执行......");
 >               return res;
@@ -992,9 +996,9 @@
 >
 >       ```java
 >       package com.atguigu.spring5;
->       
+>             
 >       public interface UserDao {
->       
+>             
 >           public int add (int a,int b);
 >           public String update(String id);
 >       }
@@ -1002,13 +1006,13 @@
 >
 >       ```java
 >       package com.atguigu.spring5;
->       
+>             
 >       public class UserDaoImpl implements UserDao {
 >           @Override
 >           public int add(int a, int b) {
 >               return a + b;
 >           }
->       
+>             
 >           @Override
 >           public String update(String id) {
 >               return id;

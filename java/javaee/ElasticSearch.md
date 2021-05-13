@@ -439,7 +439,7 @@ GET /jd_index/_doc/_search
 ==分页==：从0开始取2条
 
 ```
-"form": 0,
+"from": 0,
 "size": 2
 ```
 
