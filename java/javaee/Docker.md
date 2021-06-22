@@ -435,3 +435,96 @@
 >
 > 
 
+### 搭建Docker私有仓库
+
+> **Harbor简介**
+>
+> - 虽然Docker官方提供了公共的镜像仓库，但是从安全和效率等方面考虑，部署我们私有环境内的Registry也是非常必要的。
+> - Harbor是由VMware公司开源的企业级的Docker Registry管理项目，相比docker官方拥有更丰富的权限权利和完善的架构设计，适用大规模docker集群部署提供仓库服务。
+> - 它主要提供 Dcoker Registry 管理界面UI，可基于角色访问控制,镜像复制， AD/LDAP 集成，日志审核等功能，完全的支持中文。
+>
+> **安装步骤**
+>
+> *先安装docker与docker-compose*
+>
+> *安装docker-compose*
+>
+> 先下载docker-compose离线安装包( 下载地址：https://github.com/docker/compose/releases )
+>
+> ```shell
+> mv docker-compose-Linux-x86_64 /usr/local/bin/docker-compose
+> ```
+>
+> *安装Harbor*
+>
+> 先下载Harbor离线安装包( 下载地址：https://github.com/goharbor/harbor/releases )
+>
+> ```shell
+> # 解压离线Harbor离线安装包
+> tar -zxvf harbor-offline-installer-v2.3.0.tgz 
+> cp -ra harbor /usr/local/app
+> ```
+>
+> 修改harbor配置文件
+>
+> ```shell
+> cp harbor.yml.tmpl harbor.yml
+> ```
+>
+> <img src="./images/docker_harbor1.jpg" style="zoom:67%;" />
+>
+> 
+>
+> 修改以下内容
+>
+> ```shell
+> hostname = 192.168.0.198 #修改harbor的启动ip，这里需要依据系统ip设置
+> 
+> port: 80 #harbor的端口,有两个端口,http协议(80)和https协议(443)
+> 
+> harbor_admin_password = harbor12345   #修改harbor的admin用户的密码
+> 
+> data_volume: /harbor/data #修改harbor存储位置
+> ```
+>
+> 生成SSL证书
+>
+> ```shell
+> openssl genrsa -out ca.key 4096
+> openssl req -x509 -new -nodes -sha512 -days 3650 -subj "/C=CN/ST=Beijing/L=Beijing/O=example/OU=Personal/CN=192.168.0.198" -key ca.key -out ca.crt
+> openssl genrsa -out 192.168.0.198.key 4096
+> openssl req -sha512 -new -subj "/C=CN/ST=Beijing/L=Beijing/O=example/OU=Personal/CN=192.168.0.198" -key 192.168.0.198.key -out 192.168.0.198.csr
+> 
+> cat > v3.ext <<-EOF
+> authorityKeyIdentifier=keyid,issuer
+> basicConstraints=CA:FALSE
+> keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
+> extendedKeyUsage = serverAuth
+> subjectAltName = IP:192.168.0.198
+> EOF
+> 
+> openssl x509 -req -sha512 -days 3650 -extfile v3.ext -CA ca.crt -CAkey ca.key -CAcreateserial -in 192.168.0.198.csr -out 192.168.0.198.crt
+> 
+> ```
+>
+> 修改/etc/docker/daemon.json
+>
+> ```json
+> {
+>   "registry-mirrors": ["https://7o196ybs.mirror.aliyuncs.com"],
+>   "insecure-registries":["192.168.0.198"]
+> }
+> ```
+>
+> 重启docker
+>
+> ```shell
+> systemctl restart docker
+> ```
+>
+> 正式安装harbor
+>
+> ```shell
+> ./prepare
+> ./install.sh
+> ```
