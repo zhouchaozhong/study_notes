@@ -561,5 +561,113 @@
 > }
 > ```
 >
+> **选择器( Selector )的应用**
+>
+> * 当调用 register(Selector sel, int ops) 将通道注册选择器时，选择器对通道的监听事件，需要通过第二个参数 ops 指定。
+> * 可以监听的事件类型（用 可使用 SelectionKey  的四个常量 表示）
+>   * 读 : SelectionKey.OP_READ 
+>   * 写 : SelectionKey.OP_WRITE
+>   * 连接 : SelectionKey.OP_CONNECT
+>   * 接收 : SelectionKey.OP_ACCEPT
+> * 若注册时不止监听一个事件，则可以使用“位或”操作符连接  （例如：SelectionKey.OP_READ | SelectionKey.OP_WRITE）
+>
+> **DatagramChannel**
+>
+> * Java NIO中的DatagramChannel是一个能收发UDP包的通道
+>
+> ```java
+> package com.nio;
+> import org.junit.Test;
+> import java.io.IOException;
+> import java.net.InetSocketAddress;
+> import java.nio.ByteBuffer;
+> import java.nio.channels.DatagramChannel;
+> import java.nio.channels.SelectionKey;
+> import java.nio.channels.Selector;
+> import java.util.Date;
+> import java.util.Iterator;
+> import java.util.Scanner;
+> 
+> public class TestNonBlockingNIO2 {
+> 
+>     @Test
+>     public void send() throws IOException {
+>         DatagramChannel dc = DatagramChannel.open();
+>         dc.configureBlocking(false);
+>         ByteBuffer buf = ByteBuffer.allocate(1024);
+>         Scanner scan = new Scanner(System.in);
+>         while(scan.hasNext()){
+>             String str = scan.next();
+>             buf.put((new Date().toString() + ":\n" + str).getBytes());
+>             buf.flip();
+>             dc.send(buf, new InetSocketAddress("127.0.0.1",9000));
+>             buf.clear();
+>         }
+> 
+>         dc.close();
+>     }
+> 
+>     @Test
+>     public void receive() throws IOException {
+>         DatagramChannel dc = DatagramChannel.open();
+>         dc.configureBlocking(false);
+>         dc.bind(new InetSocketAddress(9000));
+>         Selector selector = Selector.open();
+>         dc.register(selector, SelectionKey.OP_READ);
+>         while(selector.select() > 0){
+>             Iterator<SelectionKey> it = selector.selectedKeys().iterator();
+>             while(it.hasNext()){
+>                 SelectionKey sk = it.next();
+>                 if(sk.isReadable()){
+>                     ByteBuffer buf = ByteBuffer.allocate(1024);
+>                     dc.receive(buf);
+>                     buf.flip();
+>                     System.out.println(new String(buf.array(),0,buf.limit()));
+>                     buf.clear();
+>                 }
+>             }
+> 
+>             it.remove();;
+>         }
+>     }
+> }
+> ```
+
+##### 管道 (Pipe)
+
+> * Java NIO 管道是2个线程之间的单向数据连接。Pipe有一个source通道和一个sink通道。数据会被写到sink通道，从source通道读取。
+>
+> ![](./images/pipe.jpg)
+>
+> ```java
+> package com.nio;
+> import org.junit.Test;
+> import java.io.IOException;
+> import java.nio.ByteBuffer;
+> import java.nio.channels.Pipe;
+> 
+> public class TestPipe {
+> 
+>     @Test
+>     public void test1() throws IOException {
+>         // 1.获取管道
+>         Pipe pipe = Pipe.open();
+>         // 2.将缓冲区中的数据写入管道
+>         ByteBuffer buf = ByteBuffer.allocate(1024);
+>         Pipe.SinkChannel sinkChannel = pipe.sink();
+>         buf.put("通过单向管道发送数据！".getBytes());
+>         buf.flip();
+>         sinkChannel.write(buf);
+>         // 3. 读取缓冲区的数据
+>         Pipe.SourceChannel sourceChannel = pipe.source();
+>         buf.flip();
+>         int len = sourceChannel.read(buf);
+>         System.out.println(new String(buf.array(),0,len));
+>         sourceChannel.close();
+>         sinkChannel.close();
+>     }
+> }
+> ```
+>
 > 
 
