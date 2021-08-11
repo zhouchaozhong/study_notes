@@ -2150,9 +2150,506 @@
 > * 使用 union-subclass 映射策略是不可使用 identity 的主键生成策略, 因为同一类继承层次中所有实体类都需要使用同一个主键种子, 即多个持久化实体对应的记录的主键应该是连续的. 受此影响, 也不该使用 native 主键生成策略, 因为 native 会根据数据库来选择使用 identity 或 sequence
 > * ![](./images/hibernate_mapping3.jpg)
 >
+> ```xml
+> <?xml version="1.0"?>
+> <!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+>         "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 > 
+> <hibernate-mapping package="com.atguigu.demo.entity">
+> 
+>     <class name="Person" table="PERSON">
+>         <id name="id" type="java.lang.Integer">
+>             <column name="ID" />
+>             <generator class="hilo"></generator>
+>         </id>
+>         <property name="name" type="java.lang.String">
+>             <column name="NAME" />
+>         </property>
+>         <property name="age" type="java.lang.Integer">
+>             <column name="AGE" />
+>         </property>
+>         <union-subclass name="Student" table="STUDENTS">
+>             <property name="school" column="SCHOOL" type="string"></property>
+>         </union-subclass>
+>     </class>
+> </hibernate-mapping>
+> ```
 >
+> ```java
+> package com.atguigu.demo;
+> import com.atguigu.demo.entity.*;
+> import org.hibernate.Session;
+> import org.hibernate.SessionFactory;
+> import org.hibernate.Transaction;
+> import org.hibernate.cfg.Configuration;
+> import org.hibernate.service.ServiceRegistry;
+> import org.hibernate.service.ServiceRegistryBuilder;
+> import org.junit.After;
+> import org.junit.Before;
+> import org.junit.Test;
+> import java.util.List;
 > 
+> public class HibernateTest {
+> 
+>     private SessionFactory sessionFactory;
+>     private Session session;
+>     private Transaction transaction;
+> 
+>     @Before
+>     public void init(){
+>         Configuration configuration = new Configuration().configure();
+>         ServiceRegistry serviceRegistry = new ServiceRegistryBuilder().applySettings(configuration.getProperties()).buildServiceRegistry();
+>         sessionFactory = configuration.buildSessionFactory(serviceRegistry);
+>         session = sessionFactory.openSession();
+>         transaction = session.beginTransaction();
+>     }
+> 
+>     @After
+>     public void destroy(){
+>         transaction.commit();
+>         session.close();
+>         sessionFactory.close();
+>     }
+> 
+>     /**
+>      * 插入操作：
+>      *      1.对于子类对象至少需要插入到两张数据表中
+>      *
+>      */
+>     @Test
+>     public void testSave(){
+>         Person person = new Person();
+>         person.setAge(10);
+>         person.setName("AA");
+>         session.save(person);
+>         Student student = new Student();
+>         student.setAge(18);
+>         student.setName("BB");
+>         student.setSchool("ZTC");
+>         session.save(student);
+>     }
+> 
+>     /**
+>      * 查询：
+>      *      1. 查询父类记录，需要把父表记录和子表记录汇总到一起再做查询，性能稍差
+>      *      2. 对于子类记录，只需要查询一张数据表
+>      * 优点：
+>      *      1.不需要使用辨别者列
+>      *      2.子类独有的字段，能添加非空约束
+>      * 缺点：
+>      *      1.存在冗余的字段
+>      *      2.若更新父表的字段，则更新的效率较低
+>      */
+>     @Test
+>     public void testQuery(){
+>         List<Person> people = session.createQuery("FROM Person").list();
+>         System.out.println(people.size());
+>         List<Student> students = session.createQuery("FROM Student").list();
+>         System.out.println(students.size());
+>     }
+> 
+>     @Test
+>     public void testUpdate(){
+>         String hql = "UPDATE Person p set p.age = 22";
+>         session.createQuery(hql).executeUpdate();
+>     }
+> }
+> ```
+>
+> **三种继承映射方式的比较 **
+>
+> |                    | union-subclass                                               | subclass                                                     | joined-subclass                                              |
+> | ------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+> | 比较方面           | 每个具体类一张表                                             | 每个类分层结构一张表                                         | 每个子类一张表                                               |
+> | 建立关系模型的原则 | 每个具体类对应一张表，有多少具体类就需要建立多少个独立的表   | 描述一个继承关系只用一张表                                   | 每个子类使用一张表。但这些子类所对应的表都关联到基类所对应的表中 |
+> | 关系模型的优缺点   | 这种设计方式符合关系模型的设计原则，但有表中存在重复字段的问题 | 缺点有二：首先表中引入了区分子类的字段。其次，如果某个子类的某个属性的值不能为空，那么在数据库一级是不能设置该字段为NOT NULL的 | 这种设计方式完全符合关系模型的设计原则，而且不存在冗余       |
+> | 可维护性           | 如果需要对基类进行修改，则需要对基类以及该类的子类所对应的所有表都进行修改 | 维护起来比较方便，只需要修改一张表                           | 维护起来比较方便，对每个类的修改只需要修改其所对应的表       |
+> | 灵活性             | 映射的灵活性很大，子类可以对包括基类属性在内的每一个属性进行单独的配置 | 灵活性差，表中的冗余字段会随着子类的增多而增加               | 灵活性很好，完全是参照对象继承的方式进行映射配置             |
+> | 查询的性能         | 对于子类的查询只需要访问单独的表，但对于父类的查询则需要检索所有的表 | 在任何情况下的查询都只需要处理这一张表                       | 对于父类的查询需要使用左外连接，而对于子类的查询则需要进行内连接 |
+> | 维护的性能         | 对于 单个对象的持久化操作只需要处理一张表                    | 对于单个对象的持久化操作只需要处理一张表                     | 对于子类的持久化操作至少需要处理两张表                       |
+
+### Hibernate 检索策略
+
+> **概述**
+>
+> * 检索数据时的 2 个问题：
+>   * 不浪费内存：当 Hibernate 从数据库中加载 Customer 对象时, 如果同时加载所有关联的 Order 对象, 而程序实际上仅仅需要访问 Customer 对象, 那么这些关联的 Order 对象就白白浪费了许多内存
+>   * 更高的查询效率：发送尽可能少的 SQL 语句
+>   * ![](./images/hibernate_query1.jpg)
+>
+> **类级别的检索策略**
+>
+> * 类级别可选的检索策略包括立即检索和延迟检索, 默认为延迟检索
+>   * 立即检索: 立即加载检索方法指定的对象
+>   * 延迟检索: 延迟加载检索方法指定的对象。在使用具体的属性时，再进行加载
+> * 类级别的检索策略可以通过 <class> 元素的 lazy 属性进行设置
+> * 如果程序加载一个对象的目的是为了访问它的属性, 可以采取立即检索. 
+> * 如果程序加载一个持久化对象的目的是仅仅为了获得它的引用, 可以采用延迟检索。注意出现懒加载异常！
+> * 无论 <class> 元素的 lazy 属性是 true 还是 false, Session 的 get() 方法及 Query 的 list() 方法在类级别总是使用立即检索策略
+> * 若 <class> 元素的 lazy 属性为 true 或取默认值, Session 的 load() 方法不会执行查询数据表的 SELECT 语句, 仅返回代理类对象的实例, 该代理类实例有如下特征:
+>   * 由 Hibernate 在运行时采用 CGLIB 工具动态生成
+>   * Hibernate 创建代理类实例时, 仅初始化其 OID 属性
+>   * 在应用程序第一次访问代理类实例的非 OID 属性时, Hibernate 会初始化代理类实例
+>
+> **一对多和多对多的检索策略**
+>
+> * 在映射文件中, 用 <set> 元素来配置一对多关联及多对多关联关系. <set> 元素有 lazy 和 fetch 属性
+>   * lazy: 主要决定 orders 集合被初始化的时机. 即到底是在加载 Customer 对象时就被初始化, 还是在程序访问 orders 集合时被初始化
+>   * fetch: 取值为 “select” 或 “subselect” 时, 决定初始化 orders 的查询语句的形式;  若取值为”join”, 则决定 orders 集合被初始化的时机
+>   * 若把 fetch 设置为 “join”, lazy 属性将被忽略
+>   * <set> 元素的 batch-size 属性：用来为延迟检索策略或立即检索策略设定批量检索的数量. 批量检索能减少 SELECT 语句的数目, 提高延迟检索或立即检索的运行性能. 
+>
+> **<set> 元素的 lazy 和 fetch 属性**
+>
+> | lazy属性（默认值为true）   | fetch属性（默认值为select）  | 检索策略                                                     |
+> | -------------------------- | ---------------------------- | ------------------------------------------------------------ |
+> | true                       | 未显式设置（取默认值select） | 采用延迟检索策略，这是默认的检索策略，也是有限考虑使用的检索策略 |
+> | false                      | 未显式设置（取默认值select） | 采用立即检索策略，当使用Hibernate二级缓存时，可以考虑使用立即检索 |
+> | extra                      | 未显式设置（取默认值select） | 采用加强延迟检索策略，它尽可能延迟orders集合被初始化的时机   |
+> | true,false或extra          | 未显式设置（取默认值select） | lazy属性决定采用的检索策略，即决定初始化orders集合的时机。fetch属性为select，意味着通过select语句来初始化orders集合，形式为SELECT * FROM orders WHERE customer_id IN(1,2,3,4) |
+> | true,false或extra          | subselect                    | lazy属性决定采用的检索策略，即决定初始化orders集合的时机。fetch属性为subselect，意味着通过subselect语句来初始化orders集合，形式为SELECT * FROM orders WHERE customer_id IN (SELECT  id FROM customers) |
+> | 未显式设置（取默认值true） | join                         | 采用迫切左外连接策略                                         |
+>
+> **延迟检索和增强延迟检索**
+>
+> * 在延迟检索(lazy 属性值为 true) 集合属性时, Hibernate 在以下情况下初始化集合代理类实例 
+>   * 应用程序第一次访问集合属性: iterator(), size(), isEmpty(), contains() 等方法
+>   * 通过 Hibernate.initialize() 静态方法显式初始化
+> * 增强延迟检索(lazy 属性为 extra): 与 lazy=“true” 类似. 主要区别是增强延迟检索策略能进一步延迟 Customer 对象的 orders 集合代理实例的初始化时机：
+>   * 当程序第一次访问 orders 属性的 iterator() 方法时, 会导致 orders 集合代理类实例的初始化
+>   * 当程序第一次访问 order 属性的 size(), contains() 和 isEmpty() 方法时, Hibernate 不会初始化 orders 集合类的实例, 仅通过特定的 select 语句查询必要的信息, 不会检索所有的 Order 对象
+>
+> **<set> 元素的 batch-size 属性**
+>
+> * <set> 元素有一个 batch-size 属性, 用来为延迟检索策略或立即检索策略设定批量检索的数量. 批量检索能减少 SELECT 语句的数目, 提高延迟检索或立即检索的运行性能. 
+>
+> **一对多和多对多的检索策略**
+>
+> * 在映射文件中, 用 <set> 元素来配置一对多关联及多对多关联关系. <set> 元素有 lazy 和 fetch 属性
+>   * lazy: 主要决定 orders 集合被初始化的时机. 即到底是在加载 Customer 对象时就被初始化, 还是在程序访问 orders 集合时被初始化
+>   * fetch: 取值为 “select” 或 “subselect” 时, 决定初始化 orders 的查询语句的形式;  若取值为”join”, 则决定 orders 集合被初始化的时机
+>   * 若把 fetch 设置为 “join”, lazy 属性将被忽略
+>
+> **用带子查询的 select 语句整批量初始化 orders 集合(fetch 属性为 “subselect”)**
+>
+> * <set> 元素的 fetch 属性: 取值为 “select” 或 “subselect” 时, 决定初始化 orders 的查询语句的形式;  若取值为”join”, 则决定 orders 集合被初始化的时机.默认值为 select 
+> * 当 fetch 属性为 “subselect” 时
+>   * 假定 Session 缓存中有 n 个 orders 集合代理类实例没有被初始化, Hibernate 能够通过带子查询的 select 语句, 来批量初始化 n 个 orders 集合代理类实例
+>   * batch-size 属性将被忽略
+>   * 子查询中的 select 语句为查询 CUSTOMERS 表 OID 的 SELECT 语句
+>
+> **迫切左外连接检索(fetch 属性值设为 “join”)**
+>
+> * <set> 元素的 fetch 属性: 取值为 “select” 或 “subselect” 时, 决定初始化 orders 的查询语句的形式;  若取值为”join”, 则决定 orders 集合被初始化的时机.默认值为 select 
+> * 当 fetch 属性为 “join” 时:
+>   * 检索 Customer 对象时, 会采用迫切左外连接(通过左外连接加载与检索指定的对象关联的对象)策略来检索所有关联的 Order 对象
+>   * lazy 属性将被忽略
+>   * Query 的list() 方法会忽略映射文件中配置的迫切左外连接检索策略, 而依旧采用延迟加载策略
+>
+> **多对一和一对一关联的检索策略**
+>
+> * 和 <set> 一样, <many-to-one> 元素也有一个 lazy 属性和 fetch 属性.
+>
+> | lazy属性（默认值为proxy）   | fetch属性（默认值为select）  | 检索Order对象时对关联的Customer对象使用的检索策略 |
+> | --------------------------- | ---------------------------- | ------------------------------------------------- |
+> | proxy                       | 未显式设置（取默认值select） | 采用延迟检索                                      |
+> | no-proxy                    | 未显式设置（取默认值select） | 无代理延迟检索                                    |
+> | FALSE                       | 未显式设置（取默认值select） | 立即检索                                          |
+> | 未显式设置（取默认值proxy） | join                         | 迫切左外连接策略                                  |
+>
+> * 若 fetch 属性设为 join, 那么 lazy 属性被忽略
+> * 迫切左外连接检索策略的优点在于比立即检索策略使用的 SELECT 语句更少. 
+> * 无代理延迟检索需要增强持久化类的字节码才能实现
+> * Query 的 list 方法会忽略映射文件配置的迫切左外连接检索策略, 而采用延迟检索策略
+> * 如果在关联级别使用了延迟加载或立即加载检索策略, 可以设定批量检索的大小, 以帮助提高延迟检索或立即检索的运行性能. 
+> * Hibernate 允许在应用程序中覆盖映射文件中设定的检索策略.
+>
+> **检索策略小结**
+>
+> * 类级别和关联级别可选的检索策略及默认的检索策略
+>
+> | 检索策略的作用域 | 可选的检索策略                       | 默认的检索策略 | 运行时行为受影响的检索方法                                   |
+> | ---------------- | ------------------------------------ | -------------- | ------------------------------------------------------------ |
+> | 类级别           | 立即检索；延迟检索                   | 延迟检索       | 仅影响Session的load()方法                                    |
+> | 关联级别         | 立即检索；延迟检索；迫切左外连接检索 | 延迟检索       | 影响Session的load()和get()方法，以及Query API和Criteria API；例外情况是Query API会忽略映射文件中设定的迫切左外连接检索策略 |
+>
+> * 3 种检索策略的运行机制
+>
+> | 检索策略的类型   | 类级别                     | 关联级别                                                     |
+> | ---------------- | -------------------------- | ------------------------------------------------------------ |
+> | 立即检索         | 立即加载检索方法指定的对象 | 立即加载与检索方法指定的对象的关联对象，可以设定批量检索数量 |
+> | 延迟检索         | 延迟加载检索方法指定的对象 | 延迟加载与检索方法指定的对象的关联对象，可以设定批量检索数量 |
+> | 迫切左外连接检索 | 不适用                     | 通过左外连接加载与检索方法指定的对象的关联对象               |
+>
+> * 映射文件中用于设定检索策略的几个属性
+>
+> | 属性       | 类级别                                                       | 一对多关联级别                                               | 多对多关联级别                                               |
+> | ---------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+> | lazy       | 1.<class>元素中lazy属性的可选值为：true(延迟检索)和false(立即检索)；2.<class>元素的lazy属性的默认值为true | 1.<set>元素中lazy属性的可选值为：true(延迟检索)、extra（增强延迟检索）和false(立即检索)；2.<set>元素的lazy属性的默认值为true | 1.<many-to-one>元素中lazy属性的可选值为：proxy(延迟检索)、no-proxy(无代理延迟检索)和false(立即检索)；2.<many-to-one>元素的lazy属性的默认值为true |
+> | fetch      | 没有此属性                                                   | 1.<set>元素中fech属性的可选值为：select(select查询语句)、subselect(带子查询的select查询语句)和join(迫切左外连接检索)；2.<set>元素的fetch属性的默认值为select | 1.<many-to-one>元素中fech属性的可选值为：select(select查询语句)和join(迫切左外连接检索)；2.<many-to-one>元素的fetch属性的默认值为select |
+> | batch-size | 设定批量检索的数量。可选值为一个正整数，默认值为1.如果设定此项，合理的取值在3-10之间。进适用于关联级别的立即检索和延迟检索。在<class>和<set>元素中包含此属性 | 与前面一样                                                   | 与前面一样                                                   |
+>
+> **比较 Hibernate 的三种检索策略**
+>
+> | 检索策略         | 优点                                                         | 缺点                                                         | 优先考虑使用的场合                                           |
+> | ---------------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+> | 立即检索         | 对应用程序完全透明，不管对象处于持久化状态，还是游离状态，应用程序都可以方便地从一个对象导航到与它关联的对象 | (1)select语句数目多；(2)可能会加载应用程序不需要访问的对象，浪费内存空间 | (1)类级别；(2)应用程序需要立即访问的对象；(3)使用了第二级缓存 |
+> | 延迟检索         | 由应用程序决定需要加载哪些对象，可以避免执行多余的select语句，以及避免加载应用程序不需要访问的对象。因此能提高检索性能，并且节省内在空间 | 应用程序如果希望访问游离状态的代理类实例，必须保证它在持久化状态时已经被初始化 | (1)一对多或者多对多关联；(2)应用程序不需要立即访问或者根本不会访问的对象 |
+> | 迫切左外连接检索 | (1)对应用程序完全透明，不管对象处于持久化状态，还是游离状态，应用程序都可以方便地从一个对象导航到与它关联的对象；(2)使用了外连接，select语句数目少 | (1)可能会加载应用程序不需要访问的对象，浪费内存空间；(2)复杂的数据库表连接也会影响检索性能 | (1)多对一或者多对多关联；(2)应用程序需要立即访问的对象；(3)数据库系统具有良好的表连接性能 |
+
+### Hibernate 检索方式
+
+> **概述**
+>
+> * Hibernate 提供了以下几种检索对象的方式
+>   * 导航对象图检索方式:  根据已经加载的对象导航到其他对象
+>   * OID 检索方式:  按照对象的 OID 来检索对象
+>   * HQL 检索方式: 使用面向对象的 HQL 查询语言
+>   * QBC 检索方式: 使用 QBC(Query By Criteria) API 来检索对象. 这种 API 封装了基于字符串形式的查询语句, 提供了更加面向对象的查询接口. 
+>   * 本地 SQL 检索方式: 使用本地数据库的 SQL 查询语句
+
+##### HQL 检索方式
+
+> **概述**
+>
+> * HQL(Hibernate Query Language) 是面向对象的查询语言, 它和 SQL 查询语言有些相似. 在 Hibernate 提供的各种检索方式中, HQL 是使用最广的一种检索方式. 它有如下功能:
+>   * 在查询语句中设定各种查询条件
+>   * 支持投影查询, 即仅检索出对象的部分属性
+>   * 支持分页查询
+>   * 支持连接查询
+>   * 支持分组查询, 允许使用 HAVING 和 GROUP BY 关键字
+>   * 提供内置聚集函数, 如 sum(), min() 和 max()
+>   * 支持子查询
+>   * 支持动态绑定参数
+>   * 能够调用 用户定义的 SQL 函数或标准的 SQL 函数
+> * HQL 检索方式包括以下步骤:
+>   * 通过 Session 的 createQuery() 方法创建一个 Query 对象, 它包括一个 HQL 查询语句. HQL 查询语句中可以包含命名参数
+>   * 动态绑定参数
+>   * 调用 Query 相关方法执行查询语句. 
+> * Qurey 接口支持方法链编程风格, 它的 setXxx() 方法返回自身实例, 而不是 void 类型
+> * HQL vs SQL:
+>   * HQL 查询语句是面向对象的, Hibernate 负责解析 HQL 查询语句, 然后根据对象-关系映射文件中的映射信息, 把 HQL 查询语句翻译成相应的 SQL 语句. HQL 查询语句中的主体是域模型中的类及类的属性
+>   * SQL 查询语句是与关系数据库绑定在一起的. SQL 查询语句中的主体是数据库表及表的字段. 
+> * 绑定参数:
+>   * Hibernate 的参数绑定机制依赖于 JDBC API 中的 PreparedStatement 的预定义 SQL 语句功能.
+>   * HQL 的参数绑定由两种形式:
+>     * 按参数名字绑定: 在 HQL 查询语句中定义命名参数, 命名参数以 “:” 开头.
+>     * 按参数位置绑定: 在 HQL 查询语句中用 “?” 来定义参数位置
+>   * 相关方法:
+>     * setEntity(): 把参数与一个持久化类绑定
+>     * setParameter(): 绑定任意类型的参数. 该方法的第三个参数显式指定 Hibernate 映射类型
+> * HQL 采用 ORDER BY 关键字对查询结果排序
+> * 分页查询:
+>   * setFirstResult(int firstResult): 设定从哪一个对象开始检索, 参数 firstResult 表示这个对象在查询结果中的索引位置, 索引位置的起始值为 0. 默认情况下, Query 从查询结果中的第一个对象开始检索
+>   * setMaxResults(int maxResults): 设定一次最多检索出的对象的数目. 在默认情况下, Query 和 Criteria 接口检索出查询结果中所有的对象
+> * 在映射文件中定义命名查询语句
+>   * Hibernate 允许在映射文件中定义字符串形式的查询语句. 
+>   * <query> 元素用于定义一个 HQL 查询语句, 它和 <class> 元素并列. 
+>   * 在程序中通过 Session 的 getNamedQuery() 方法获取查询语句对应的 Query 对象. 
+>
+> *入门代码示例：*
+>
+> ```xml
+> <?xml version="1.0"?>
+> <!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+>         "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+> 
+> <hibernate-mapping package="com.atguigu.demo.entity">
+> 
+>     <class name="com.atguigu.demo.entity.Department" table="DEPARTMENTS">
+> 
+>         <id name="id" type="java.lang.Integer">
+>             <column name="ID" />
+>             <generator class="native"></generator>
+>         </id>
+>         <property name="name" type="java.lang.String">
+>             <column name="NAME" />
+>         </property>
+>         <set name="emps" table="EMPLOYEES" inverse="true" lazy="true">
+>             <key>
+>                 <column name="DEPT_ID"/>
+>             </key>
+>             <one-to-many class="Employee"></one-to-many>
+>         </set>
+>     </class>
+> 
+> </hibernate-mapping>
+> ```
+>
+> ```xml
+> <?xml version="1.0"?>
+> <!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+>         "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+> 
+> <hibernate-mapping package="com.atguigu.demo.entity">
+> 
+>     <class name="com.atguigu.demo.entity.Employee" table="EMPLOYEES">
+> 
+>         <id name="id" type="java.lang.Integer">
+>             <column name="ID" />
+>             <generator class="native"></generator>
+>         </id>
+>         <property name="name" type="java.lang.String">
+>             <column name="NAME" />
+>         </property>
+>         <property name="salary" type="java.lang.Float">
+>             <column name="SALARY" />
+>         </property>
+>         <property name="email" type="java.lang.String">
+>             <column name="EMAIL" />
+>         </property>
+>         <many-to-one name="dept" class="Department">
+>             <column name="DEPT_ID"/>
+>         </many-to-one>
+>     </class>
+> 
+> </hibernate-mapping>
+> ```
+>
+> ```java
+> package com.atguigu.demo.entity;
+> import java.util.HashSet;
+> import java.util.Set;
+> 
+> public class Department {
+>     private Integer id;
+>     private String name;
+>     private Set<Employee> emps = new HashSet<>();
+> 
+>     public Integer getId() {
+>         return id;
+>     }
+> 
+>     public void setId(Integer id) {
+>         this.id = id;
+>     }
+> 
+>     public String getName() {
+>         return name;
+>     }
+> 
+>     public void setName(String name) {
+>         this.name = name;
+>     }
+> 
+>     public Set<Employee> getEmps() {
+>         return emps;
+>     }
+> 
+>     public void setEmps(Set<Employee> emps) {
+>         this.emps = emps;
+>     }
+> }
+> ```
+>
+> ```java
+> package com.atguigu.demo.entity;
+> 
+> public class Employee {
+>     private Integer id;
+>     private String name;
+>     private Float salary;
+>     private String email;
+>     private Department dept;
+> 
+>     public Integer getId() {
+>         return id;
+>     }
+> 
+>     public void setId(Integer id) {
+>         this.id = id;
+>     }
+> 
+>     public String getName() {
+>         return name;
+>     }
+> 
+>     public void setName(String name) {
+>         this.name = name;
+>     }
+> 
+>     public Float getSalary() {
+>         return salary;
+>     }
+> 
+>     public void setSalary(Float salary) {
+>         this.salary = salary;
+>     }
+> 
+>     public String getEmail() {
+>         return email;
+>     }
+> 
+>     public void setEmail(String email) {
+>         this.email = email;
+>     }
+> 
+>     public Department getDept() {
+>         return dept;
+>     }
+> 
+>     public void setDept(Department dept) {
+>         this.dept = dept;
+>     }
+> }
+> ```
+>
+> ```java
+> package com.atguigu.demo;
+> import com.atguigu.demo.entity.Department;
+> import com.atguigu.demo.entity.Employee;
+> import org.hibernate.Query;
+> import org.hibernate.Session;
+> import org.hibernate.SessionFactory;
+> import org.hibernate.Transaction;
+> import org.hibernate.cfg.Configuration;
+> import org.hibernate.service.ServiceRegistry;
+> import org.hibernate.service.ServiceRegistryBuilder;
+> import org.junit.After;
+> import org.junit.Before;
+> import org.junit.Test;
+> import java.util.List;
+> 
+> public class HibernateTest {
+> 
+>     private SessionFactory sessionFactory;
+>     private Session session;
+>     private Transaction transaction;
+> 
+>     @Before
+>     public void init(){
+>         Configuration configuration = new Configuration().configure();
+>         ServiceRegistry serviceRegistry = new ServiceRegistryBuilder().applySettings(configuration.getProperties()).buildServiceRegistry();
+>         sessionFactory = configuration.buildSessionFactory(serviceRegistry);
+>         session = sessionFactory.openSession();
+>         transaction = session.beginTransaction();
+>     }
+> 
+>     @After
+>     public void destroy(){
+>         transaction.commit();
+>         session.close();
+>         sessionFactory.close();
+>     }
+> 
+>     @Test
+>     public void testHQL(){
+>         // 1.创建Query对象
+>         String hql = "FROM Employee e WHERE e.salary > :salary AND e.email LIKE :email AND e.dept = :dept";
+>         Query query = session.createQuery(hql);
+>         // 2.绑定参数
+>         // Query对象调用setXXX方法支持方法链的编程风格
+>         Department dept = new Department();
+>         dept.setId(5);
+>         query.setFloat("salary", 6000)
+>              .setString("email", "%a%")
+>              .setEntity("dept", dept);
+>         // 3.执行查询
+>         List<Employee> emps = query.list();
+>         System.out.println(emps.size());
+>     }
+> }
+> ```
 >
 > 
 
