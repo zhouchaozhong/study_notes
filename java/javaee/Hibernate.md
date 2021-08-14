@@ -2651,5 +2651,1068 @@
 > }
 > ```
 >
+> **分页查询**
+>
+> ```java
+> @Test
+> public void testPageQuery(){
+>     String hql = "FROM Employee";
+>     Query query = session.createQuery(hql);
+>     int pageNo = 3;
+>     int pageSize = 3;
+>     List<Employee> emps = query.setFirstResult((pageNo -1 ) * pageSize)
+>         .setMaxResults(pageSize)
+>         .list();
+>     System.out.println(emps.size());
+> }
+> ```
+>
+> **命名查询**
+>
+> ```xml
+> <?xml version="1.0"?>
+> <!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+>         "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 > 
+> <hibernate-mapping package="com.atguigu.demo.entity">
+> 
+>     <class name="com.atguigu.demo.entity.Employee" table="EMPLOYEES">
+> 
+>         <id name="id" type="java.lang.Integer">
+>             <column name="ID" />
+>             <generator class="native"></generator>
+>         </id>
+>         <property name="name" type="java.lang.String">
+>             <column name="NAME" />
+>         </property>
+>         <property name="salary" type="java.lang.Float">
+>             <column name="SALARY" />
+>         </property>
+>         <property name="email" type="java.lang.String">
+>             <column name="EMAIL" />
+>         </property>
+>         <many-to-one name="dept" class="Department">
+>             <column name="DEPT_ID"/>
+>         </many-to-one>
+>     </class>
+>     <query name="salaryEmps">
+>        <![CDATA[FROM Employee e WHERE e.salary > :minSal AND e.salary < :maxSal]]>
+>     </query>
+> 
+> </hibernate-mapping>
+> ```
+>
+> ```java
+> @Test
+> public void testNamedQuery(){
+>     Query query = session.getNamedQuery("salaryEmps");
+>     List<Employee> emps = query.setFloat("minSal", 5000)
+>         .setFloat("maxSal", 10000)
+>         .list();
+>     System.out.println(emps.size());
+> }
+> ```
+>
+> **投影查询**
+>
+> * 投影查询: 查询结果仅包含实体的部分属性. 通过 SELECT 关键字实现
+> * Query 的 list() 方法返回的集合中包含的是数组类型的元素, 每个对象数组代表查询结果的一条记录
+> * 可以在持久化类中定义一个对象的构造器来包装投影查询返回的记录, 使程序代码能完全运用面向对象的语义来访问查询结果集
+> * 可以通过 DISTINCT 关键字来保证查询结果不会返回重复元素
+>
+> *第一种方式*
+>
+> ```java
+> @Test
+> public void testFieldQuery(){
+>     String hql = "SELECT e.email,e.salary FROM Employee e WHERE e.dept = :dept";
+>     Query query = session.createQuery(hql);
+>     Department dept = new Department();
+>     dept.setId(1);
+>     List<Object[]> result = query.setEntity("dept", dept)
+>         .list();
+>     for (Object[] objects : result) {
+>         System.out.println(Arrays.asList(objects));
+>     }
+> }
+> ```
+>
+> *第二种方式*
+>
+> ```java
+> @Test
+> public void testFieldQuery2(){
+>     String hql = "SELECT new Employee(e.salary,e.email,e.dept) FROM Employee e WHERE e.dept = :dept";
+>     Query query = session.createQuery(hql);
+>     Department dept = new Department();
+>     dept.setId(1);
+>     List<Employee> result = query.setEntity("dept", dept)
+>         .list();
+>     for (Employee employee : result) {
+>         System.out.println(employee.getEmail());
+>     }
+> }
+> ```
+>
+> ```java
+> package com.atguigu.demo.entity;
+> 
+> public class Employee {
+>     private Integer id;
+>     private String name;
+>     private Float salary;
+>     private String email;
+>     private Department dept;
+> 
+>     public Integer getId() {
+>         return id;
+>     }
+> 
+>     public void setId(Integer id) {
+>         this.id = id;
+>     }
+> 
+>     public String getName() {
+>         return name;
+>     }
+> 
+>     public void setName(String name) {
+>         this.name = name;
+>     }
+> 
+>     public Float getSalary() {
+>         return salary;
+>     }
+> 
+>     public void setSalary(Float salary) {
+>         this.salary = salary;
+>     }
+> 
+>     public String getEmail() {
+>         return email;
+>     }
+> 
+>     public void setEmail(String email) {
+>         this.email = email;
+>     }
+> 
+>     public Department getDept() {
+>         return dept;
+>     }
+> 
+>     public void setDept(Department dept) {
+>         this.dept = dept;
+>     }
+> 
+>     public Employee(Float salary, String email, Department dept) {
+>         this.salary = salary;
+>         this.email = email;
+>         this.dept = dept;
+>     }
+> 
+>     public Employee() {
+>     }
+> }
+> ```
+>
+> **报表查询**
+>
+> * 报表查询用于对数据分组和统计, 与 SQL 一样, HQL 利用 GROUP BY 关键字对数据分组, 用 HAVING 关键字对分组数据设定约束条件
+> * 在 HQL 查询语句中可以调用以下聚集函数
+>   * count()
+>   * min()
+>   * max()
+>   * sum()
+>   * avg()
+>
+> ```java
+> @Test
+> public void testGroupBy(){
+>     String hql = "SELECT min(e.salary),max(e.salary) FROM Employee e GROUP BY e.dept HAVING min(e.salary) > :minSal";
+>     Query query = session.createQuery(hql);
+>     query.setFloat("minSal", 5000);
+>     List<Object[]> result = query.list();
+>     for (Object[] objs : result) {
+>         System.out.println(Arrays.asList(objs));
+>     }
+> }
+> ```
+>
+> **HQL (迫切)左外连接**
+>
+> * 迫切左外连接:
+>   * LEFT JOIN FETCH 关键字表示迫切左外连接检索策略.
+>   * list() 方法返回的集合中存放实体对象的引用, 每个 Department 对象关联的 Employee  集合都被初始化, 存放所有关联的 Employee 的实体对象. 
+>   * 查询结果中可能会包含重复元素, 可以通过一个 HashSet 来过滤重复元素
+> * 左外连接:
+>   * LEFT JOIN 关键字表示左外连接查询
+>   * list() 方法返回的集合中存放的是对象数组类型
+>   * 根据配置文件来决定 Employee 集合的检索策略. 
+>   * 如果希望 list() 方法返回的集合中仅包含 Department 对象, 可以在HQL 查询语句中使用 SELECT 关键字
+>
+> ```java
+> @Test
+> public void testLeftJoinFetch(){
+>     String hql = "SELECT DISTINCT d FROM Department d LEFT JOIN FETCH d.emps";
+>     Query query = session.createQuery(hql);
+>     List<Department> depts = query.list();
+>     for (Department dept : depts) {
+>         Set<Employee> emps = dept.getEmps();
+>         Iterator<Employee> iterator = emps.iterator();
+>         while(iterator.hasNext()){
+>             Employee employee = iterator.next();
+>             System.out.println(dept.getName() + "---" + employee.getName());
+>         }
+>     }
+> }
+> ```
+>
+> ```java
+> @Test
+> public void testLeftJoin(){
+>     String hql = "SELECT DISTINCT d FROM Department d LEFT JOIN d.emps";
+>     Query query = session.createQuery(hql);
+>     List<Department> depts = query.list();
+>     for (Department dept : depts) {
+>         System.out.println(dept.getName());
+>         System.out.println(dept.getEmps());
+>     }
+>     //        List<Object[]> result = query.list();
+>     //        for (Object[] objs : result) {
+>     //            System.out.println(Arrays.asList(objs));
+>     //        }
+> }
+> ```
+>
+> **HQL (迫切)内连接**
+>
+> * 迫切内连接:
+>   * INNER JOIN FETCH 关键字表示迫切内连接, 也可以省略 INNER 关键字
+>   * list() 方法返回的集合中存放 Department 对象的引用, 每个 Department 对象的 Employee 集合都被初始化, 存放所有关联的 Employee 对象
+> * 内连接:
+>   * INNER JOIN 关键字表示内连接, 也可以省略 INNER 关键字
+>   * list() 方法的集合中存放的每个元素对应查询结果的一条记录, 每个元素都是对象数组类型
+>   * 如果希望 list() 方法的返回的集合仅包含 Department  对象, 可以在 HQL 查询语句中使用 SELECT 关键字
+>
+> **关联级别运行时的检索策略**
+>
+> * 如果在 HQL 中没有显式指定检索策略, 将使用映射文件配置的检索策略. 
+> * HQL 会忽略映射文件中设置的迫切左外连接检索策略, 如果希望 HQL 采用迫切左外连接策略, 就必须在 HQL 查询语句中显式的指定它
+> * 若在 HQL 代码中显式指定了检索策略, 就会覆盖映射文件中配置的检索策略
+
+##### QBC 检索和本地 SQL 检索
+
+> * QBC 查询就是通过使用 Hibernate 提供的 Query By Criteria API 来查询对象，这种 API 封装了 SQL 语句的动态拼装，对查询提供了更加面向对象的功能接口
+> * 本地SQL查询来完善HQL不能涵盖所有的查询特性
+>
+> ```java
+> package com.atguigu.demo;
+> import com.atguigu.demo.entity.Department;
+> import com.atguigu.demo.entity.Employee;
+> import org.hibernate.Criteria;
+> import org.hibernate.Session;
+> import org.hibernate.SessionFactory;
+> import org.hibernate.Transaction;
+> import org.hibernate.cfg.Configuration;
+> import org.hibernate.criterion.*;
+> import org.hibernate.service.ServiceRegistry;
+> import org.hibernate.service.ServiceRegistryBuilder;
+> import org.junit.After;
+> import org.junit.Before;
+> import org.junit.Test;
+> import java.util.List;
+> 
+> public class HibernateTest {
+> 
+>     private SessionFactory sessionFactory;
+>     private Session session;
+>     private Transaction transaction;
+> 
+>     @Before
+>     public void init(){
+>         Configuration configuration = new Configuration().configure();
+>         ServiceRegistry serviceRegistry = new ServiceRegistryBuilder().applySettings(configuration.getProperties()).buildServiceRegistry();
+>         sessionFactory = configuration.buildSessionFactory(serviceRegistry);
+>         session = sessionFactory.openSession();
+>         transaction = session.beginTransaction();
+>     }
+> 
+>     @After
+>     public void destroy(){
+>         transaction.commit();
+>         session.close();
+>         sessionFactory.close();
+>     }
+> 
+>     @Test
+>     public void testQBC(){
+>         // 1. 创建一个Criteria对象
+>         Criteria criteria = session.createCriteria(Employee.class);
+>         // 2. 添加查询条件：在QBC中查询条件使用Criterion来表示
+>         // Criterion可以通过Restrictions的静态方法得到
+>         criteria.add(Restrictions.eq("email","lhc@hotmail.com"));
+>         criteria.add(Restrictions.gt("salary", 5000F));
+>         // 3. 执行查询
+>         Employee employee = (Employee) criteria.uniqueResult();
+>         System.out.println(employee);
+>     }
+> 
+>     @Test
+>     public void testQBC2(){
+>         Criteria criteria = session.createCriteria(Employee.class);
+>         // 1. AND ： 使用Conjunction表示
+>         // Conjunction本身就是一个Criteria对象，且其中还可以添加Criterion对象
+>         Conjunction conjunction = Restrictions.conjunction();
+>         conjunction.add(Restrictions.like("email", "gmail", MatchMode.ANYWHERE));
+>         Department dept = new Department();
+>         dept.setId(1);
+>         conjunction.add(Restrictions.eq("dept", dept));
+>         System.out.println(conjunction);
+> 
+>         // 2. OR
+>         Disjunction disjunction = Restrictions.disjunction();
+>         disjunction.add(Restrictions.gt("salary", 5000F));
+>         disjunction.add(Restrictions.like("name", "王", MatchMode.ANYWHERE));
+>         System.out.println(disjunction);
+>         criteria.add(disjunction);
+>         criteria.add(conjunction);
+>         List list = criteria.list();
+>     }
+> 
+>     @Test
+>     public void testQBC3(){
+>         Criteria criteria = session.createCriteria(Employee.class);
+>         // 统计查询：使用Projection来表示，可以由Projections的静态方法得到
+>         criteria.setProjection(Projections.max("salary"));
+>         System.out.println(criteria.uniqueResult());
+>     }
+> 
+>     @Test
+>     public void testQBC4(){
+>         Criteria criteria = session.createCriteria(Employee.class);
+>         // 1.添加排序
+>         criteria.addOrder(Order.asc("salary"));
+>         criteria.addOrder(Order.desc("email"));
+>         // 2.添加分页方法
+>         int pageSize = 3;
+>         int pageNo = 3;
+>         List list = criteria.setFirstResult((pageNo - 1) * pageSize)
+>                 .setMaxResults(pageSize)
+>                 .list();
+>         System.out.println(list);
+>     }
+> }
+> ```
+>
+> **本地SQL**
+>
+> ```java
+> @Test
+> public void testNativeSQL(){
+>     String sql = "INSERT INTO DEPARTMENTS VALUES(?,?)";
+>     Query query = session.createSQLQuery(sql);
+>     query.setInteger(0, 6)
+>         .setString(1, "财务部")
+>         .executeUpdate();
+> }
+> 
+> @Test
+> public void testHQLUpdate(){
+>     String hql = "DELETE FROM Department d WHERE d.id = :id";
+>     session.createQuery(hql)
+>         .setInteger("id", 6)
+>         .executeUpdate();
+> }
+> ```
+
+### 二级缓存
+
+> **Hibernate 缓存**
+>
+> * 缓存(Cache): 计算机领域非常通用的概念。它介于应用程序和永久性数据存储源(如硬盘上的文件或者数据库)之间，其作用是降低应用程序直接读写永久性数据存储源的频率，从而提高应用的运行性能。缓存中的数据是数据存储源中数据的拷贝。缓存的物理介质通常是内存
+> * Hibernate中提供了两个级别的缓存
+>   * 第一级别的缓存是 Session 级别的缓存，它是属于事务范围的缓存。这一级别的缓存由 hibernate 管理的
+>   * 第二级别的缓存是 SessionFactory 级别的缓存，它是属于进程范围的缓存
+>
+> **SessionFactory 级别的缓存**
+>
+> * SessionFactory 的缓存可以分为两类:
+>   * 内置缓存: Hibernate 自带的, 不可卸载. 通常在 Hibernate 的初始化阶段, Hibernate 会把映射元数据和预定义的 SQL 语句放到 SessionFactory 的缓存中, 映射元数据是映射文件中数据（.hbm.xml 文件中的数据）的复制. 该内置缓存是只读的. 
+>   * 外置缓存(二级缓存): 一个可配置的缓存插件. 在默认情况下, SessionFactory 不会启用这个缓存插件. 外置缓存中的数据是数据库数据的复制, 外置缓存的物理介质可以是内存或硬盘
+>
+> **使用 Hibernate 的二级缓存**
+>
+> * 适合放入二级缓存中的数据:
+>   * 很少被修改
+>   * 不是很重要的数据, 允许出现偶尔的并发问题
+> * 不适合放入二级缓存中的数据:
+>   * 经常被修改
+>   * 财务数据, 绝对不允许出现并发问题
+>   * 与其他应用程序共享的数据
+>
+> **二级缓存的并发访问策略**
+>
+> * 两个并发的事务同时访问持久层的缓存的相同数据时, 也有可能出现各类并发问题. 
+> * 二级缓存可以设定以下 4 种类型的并发访问策略, 每一种访问策略对应一种事务隔离级别
+>   * 非严格读写(Nonstrict-read-write): 不保证缓存与数据库中数据的一致性. 提供 Read Uncommited 事务隔离级别, 对于极少被修改, 而且允许脏读的数据, 可以采用这种策略
+>   * 读写型(Read-write): 提供 Read Commited 数据隔离级别.对于经常读但是很少被修改的数据, 可以采用这种隔离类型, 因为它可以防止脏读
+>   * 事务型(Transactional): 仅在受管理环境下适用. 它提供了 Repeatable Read 事务隔离级别. 对于经常读但是很少被修改的数据, 可以采用这种隔离类型, 因为它可以防止脏读和不可重复读
+>   * 只读型(Read-Only):提供 Serializable 数据隔离级别, 对于从来不会被修改的数据, 可以采用这种访问策略
+>
+> **管理 Hibernate 的二级缓存**
+>
+> * Hibernate 的二级缓存是进程或集群范围内的缓存
+> * 二级缓存是可配置的的插件, Hibernate 允许选用以下类型的缓存插件:
+>   * EHCache: 可作为进程范围内的缓存, 存放数据的物理介质可以使内存或硬盘, 对 Hibernate 的查询缓存提供了支持
+>   * OpenSymphony OSCache:可作为进程范围内的缓存, 存放数据的物理介质可以使内存或硬盘, 提供了丰富的缓存数据过期策略, 对 Hibernate 的查询缓存提供了支持
+>   * SwarmCache: 可作为集群范围内的缓存, 但不支持 Hibernate 的查询缓存
+>   * JBossCache:可作为集群范围内的缓存, 支持 Hibernate 的查询缓存
+>   * 4 种缓存插件支持的并发访问策略
+>
+> | 缓存插件    | Read-only | Nonstrict-read-write | Read-write | Transactional |
+> | ----------- | --------- | -------------------- | ---------- | ------------- |
+> | EHCache     | 支持      | 支持                 | 支持       | 不支持        |
+> | OSCache     | 支持      | 支持                 | 支持       | 不支持        |
+> | SwarmCache  | 支持      | 支持                 | 不支持     | 不支持        |
+> | JBoss Cache | 支持      | 不支持               | 不支持     | 支持          |
+>
+> ```xml
+> <?xml version="1.0" encoding="UTF-8"?>
+> <!DOCTYPE hibernate-configuration PUBLIC
+>         "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+>         "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+> <hibernate-configuration>
+>     <session-factory>
+> 
+>         <!-- Hibernate 连接数据库的基本信息 -->
+>         <property name="connection.username">root</property>
+>         <property name="connection.password">root</property>
+>         <property name="connection.driver_class">com.mysql.jdbc.Driver</property>
+>         <property name="connection.url">jdbc:mysql://192.168.0.199:3306/test</property>
+> 
+>         <!-- Hibernate 的基本配置 -->
+>         <!-- Hibernate 使用的数据库方言 -->
+>         <property name="dialect">org.hibernate.dialect.MySQL5InnoDBDialect</property>
+> 
+>         <!-- 运行时是否打印 SQL -->
+>         <property name="show_sql">true</property>
+> 
+>         <!-- 运行时是否格式化 SQL -->
+>         <property name="format_sql">true</property>
+> 
+>         <!-- 生成数据表的策略 -->
+>         <property name="hbm2ddl.auto">update</property>
+> 
+>         <!-- 设置 Hibernate 的事务隔离级别 -->
+>         <property name="connection.isolation">2</property>
+> 
+>         <!-- 删除对象后, 使其 OID 置为 null -->
+>         <property name="use_identifier_rollback">true</property>
+> 
+>         <!-- 配置 C3P0 数据源 -->
+>         <property name="hibernate.c3p0.max_size">10</property>
+>         <property name="hibernate.c3p0.min_size">5</property>
+>         <property name="c3p0.acquire_increment">2</property>
+> 
+>         <property name="c3p0.idle_test_period">2000</property>
+>         <property name="c3p0.timeout">2000</property>
+> 
+>         <property name="c3p0.max_statements">10</property>
+> 
+>         <!-- 设定 JDBC 的 Statement 读取数据的时候每次从数据库中取出的记录条数 -->
+>         <property name="hibernate.jdbc.fetch_size">100</property>
+> 
+>         <!-- 设定对数据库进行批量删除，批量更新和批量插入的时候的批次大小 -->
+>         <property name="jdbc.batch_size">30</property>
+> 
+>         <!--启用二级缓存-->
+>         <property name="cache.use_second_level_cache">true</property>
+>         <!-- 配置使用的二级缓存的产品 -->
+>         <property name="hibernate.cache.region.factory_class">org.hibernate.cache.ehcache.EhCacheRegionFactory</property>
+>         <!-- 需要关联的 hibernate 映射文件 .hbm.xml -->
+>         <mapping resource="com/atguigu/demo/Department.hbm.xml"/>
+>         <mapping resource="com/atguigu/demo/Employee.hbm.xml"/>
+>         <!--配置那些类使用二级缓存，以及缓存的策略-->
+>         <class-cache class="com.atguigu.demo.entity.Employee" usage="read-write"/>
+>         <class-cache class="com.atguigu.demo.entity.Department" usage="read-write"/>
+> 
+>         <!--配置集合缓存，同时还需要配置集合中的类也使用二级缓存，否则将会多出n条SQL语句-->
+>         <collection-cache usage="read-write" collection="com.atguigu.demo.entity.Department.emps"/>
+> 
+>     </session-factory>
+> </hibernate-configuration>
+> ```
+>
+> ```java
+> package com.atguigu.demo;
+> import com.atguigu.demo.entity.Department;
+> import com.atguigu.demo.entity.Employee;
+> import org.hibernate.*;
+> import org.hibernate.cfg.Configuration;
+> import org.hibernate.service.ServiceRegistry;
+> import org.hibernate.service.ServiceRegistryBuilder;
+> import org.junit.After;
+> import org.junit.Before;
+> import org.junit.Test;
+> 
+> public class HibernateTest {
+> 
+>     private SessionFactory sessionFactory;
+>     private Session session;
+>     private Transaction transaction;
+> 
+>     @Before
+>     public void init(){
+>         Configuration configuration = new Configuration().configure();
+>         ServiceRegistry serviceRegistry = new ServiceRegistryBuilder().applySettings(configuration.getProperties()).buildServiceRegistry();
+>         sessionFactory = configuration.buildSessionFactory(serviceRegistry);
+>         session = sessionFactory.openSession();
+>         transaction = session.beginTransaction();
+>     }
+> 
+>     @After
+>     public void destroy(){
+>         transaction.commit();
+>         session.close();
+>         sessionFactory.close();
+>     }
+> 
+>     @Test
+>     public void testSecondLevelCache(){
+>         Employee employee = (Employee) session.get(Employee.class, 1);
+>         System.out.println(employee.getName());
+> 
+>         transaction.commit();
+>         session.close();
+> 
+>         session = sessionFactory.openSession();
+>         transaction = session.beginTransaction();
+> 
+>         Employee employee2 = (Employee) session.get(Employee.class, 1);
+>         System.out.println(employee2.getName());
+>     }
+> 
+>     @Test
+>     public void testCollectionSecondLevelCache(){
+>         Department dept = (Department) session.get(Department.class, 1);
+>         System.out.println(dept.getName());
+>         System.out.println(dept.getEmps());
+> 
+>         transaction.commit();
+>         session.close();
+> 
+>         session = sessionFactory.openSession();
+>         transaction = session.beginTransaction();
+> 
+>         Department dept2 = (Department) session.get(Department.class, 1);
+>         System.out.println(dept2.getName());
+>         System.out.println(dept2.getEmps());
+>     }
+> }
+> ```
+>
+> ```xml
+> <ehcache>
+>     <!-- Sets the path to the directory where cache .data files are created.
+> 
+>          If the path is a Java System Property it is replaced by
+>          its value in the running VM.
+> 
+>          The following properties are translated:
+>          user.home - User's home directory
+>          user.dir - User's current working directory
+>          java.io.tmpdir - Default temp file path -->
+>     <!--  
+>     	指定一个目录：当 EHCache 把数据写到硬盘上时, 将把数据写到这个目录下.
+>     -->     
+>     <diskStore path="D:\\webapp\\java\\javaee\\hibernatedemo"/>
+> 
+> 
+>     <!--Default Cache configuration. These will applied to caches programmatically created through
+>         the CacheManager.
+> 
+>         The following attributes are required for defaultCache:
+> 
+>         maxInMemory       - Sets the maximum number of objects that will be created in memory
+>         eternal           - Sets whether elements are eternal. If eternal,  timeouts are ignored and the element
+>                             is never expired.
+>         timeToIdleSeconds - Sets the time to idle for an element before it expires. Is only used
+>                             if the element is not eternal. Idle time is now - last accessed time
+>         timeToLiveSeconds - Sets the time to live for an element before it expires. Is only used
+>                             if the element is not eternal. TTL is now - creation time
+>         overflowToDisk    - Sets whether elements can overflow to disk when the in-memory cache
+>                             has reached the maxInMemory limit.
+> 
+>         -->
+>     <!--  
+>     	设置缓存的默认数据过期策略 
+>     -->    
+>     <defaultCache
+>         maxElementsInMemory="1"
+>         eternal="false"
+>         timeToIdleSeconds="120"
+>         timeToLiveSeconds="120"
+>         overflowToDisk="true"
+>         />
+> 
+>    	<!--  
+>    		设定具体的命名缓存的数据过期策略。每个命名缓存代表一个缓存区域
+>    		缓存区域(region)：一个具有名称的缓存块，可以给每一个缓存块设置不同的缓存策略。
+>    		如果没有设置任何的缓存区域，则所有被缓存的对象，都将使用默认的缓存策略。即：<defaultCache.../>
+>    		Hibernate 在不同的缓存区域保存不同的类/集合。
+> 			对于类而言，区域的名称是类名。如:com.atguigu.domain.Customer
+> 			对于集合而言，区域的名称是类名加属性名。如com.atguigu.domain.Customer.orders
+>    	-->
+>    	<!--  
+>    		name: 设置缓存的名字,它的取值为类的全限定名或类的集合的名字 
+> 		maxElementsInMemory: 设置基于内存的缓存中可存放的对象最大数目 
+> 
+> 		eternal: 设置对象是否为永久的, true表示永不过期,
+> 		此时将忽略timeToIdleSeconds 和 timeToLiveSeconds属性; 默认值是false 
+> 		timeToIdleSeconds:设置对象空闲最长时间,以秒为单位, 超过这个时间,对象过期。
+> 		当对象过期时,EHCache会把它从缓存中清除。如果此值为0,表示对象可以无限期地处于空闲状态。 
+> 		timeToLiveSeconds:设置对象生存最长时间,超过这个时间,对象过期。
+> 		如果此值为0,表示对象可以无限期地存在于缓存中. 该属性值必须大于或等于 timeToIdleSeconds 属性值 
+> 
+> 		overflowToDisk:设置基于内存的缓存中的对象数目达到上限后,是否把溢出的对象写到基于硬盘的缓存中 
+>    	-->
+>     <cache name="com.atguigu.demo.entity.Employee"
+>         maxElementsInMemory="1"
+>         eternal="true"
+>         timeToIdleSeconds="300"
+>         timeToLiveSeconds="600"
+>         overflowToDisk="true"
+>         />
+> 
+>     <cache name="com.atguigu.demo.entity.Department.emps"
+>         maxElementsInMemory="1"
+>         eternal="true"
+>         timeToIdleSeconds="0"
+>         timeToLiveSeconds="0"
+>         overflowToDisk="true"
+>         />
+> </ehcache>
+> ```
+>
+> **ehcache.xml**
+>
+> * <diskStore>: 指定一个目录：当 EHCache 把数据写到硬盘上时, 将把数据写到这个目录下.
+> * <defaultCache>: 设置缓存的默认数据过期策略 
+> * <cache> 设定具体的命名缓存的数据过期策略。每个命名缓存代表一个缓存区域
+> * 缓存区域(region)：一个具有名称的缓存块，可以给每一个缓存块设置不同的缓存策略。如果没有设置任何的缓存区域，则所有被缓存的对象，都将使用默认的缓存策略。即：<defaultCache.../>
+> * Hibernate在不同的缓存区域保存不同的类/集合。
+>   * 对于类而言，区域的名称是类名。如:com.atguigu.domain.Customer
+>   * 对于集合而言，区域的名称是类名加属性名。如com.atguigu.domain.Customer.orders
+> * cache 元素的属性 
+>   * name:设置缓存的名字,它的取值为类的全限定名或类的集合的名字 
+>   * maxInMemory:设置基于内存的缓存中可存放的对象最大数目 
+>   * eternal:设置对象是否为永久的,true表示永不过期,此时将忽略
+>   * timeToIdleSeconds 和 timeToLiveSeconds属性; 默认值是false 
+>   * timeToIdleSeconds:设置对象空闲最长时间,以秒为单位, 超过这个时间,对象过期。当对象过期时,EHCache会把它从缓存中清除。如果此值为0,表示对象可以无限期地处于空闲状态。 
+>   * timeToLiveSeconds:设置对象生存最长时间,超过这个时间,对象过期。如果此值为0,表示对象可以无限期地存在于缓存中. 该属性值必须大于或等于 timeToIdleSeconds 属性值 
+>   * overflowToDisk:设置基于内存的缓存中的对象数目达到上限后,是否把溢出的对象写到基于硬盘的缓存中 
+>
+> **查询缓存**
+>
+> * 对于经常使用的查询语句, 如果启用了查询缓存, 当第一次执行查询语句时, Hibernate 会把查询结果存放在查询缓存中. 以后再次执行该查询语句时, 只需从缓存中获得查询结果, 从而提高查询性能
+> * 查询缓存使用于如下场合:
+>   * 应用程序运行时经常使用查询语句
+>   * 很少对与查询语句检索到的数据进行插入, 删除和更新操作
+> * 启用查询缓存的步骤
+>   * 配置二级缓存, 因为查询缓存依赖于二级缓存
+>   * 在 hibernate 配置文件中启用查询缓存
+>   * 对于希望启用查询缓存的查询语句, 调用 Query 的 setCacheable() 方法
+>
+> ```xml
+> <?xml version="1.0" encoding="UTF-8"?>
+> <!DOCTYPE hibernate-configuration PUBLIC
+>         "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+>         "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+> <hibernate-configuration>
+>     <session-factory>
+> 
+>         <!-- Hibernate 连接数据库的基本信息 -->
+>         <property name="connection.username">root</property>
+>         <property name="connection.password">root</property>
+>         <property name="connection.driver_class">com.mysql.jdbc.Driver</property>
+>         <property name="connection.url">jdbc:mysql://192.168.0.199:3306/test</property>
+> 
+>         <!-- Hibernate 的基本配置 -->
+>         <!-- Hibernate 使用的数据库方言 -->
+>         <property name="dialect">org.hibernate.dialect.MySQL5InnoDBDialect</property>
+> 
+>         <!-- 运行时是否打印 SQL -->
+>         <property name="show_sql">true</property>
+> 
+>         <!-- 运行时是否格式化 SQL -->
+>         <property name="format_sql">true</property>
+> 
+>         <!-- 生成数据表的策略 -->
+>         <property name="hbm2ddl.auto">update</property>
+> 
+>         <!-- 设置 Hibernate 的事务隔离级别 -->
+>         <property name="connection.isolation">2</property>
+> 
+>         <!-- 删除对象后, 使其 OID 置为 null -->
+>         <property name="use_identifier_rollback">true</property>
+> 
+>         <!-- 配置 C3P0 数据源 -->
+>         <property name="hibernate.c3p0.max_size">10</property>
+>         <property name="hibernate.c3p0.min_size">5</property>
+>         <property name="c3p0.acquire_increment">2</property>
+> 
+>         <property name="c3p0.idle_test_period">2000</property>
+>         <property name="c3p0.timeout">2000</property>
+> 
+>         <property name="c3p0.max_statements">10</property>
+> 
+>         <!-- 设定 JDBC 的 Statement 读取数据的时候每次从数据库中取出的记录条数 -->
+>         <property name="hibernate.jdbc.fetch_size">100</property>
+> 
+>         <!-- 设定对数据库进行批量删除，批量更新和批量插入的时候的批次大小 -->
+>         <property name="jdbc.batch_size">30</property>
+> 
+>         <!--启用二级缓存-->
+>         <property name="cache.use_second_level_cache">true</property>
+>         <!-- 配置使用的二级缓存的产品 -->
+>         <property name="hibernate.cache.region.factory_class">org.hibernate.cache.ehcache.EhCacheRegionFactory</property>
+>         <!--配置启用查询缓存-->
+>         <property name="cache.use_query_cache">true</property>
+> 
+>         <!-- 需要关联的 hibernate 映射文件 .hbm.xml -->
+>         <mapping resource="com/atguigu/demo/Department.hbm.xml"/>
+>         <mapping resource="com/atguigu/demo/Employee.hbm.xml"/>
+>         <!--配置那些类使用二级缓存，以及缓存的策略-->
+>         <class-cache class="com.atguigu.demo.entity.Employee" usage="read-write"/>
+>         <class-cache class="com.atguigu.demo.entity.Department" usage="read-write"/>
+> 
+>         <!--配置集合缓存，同时还需要配置集合中的类也使用二级缓存，否则将会多出n条SQL语句-->
+>         <collection-cache usage="read-write" collection="com.atguigu.demo.entity.Department.emps"/>
+>     </session-factory>
+> </hibernate-configuration>
+> ```
+>
+> ```java
+> @Test
+> public void testQueryCache(){
+>     Query query = session.createQuery("FROM Employee");
+>     query.setCacheable(true);
+>     List<Employee> emps = query.list();
+>     System.out.println(emps);
+> 
+>     emps = query.list();
+>     System.out.println(emps);
+> 
+>     Criteria criteria = session.createCriteria(Employee.class);
+>     criteria.setCacheable(true);
+>     List<Employee> emps2 = criteria.list();
+>     System.out.println(emps2);
+> 
+>     List<Employee> emps3 = criteria.list();
+>     System.out.println(emps3);
+> }
+> ```
+>
+> **时间戳缓存区域**
+>
+> * 时间戳缓存区域存放了对于查询结果相关的表进行插入, 更新或删除操作的时间戳.  Hibernate 通过时间戳缓存区域来判断被缓存的查询结果是否过期, 其运行过程如下:
+>   * T1 时刻执行查询操作, 把查询结果存放在 QueryCache 区域, 记录该区域的时间戳为 T1
+>   * T2 时刻对查询结果相关的表进行更新操作, Hibernate 把 T2 时刻存放在 UpdateTimestampCache 区域.
+>   * T3 时刻执行查询结果前, 先比较 QueryCache 区域的时间戳和 UpdateTimestampCache 区域的时间戳, 若 T2 >T1, 那么就丢弃原先存放在 QueryCache 区域的查询结果, 重新到数据库中查询数据, 再把结果存放到 QueryCache 区域; 若 T2 < T1, 直接从 QueryCache 中获得查询结果
+>
+> ```java
+> @Test
+> public void testUpdateTimestampCache(){
+>     Query query = session.createQuery("FROM Employee");
+>     query.setCacheable(true);
+>     List<Employee> emps = query.list();
+>     System.out.println(emps);
+> 
+>     Employee employee = (Employee) session.get(Employee.class, 1);
+>     employee.setSalary(9000F);
+>     // 这里进行更新操作后，会重新从数据库查询最新的结果
+> 
+>     emps = query.list();
+>     System.out.println(emps);
+> }
+> ```
+>
+> **Query 接口的 iterate() 方法**
+>
+> * Query 接口的 iterator() 方法
+>   * 同 list() 一样也能执行查询操作
+>   * list() 方法执行的 SQL 语句包含实体类对应的数据表的所有字段
+>   * Iterator() 方法执行的SQL 语句中仅包含实体类对应的数据表的 ID 字段
+>   * 当遍历访问结果集时, 该方法先到 Session 缓存及二级缓存中查看是否存在特定 OID 的对象, 如果存在, 就直接返回该对象, 如果不存在该对象就通过相应的 SQL Select 语句到数据库中加载特定的实体对象
+> * 大多数情况下, 应考虑使用 list() 方法执行查询操作. iterator() 方法仅在满足以下条件的场合, 可以稍微提高查询性能:
+>   * 要查询的数据表中包含大量字段
+>   * 启用了二级缓存, 且二级缓存中可能已经包含了待查询的对象
+>
+> ```java
+> @Test
+> public void testQueryIterate(){
+>     Department dept = (Department) session.get(Department.class, 1);
+>     System.out.println(dept.getName());
+>     System.out.println(dept.getEmps().size());
+> 
+>     Query query = session.createQuery("FROM Employee e WHERE e.dept.id = 1");
+>     //        List<Employee> emps = query.list();
+>     //        System.out.println(emps.size());
+> 
+>     Iterator<Employee> empIt = query.iterate();
+>     while (empIt.hasNext()){
+>         System.out.println(empIt.next().getName());
+>     }
+> }
+> ```
+
+### 管理 Session
+
+> **概述**
+>
+> * Hibernate  自身提供了三种管理 Session 对象的方法
+>   * Session 对象的生命周期与本地线程绑定
+>   * Session 对象的生命周期与 JTA 事务绑定
+>   * Hibernate 委托程序管理 Session 对象的生命周期
+> * 在 Hibernate 的配置文件中, hibernate.current_session_context_class 属性用于指定 Session 管理方式, 可选值包括
+>   * thread: Session 对象的生命周期与本地线程绑定
+>   * jta*: Session 对象的生命周期与 JTA 事务绑定
+>   * managed: Hibernate 委托程序来管理 Session 对象的生命周期
+>
+> **Session 对象的生命周期与本地线程绑定**
+>
+> * 如果把 Hibernate 配置文件的 hibernate.current_session_context_class 属性值设为 thread, Hibernate 就会按照与本地线程绑定的方式来管理 Session
+> * Hibernate 按以下规则把 Session 与本地线程绑定
+>   * 当一个线程(threadA)第一次调用 SessionFactory 对象的 getCurrentSession() 方法时, 该方法会创建一个新的 Session(sessionA) 对象, 把该对象与 threadA 绑定, 并将 sessionA 返回 
+>   * 当 threadA 再次调用 SessionFactory 对象的 getCurrentSession() 方法时, 该方法将返回 sessionA 对象
+>   * 当 threadA 提交 sessionA 对象关联的事务时, Hibernate 会自动flush sessionA 对象的缓存, 然后提交事务, 关闭 sessionA 对象. 当 threadA 撤销 sessionA 对象关联的事务时, 也会自动关闭 sessionA 对象
+>   * 若 threadA 再次调用 SessionFactory 对象的 getCurrentSession() 方法时, 该方法会又创建一个新的 Session(sessionB) 对象, 把该对象与 threadA 绑定, 并将 sessionB 返回 
+>
+> ```xml
+> <?xml version="1.0" encoding="UTF-8"?>
+> <!DOCTYPE hibernate-configuration PUBLIC
+>         "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+>         "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+> <hibernate-configuration>
+>     <session-factory>
+> 
+>         <!-- Hibernate 连接数据库的基本信息 -->
+>         <property name="connection.username">root</property>
+>         <property name="connection.password">root</property>
+>         <property name="connection.driver_class">com.mysql.jdbc.Driver</property>
+>         <property name="connection.url">jdbc:mysql://192.168.0.199:3306/test</property>
+> 
+>         <!-- Hibernate 的基本配置 -->
+>         <!-- Hibernate 使用的数据库方言 -->
+>         <property name="dialect">org.hibernate.dialect.MySQL5InnoDBDialect</property>
+> 
+>         <!-- 运行时是否打印 SQL -->
+>         <property name="show_sql">true</property>
+> 
+>         <!-- 运行时是否格式化 SQL -->
+>         <property name="format_sql">true</property>
+> 
+>         <!-- 生成数据表的策略 -->
+>         <property name="hbm2ddl.auto">update</property>
+> 
+>         <!-- 设置 Hibernate 的事务隔离级别 -->
+>         <property name="connection.isolation">2</property>
+> 
+>         <!-- 删除对象后, 使其 OID 置为 null -->
+>         <property name="use_identifier_rollback">true</property>
+> 
+>         <!-- 配置 C3P0 数据源 -->
+>         <property name="hibernate.c3p0.max_size">10</property>
+>         <property name="hibernate.c3p0.min_size">5</property>
+>         <property name="c3p0.acquire_increment">2</property>
+> 
+>         <property name="c3p0.idle_test_period">2000</property>
+>         <property name="c3p0.timeout">2000</property>
+> 
+>         <property name="c3p0.max_statements">10</property>
+> 
+>         <!-- 设定 JDBC 的 Statement 读取数据的时候每次从数据库中取出的记录条数 -->
+>         <property name="hibernate.jdbc.fetch_size">100</property>
+> 
+>         <!-- 设定对数据库进行批量删除，批量更新和批量插入的时候的批次大小 -->
+>         <property name="jdbc.batch_size">30</property>
+> 
+>         <!--启用二级缓存-->
+>         <property name="cache.use_second_level_cache">true</property>
+>         <!-- 配置使用的二级缓存的产品 -->
+>         <property name="hibernate.cache.region.factory_class">org.hibernate.cache.ehcache.EhCacheRegionFactory</property>
+>         <!--配置启用查询缓存-->
+>         <property name="cache.use_query_cache">true</property>
+> 
+>         <!--配置管理Session的方式-->
+>         <property name="current_session_context_class">thread</property>
+> 
+>         <!-- 需要关联的 hibernate 映射文件 .hbm.xml -->
+>         <mapping resource="com/atguigu/demo/Department.hbm.xml"/>
+>         <mapping resource="com/atguigu/demo/Employee.hbm.xml"/>
+>         <!--配置那些类使用二级缓存，以及缓存的策略-->
+>         <class-cache class="com.atguigu.demo.entity.Employee" usage="read-write"/>
+>         <class-cache class="com.atguigu.demo.entity.Department" usage="read-write"/>
+> 
+>         <!--配置集合缓存，同时还需要配置集合中的类也使用二级缓存，否则将会多出n条SQL语句-->
+>         <collection-cache usage="read-write" collection="com.atguigu.demo.entity.Department.emps"/>
+>     </session-factory>
+> </hibernate-configuration>
+> ```
+>
+> ```java
+> package com.atguigu.demo.dao;
+> 
+> import com.atguigu.demo.entity.Department;
+> import com.atguigu.demo.utils.HibernateUtils;
+> import org.hibernate.Session;
+> 
+> public class DepartmentDao {
+> 
+>     public void save(Department dept){
+>         // 获取和当前线程绑定的Session对象
+>         // 优点：1.不需要从外部传入Session对象
+>         // 2.多个Dao方法也可以使用一个事务
+>         Session session = HibernateUtils.getInstance().getSession();
+>         System.out.println(session.hashCode());
+>         session.save(dept);
+>     }
+> }
+> ```
+>
+> ```java
+> package com.atguigu.demo.utils;
+> import org.hibernate.Session;
+> import org.hibernate.SessionFactory;
+> import org.hibernate.cfg.Configuration;
+> import org.hibernate.service.ServiceRegistry;
+> import org.hibernate.service.ServiceRegistryBuilder;
+> 
+> public class HibernateUtils {
+>     private SessionFactory sessionFactory;
+>     private static HibernateUtils instance = new HibernateUtils();
+> 
+>     private HibernateUtils(){}
+> 
+>     public static HibernateUtils getInstance() {
+>         return instance;
+>     }
+> 
+>     public SessionFactory getSessionFactory() {
+>         if(sessionFactory == null){
+>             Configuration configuration = new Configuration().configure();
+>             ServiceRegistry serviceRegistry = new ServiceRegistryBuilder().applySettings(configuration.getProperties()).buildServiceRegistry();
+>             sessionFactory = configuration.buildSessionFactory(serviceRegistry);
+>         }
+>         return sessionFactory;
+>     }
+> 
+>     public Session getSession(){
+>         return getSessionFactory().getCurrentSession();
+>     }
+> }
+> ```
+>
+> ```java
+> package com.atguigu.demo;
+> import com.atguigu.demo.dao.DepartmentDao;
+> import com.atguigu.demo.entity.Department;
+> import com.atguigu.demo.utils.HibernateUtils;
+> import org.hibernate.*;
+> import org.hibernate.cfg.Configuration;
+> import org.hibernate.service.ServiceRegistry;
+> import org.hibernate.service.ServiceRegistryBuilder;
+> import org.junit.After;
+> import org.junit.Before;
+> import org.junit.Test;
+> 
+> public class HibernateTest {
+>     private SessionFactory sessionFactory;
+>     private Session session;
+>     private Transaction transaction;
+> 
+>     @Before
+>     public void init(){
+>         Configuration configuration = new Configuration().configure();
+>         ServiceRegistry serviceRegistry = new ServiceRegistryBuilder().applySettings(configuration.getProperties()).buildServiceRegistry();
+>         sessionFactory = configuration.buildSessionFactory(serviceRegistry);
+>         session = sessionFactory.openSession();
+>         transaction = session.beginTransaction();
+>     }
+> 
+>     @After
+>     public void destroy(){
+>         transaction.commit();
+>         session.close();
+>         sessionFactory.close();
+>     }
+> 
+>     @Test
+>     public void testManageSession(){
+>         // 获取Session
+>         // 开启事务
+>         Session session = HibernateUtils.getInstance().getSession();
+>         System.out.println("--->" + session.hashCode());
+>         Transaction transaction = session.beginTransaction();
+> 
+>         DepartmentDao departmentDao = new DepartmentDao();
+>         Department dept = new Department();
+>         dept.setName("财务部");
+>         departmentDao.save(dept);
+>         departmentDao.save(dept);
+>         departmentDao.save(dept);
+> 
+>         // 若Session是由thread来管理的，则在提交或回滚事务时，已经关闭Session了
+>         transaction.commit();
+>         System.out.println(session.isOpen());
+>     }
+> }
+> ```
+>
+> **批量处理数据**
+>
+> * 批量处理数据是指在一个事务中处理大量数据.
+> * 在应用层进行批量操作, 主要有以下方式:
+>   * 通过 Session 
+>   * 通过 HQL 
+>   * 通过 StatelessSession 
+>   * 通过 JDBC API
+>
+> **通过 Session 来进行批量操作**
+>
+> * Session 的 save() 及 update() 方法都会把处理的对象存放在自己的缓存中. 如果通过一个 Session 对象来处理大量持久化对象, 应该及时从缓存中清空已经处理完毕并且不会再访问的对象. 具体的做法是在处理完一个对象或小批量对象后, 立即调用 flush() 方法刷新缓存, 然后在调用 clear() 方法清空缓存
+> * 通过 Session 来进行处理操作会受到以下约束
+>   * 需要在  Hibernate 配置文件中设置 JDBC 单次批量处理的数目, 应保证每次向数据库发送的批量的 SQL 语句数目与 batch_size 属性一致
+>   * 若对象采用 “identity” 标识符生成器, 则 Hibernate 无法在 JDBC 层进行批量插入操作
+>   * 进行批量操作时, 建议关闭 Hibernate 的二级缓存
+> * 批量更新: 在进行批量更新时, 如果一下子把所有对象都加载到 Session 缓存, 然后再缓存中一一更新, 显然是不可取的
+> * 使用可滚动的结果集 org.hibernate.ScrollableResults, 该对象中实际上并不包含任何对象, 只包含用于在线定位记录的游标. 只有当程序遍历访问 ScrollableResults 对象的特定元素时, 它才会到数据库中加载相应的对象. 
+> * org.hibernate.ScrollableResults 对象由 Query 的 scroll 方法返回
+>
+> ```java
+> @Test
+> public void testBatch(){
+>     session.doWork(new Work() {
+>         @Override
+>         public void execute(Connection connection) throws SQLException {
+>             // 通过JDBC原生API进行操作，效率最高，速度最快
+>         }
+>     });
+> }
+> ```
+>
+> **通过 HQL 来进行批量操作**
+>
+> * 注意: HQL 只支持 INSERT INTO … SELECT 形式的插入语句, 但不支持 INSERT INTO … VALUES 形式的插入语句. 所以使用 HQL 不能进行批量插入操作. 
+>
+> **通过StatelessSession来进行批量操作**
+>
+> * 从形式上看，StatelessSession与session的用法类似。StatelessSession与session相比，有以下区别:
+>   * StatelessSession没有缓存，通过StatelessSession来加载、保存或更新后的对象处于游离状态。
+>   * StatelessSession不会与Hibernate的第二级缓存交互。
+>   * 当调用StatelessSession的save()、update()或delete()方法时，这些方法会立即执行相应的SQL语句，而不会仅计划执行一条SQL语句
+>   * StatelessSession不会进行脏检查，因此修改了Customer对象属性后，还需要调用StatelessSession的update()方法来更新数据库中数据。
+>   * StatelessSession不会对关联的对象进行任何级联操作。
+>   * 通过同一个StatelessSession对象两次加载OID为1的Customer对象，得到的两个对象内存地址不同。
+>   * StatelessSession所做的操作可以被Interceptor拦截器捕获到，但是会被Hibernate的事件处理系统忽略掉。
 
