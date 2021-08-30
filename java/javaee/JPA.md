@@ -901,3 +901,1616 @@
 > }
 > ```
 
+##### 单向一对多
+
+> ```java
+> package com.example.helloworld;
+> import javax.persistence.*;
+> import java.util.Date;
+> import java.util.HashSet;
+> import java.util.Set;
+> 
+> @Table(name = "CUSTOMERS")
+> @Entity
+> public class Customer {
+> 
+>     private Integer id;
+>     private String lastName;
+>     private String email;
+>     private Integer age;
+>     private Date createdTime;
+>     private Date birth;
+>     private Set<Order> orders = new HashSet<Order>();
+> 
+>     @Column(name = "ID")
+>     @GeneratedValue(strategy = GenerationType.AUTO)
+>     @Id
+>     public Integer getId() {
+>         return id;
+>     }
+> 
+>     public void setId(Integer id) {
+>         this.id = id;
+>     }
+> 
+>     @Column(name = "LAST_NAME")
+>     public String getLastName() {
+>         return lastName;
+>     }
+> 
+>     public void setLastName(String lastName) {
+>         this.lastName = lastName;
+>     }
+> 
+>     /**
+>      *  如果数据库字段名和属性名一致，则不用写@Column注解
+>      */
+>     public String getEmail() {
+>         return email;
+>     }
+> 
+>     public void setEmail(String email) {
+>         this.email = email;
+>     }
+> 
+>     public Integer getAge() {
+>         return age;
+>     }
+> 
+>     public void setAge(Integer age) {
+>         this.age = age;
+>     }
+> 
+>     @Temporal(TemporalType.TIMESTAMP)
+>     public Date getCreatedTime() {
+>         return createdTime;
+>     }
+> 
+>     public void setCreatedTime(Date createdTime) {
+>         this.createdTime = createdTime;
+>     }
+> 
+>     @Temporal(TemporalType.DATE)
+>     public Date getBirth() {
+>         return birth;
+>     }
+> 
+>     public void setBirth(Date birth) {
+>         this.birth = birth;
+>     }
+> 
+>     /**
+>      *  映射单向1-n关联关系
+>      *  使用@OneToMany来映射1-n的关联关系
+>      *  使用@JoinColumn来映射外键列的名称
+>      *  可以使用@OneToMany的fetch属性来修改默认的加载策略
+>      * @return
+>      */
+>     @JoinColumn(name = "CUSTOMER_ID")
+>     @OneToMany(fetch = FetchType.EAGER,cascade = {CascadeType.REMOVE})
+>     public Set<Order> getOrders() {
+>         return orders;
+>     }
+> 
+>     public void setOrders(Set<Order> orders) {
+>         this.orders = orders;
+>     }
+> 
+>     @Transient
+>     public String getInfo(){
+>         return "lastName : " + lastName + " email : " + email;
+>     }
+> 
+>     @Override
+>     public String toString() {
+>         return "Customer{" +
+>                 "id=" + id +
+>                 ", lastName='" + lastName + '\'' +
+>                 ", email='" + email + '\'' +
+>                 ", age=" + age +
+>                 ", createdTime=" + createdTime +
+>                 ", birth=" + birth +
+>                 '}';
+>     }
+> }
+> ```
+>
+> ```java
+> package com.example.helloworld;
+> import javax.persistence.*;
+> 
+> @Table(name = "ORDERS")
+> @Entity
+> public class Order {
+>     private Integer id;
+>     private String orderName;
+> 
+>     @GeneratedValue
+>     @Id
+>     public Integer getId() {
+>         return id;
+>     }
+> 
+>     public void setId(Integer id) {
+>         this.id = id;
+>     }
+> 
+>     @Column(name = "ORDER_NAME")
+>     public String getOrderName() {
+>         return orderName;
+>     }
+> 
+>     public void setOrderName(String orderName) {
+>         this.orderName = orderName;
+>     }
+> }
+> ```
+>
+> ```java
+> package com.example.test;
+> import com.example.helloworld.Customer;
+> import com.example.helloworld.Order;
+> import org.junit.After;
+> import org.junit.Before;
+> import org.junit.Test;
+> import javax.persistence.EntityManager;
+> import javax.persistence.EntityManagerFactory;
+> import javax.persistence.EntityTransaction;
+> import javax.persistence.Persistence;
+> import java.util.Date;
+> 
+> public class JPATest {
+> 
+>     private EntityManagerFactory entityManagerFactory;
+>     private EntityManager entityManager;
+>     private EntityTransaction transaction;
+> 
+>     @Before
+>     public void init(){
+>         entityManagerFactory = Persistence.createEntityManagerFactory("JPA-1");
+>         entityManager = entityManagerFactory.createEntityManager();
+>         transaction = entityManager.getTransaction();
+>         transaction.begin();
+>     }
+> 
+>     @After
+>     public void destroy(){
+>         transaction.commit();
+>         entityManager.close();
+>         entityManagerFactory.close();
+>     }
+> 
+>     /**
+>      *  单向1-n关联关系执行保存时，一定会多出update语句
+>      *  因为n的一端在插入时不会同时插入外键列
+>      */
+>     @Test
+>     public void testOneToManyPersist(){
+>         Customer customer = new Customer();
+>         customer.setAge(18);
+>         customer.setBirth(new Date());
+>         customer.setCreatedTime(new Date());
+>         customer.setEmail("tom@gmail.com");
+>         customer.setLastName("tom");
+> 
+>         Order order1 = new Order();
+>         order1.setOrderName("order-1");
+> 
+>         Order order2 = new Order();
+>         order2.setOrderName("order-2");
+> 
+>         // 设置关联关系
+>         customer.getOrders().add(order1);
+>         customer.getOrders().add(order2);
+>         // 执行保存操作
+>         entityManager.persist(customer);
+>         entityManager.persist(order1);
+>         entityManager.persist(order2);
+>     }
+> 
+>     /**
+>      *  默认对关联的多的一方，使用懒加载
+>      */
+>     @Test
+>     public void testOneToManyFind(){
+>         Customer customer = entityManager.find(Customer.class, 11);
+>         System.out.println(customer.getLastName());
+>         System.out.println(customer.getOrders().size());
+>     }
+> 
+>     /**
+>      *  默认情况下，若删除1的一端，则会把关联的n的一端的外键置空，然后进行删除
+>      *  可以通过修改OneToMany的cascade属性来修改默认的删除策略，实现级联删除
+>      */
+>     @Test
+>     public void testOneToManyRemove(){
+>         Customer customer = entityManager.find(Customer.class, 8);
+>         entityManager.remove(customer);
+>     }
+> 
+>     @Test
+>     public void testOneToManyUpdate(){
+>         Customer customer = entityManager.find(Customer.class, 14);
+>         customer.getOrders().iterator().next().setOrderName("order-1-update");
+>     }
+> }
+> ```
+
+##### 双向一对多
+> **双向一对多及多对一映射**
+>
+> * 双向一对多关系中，必须存在一个关系维护端，在 JPA 规范中，要求  many 的一方作为关系的维护端(owner side), one 的一方作为被维护端(inverse side)。
+> * 可以在 one 方指定 @OneToMany 注释并设置 mappedBy 属性，以指定它是这一关联中的被维护端，many 为维护端。
+> * 在 many 方指定 @ManyToOne 注释，并使用 @JoinColumn 指定外键名称
+>
+> ```java
+> package com.example.helloworld;
+> 
+> import javax.persistence.*;
+> import java.util.Date;
+> import java.util.HashSet;
+> import java.util.Set;
+> 
+> @Table(name = "CUSTOMERS")
+> @Entity
+> public class Customer {
+> 
+>  private Integer id;
+>  private String lastName;
+>  private String email;
+>  private Integer age;
+>  private Date createdTime;
+>  private Date birth;
+>  private Set<Order> orders = new HashSet<Order>();
+> 
+>  @Column(name = "ID")
+>  @GeneratedValue(strategy = GenerationType.AUTO)
+>  @Id
+>  public Integer getId() {
+>      return id;
+>  }
+> 
+>  public void setId(Integer id) {
+>      this.id = id;
+>  }
+> 
+>  @Column(name = "LAST_NAME")
+>  public String getLastName() {
+>      return lastName;
+>  }
+> 
+>  public void setLastName(String lastName) {
+>      this.lastName = lastName;
+>  }
+> 
+>  /**
+>      *  如果数据库字段名和属性名一致，则不用写@Column注解
+>      */
+>     public String getEmail() {
+>         return email;
+>     }
+> 
+>     public void setEmail(String email) {
+>         this.email = email;
+>     }
+> 
+>     public Integer getAge() {
+>         return age;
+>     }
+> 
+>     public void setAge(Integer age) {
+>         this.age = age;
+>     }
+> 
+>     @Temporal(TemporalType.TIMESTAMP)
+>     public Date getCreatedTime() {
+>         return createdTime;
+>     }
+> 
+>     public void setCreatedTime(Date createdTime) {
+>         this.createdTime = createdTime;
+>     }
+> 
+>     @Temporal(TemporalType.DATE)
+>     public Date getBirth() {
+>         return birth;
+>     }
+> 
+>     public void setBirth(Date birth) {
+>         this.birth = birth;
+>     }
+> 
+>     /**
+>      *  映射单向1-n关联关系
+>      *  使用@OneToMany来映射1-n的关联关系
+>      *  使用@JoinColumn来映射外键列的名称
+>      *  可以使用@OneToMany的fetch属性来修改默认的加载策略
+>      *
+>      * @return
+>      */
+> //    @JoinColumn(name = "CUSTOMER_ID")
+>     @OneToMany(fetch = FetchType.EAGER,cascade = {CascadeType.REMOVE},mappedBy = "customer")
+>     public Set<Order> getOrders() {
+>         return orders;
+>     }
+> 
+>     public void setOrders(Set<Order> orders) {
+>         this.orders = orders;
+>     }
+> 
+>     @Transient
+>     public String getInfo(){
+>         return "lastName : " + lastName + " email : " + email;
+>     }
+> 
+>     @Override
+>     public String toString() {
+>         return "Customer{" +
+>                 "id=" + id +
+>                 ", lastName='" + lastName + '\'' +
+>                 ", email='" + email + '\'' +
+>                 ", age=" + age +
+>                 ", createdTime=" + createdTime +
+>                 ", birth=" + birth +
+>                 '}';
+>     }
+> }
+> ```
+>
+> ```java
+> package com.example.helloworld;
+> 
+> import javax.persistence.*;
+> 
+> @Table(name = "ORDERS")
+> @Entity
+> public class Order {
+>     private Integer id;
+>     private String orderName;
+>     private Customer customer;
+> 
+>     @GeneratedValue
+>     @Id
+>     public Integer getId() {
+>         return id;
+>     }
+> 
+>     public void setId(Integer id) {
+>         this.id = id;
+>     }
+> 
+>     @Column(name = "ORDER_NAME")
+>     public String getOrderName() {
+>         return orderName;
+>     }
+> 
+>     public void setOrderName(String orderName) {
+>         this.orderName = orderName;
+>     }
+> 
+>     @JoinColumn(name = "CUSTOMER_ID")
+>     @ManyToOne(fetch = FetchType.LAZY)
+>     public Customer getCustomer() {
+>         return customer;
+>     }
+> 
+>     public void setCustomer(Customer customer) {
+>         this.customer = customer;
+>     }
+> }
+> ```
+>
+> ```java
+> package com.example.test;
+> import com.example.helloworld.Customer;
+> import com.example.helloworld.Order;
+> import org.junit.After;
+> import org.junit.Before;
+> import org.junit.Test;
+> import javax.persistence.EntityManager;
+> import javax.persistence.EntityManagerFactory;
+> import javax.persistence.EntityTransaction;
+> import javax.persistence.Persistence;
+> import java.util.Date;
+> 
+> public class JPATest {
+> 
+>     private EntityManagerFactory entityManagerFactory;
+>     private EntityManager entityManager;
+>     private EntityTransaction transaction;
+> 
+>     @Before
+>     public void init(){
+>         entityManagerFactory = Persistence.createEntityManagerFactory("JPA-1");
+>         entityManager = entityManagerFactory.createEntityManager();
+>         transaction = entityManager.getTransaction();
+>         transaction.begin();
+>     }
+> 
+>     @After
+>     public void destroy(){
+>         transaction.commit();
+>         entityManager.close();
+>         entityManagerFactory.close();
+>     }
+> 
+>     /**
+>      *  若是双向1-n的关联关系，执行保存时
+>      *  若先保存n的一端，再保存1的一端，默认情况下会多出4条update语句
+>      *  在进行双向1-n关联关系时，建议使用n的一方来维护关联关系，而1的一方不维护，这样会有效地减少SQL语句
+>      *  注意:若在1的一端 @OneToMany 中，使用mappedBy属性，则 @OneToMany就不能再使用 @JoinColumn注解
+>      */
+>     @Test
+>     public void testOneToManyPersist(){
+>         Customer customer = new Customer();
+>         customer.setAge(18);
+>         customer.setBirth(new Date());
+>         customer.setCreatedTime(new Date());
+>         customer.setEmail("mike@gmail.com");
+>         customer.setLastName("mike");
+> 
+>         Order order1 = new Order();
+>         order1.setOrderName("order-3");
+> 
+>         Order order2 = new Order();
+>         order2.setOrderName("order-4");
+> 
+>         // 设置关联关系
+>         customer.getOrders().add(order1);
+>         customer.getOrders().add(order2);
+> 
+>         order1.setCustomer(customer);
+>         order2.setCustomer(customer);
+>         // 执行保存操作
+>         entityManager.persist(order1);
+>         entityManager.persist(order2);
+>         entityManager.persist(customer);
+> 
+>     }
+> 
+>     /**
+>      *  默认对关联的多的一方，使用懒加载
+>      */
+>     @Test
+>     public void testOneToManyFind(){
+>         Customer customer = entityManager.find(Customer.class, 11);
+>         System.out.println(customer.getLastName());
+>         System.out.println(customer.getOrders().size());
+>     }
+> 
+>     /**
+>      *  默认情况下，若删除1的一端，则会把关联的n的一端的外键置空，然后进行删除
+>      *  可以通过修改OneToMany的cascade属性来修改默认的删除策略，实现级联删除
+>      */
+>     @Test
+>     public void testOneToManyRemove(){
+>         Customer customer = entityManager.find(Customer.class, 8);
+>         entityManager.remove(customer);
+>     }
+> 
+>     @Test
+>     public void testOneToManyUpdate(){
+>         Customer customer = entityManager.find(Customer.class, 14);
+>         customer.getOrders().iterator().next().setOrderName("order-1-update");
+>     }
+> }
+> ```
+
+##### 双向一对一
+
+> **双向一对一映射**
+>
+> * 基于外键的 1-1 关联关系：在双向的一对一关联中，需要在关系被维护端(inverse side)中的 @OneToOne 注释中指定 mappedBy，以指定是这一关联中的被维护端。同时需要在关系维护端(owner side)建立外键列指向关系被维护端的主键列。
+>
+> **双向 1-1 不延迟加载的问题**
+>
+> * 如果延迟加载要起作用, 就必须设置一个代理对象
+> * Manager 其实可以不关联一个 Department
+> * 如果有 Department 关联就设置为代理对象而延迟加载, 如果不存在关联的 Department 就设置 null, 因为外键字段是定义在 Department 表中的,Hibernate 在不读取 Department 表的情况是无法判断是否有关联有 Deparmtment, 因此无法判断设置 null 还是代理对象, 而统一设置为代理对象,也无法满足不关联的情况, 所以无法使用延迟加载,只 有显式读取 Department.
+>
+> ![](./images/jpa1-1.jpg)
+>
+> ```java
+> package com.example.helloworld;
+> import javax.persistence.*;
+> 
+> @Table(name = "managers")
+> @Entity
+> public class Manager {
+>     private Integer id;
+>     private String mgrName;
+>     private Department dept;
+> 
+>     @GeneratedValue
+>     @Id
+>     public Integer getId() {
+>         return id;
+>     }
+> 
+>     public void setId(Integer id) {
+>         this.id = id;
+>     }
+> 
+>     @Column(name = "mgr_name")
+>     public String getMgrName() {
+>         return mgrName;
+>     }
+> 
+>     public void setMgrName(String mgrName) {
+>         this.mgrName = mgrName;
+>     }
+> 
+>     /**
+>      *  对于不维护关联关系，没有外键的一方，使用 @OneToOne来进行映射，建议设置mappedBy属性
+>      * @return
+>      */
+>     @OneToOne(mappedBy = "mgr",fetch = FetchType.LAZY)
+>     public Department getDept() {
+>         return dept;
+>     }
+> 
+>     public void setDept(Department dept) {
+>         this.dept = dept;
+>     }
+> }
+> ```
+>
+> ```java
+> package com.example.helloworld;
+> import javax.persistence.*;
+> 
+> @Table(name = "departments")
+> @Entity
+> public class Department {
+>     private Integer id;
+>     private String deptName;
+>     private Manager mgr;
+> 
+>     @GeneratedValue
+>     @Id
+>     public Integer getId() {
+>         return id;
+>     }
+> 
+>     public void setId(Integer id) {
+>         this.id = id;
+>     }
+> 
+>     @Column(name = "dept_name")
+>     public String getDeptName() {
+>         return deptName;
+>     }
+> 
+>     public void setDeptName(String deptName) {
+>         this.deptName = deptName;
+>     }
+> 
+>     /**
+>      *  使用 @OneToOne来映射1-1关联关系
+>      *  若需要在当前数据表中添加主键，则需要使用@JoinColumn来进行映射，注意1-1关联关系，需要添加unique=true
+>      * @return
+>      */
+>     @JoinColumn(name = "mgr_id",unique = true)
+>     @OneToOne(fetch = FetchType.LAZY)
+>     public Manager getMgr() {
+>         return mgr;
+>     }
+> 
+>     public void setMgr(Manager mgr) {
+>         this.mgr = mgr;
+>     }
+> }
+> ```
+>
+> ```java
+> package com.example.test;
+> import com.example.helloworld.Department;
+> import com.example.helloworld.Manager;
+> import org.junit.After;
+> import org.junit.Before;
+> import org.junit.Test;
+> import javax.persistence.EntityManager;
+> import javax.persistence.EntityManagerFactory;
+> import javax.persistence.EntityTransaction;
+> import javax.persistence.Persistence;
+> 
+> public class JPATest {
+> 
+>     private EntityManagerFactory entityManagerFactory;
+>     private EntityManager entityManager;
+>     private EntityTransaction transaction;
+> 
+>     @Before
+>     public void init(){
+>         entityManagerFactory = Persistence.createEntityManagerFactory("JPA-1");
+>         entityManager = entityManagerFactory.createEntityManager();
+>         transaction = entityManager.getTransaction();
+>         transaction.begin();
+>     }
+> 
+>     @After
+>     public void destroy(){
+>         transaction.commit();
+>         entityManager.close();
+>         entityManagerFactory.close();
+>     }
+> 
+>     /**
+>      *  双向1-1的关联关系，建议先保存不维护关联关系的一方，即没有外键的一方，这样不会多出update语句
+>      */
+>     @Test
+>     public void testOneToOne(){
+>         Manager manager = new Manager();
+>         manager.setMgrName("M-AA");
+>         Department department = new Department();
+>         department.setDeptName("D-AA");
+>         // 设置关联关系
+>         manager.setDept(department);
+>         department.setMgr(manager);
+> 
+>         // 执行保存操作
+>         entityManager.persist(manager);
+>         entityManager.persist(department);
+>     }
+> 
+>     /**
+>      *  默认情况下：
+>      *      1.若获取维护关联关系的一方，则会通过左外连接获取其关联的对象
+>      *      但可以通过 @OneToOne的fetch属性来修改加载策略
+>      */
+>     @Test
+>     public void testOneToOneFind(){
+>         Department department = entityManager.find(Department.class, 2);
+>         System.out.println(department.getDeptName());
+>         System.out.println(department.getMgr().getClass().getName());
+>     }
+> 
+>     /**
+>      *  默认情况下：
+>      *    1.若获取不维护关联关系的一方，也会通过左外连接获取其关联的对象
+>      *    但可以通过 @OneToOne的fetch属性来修改加载策略，但依然会再发送SQL语句来初始化其关联的对象
+>      *    这说明在不维护关联关系的一方，不建议修改fetch属性
+>      */
+>     @Test
+>     public void testOneToOneFind1(){
+>         Manager manager = entityManager.find(Manager.class, 1);
+>         System.out.println(manager.getMgrName());
+>         System.out.println(manager.getDept().getClass().getName());
+>     }
+> }
+> ```
+>
+
+##### 双向多对多
+
+> * 在双向多对多关系中，我们必须指定一个关系维护端(owner side),可以通过 @ManyToMany 注释中指定 mappedBy 属性来标识其为关系维护端。
+>
+> 表结构
+>
+> ![](./images/jpa_n2n.jpg)
+>
+> ```java
+> package com.example.helloworld;
+> import javax.persistence.*;
+> import java.util.HashSet;
+> import java.util.Set;
+> 
+> @Table(name = "categories")
+> @Entity
+> public class Category {
+>     private Integer id;
+>     private String categoryName;
+>     private Set<Item> items = new HashSet<Item>();
+> 
+>     @GeneratedValue
+>     @Id
+>     public Integer getId() {
+>         return id;
+>     }
+> 
+>     public void setId(Integer id) {
+>         this.id = id;
+>     }
+> 
+>     @Column(name = "category_name")
+>     public String getCategoryName() {
+>         return categoryName;
+>     }
+> 
+>     public void setCategoryName(String categoryName) {
+>         this.categoryName = categoryName;
+>     }
+> 
+>     @ManyToMany(mappedBy = "categories")
+>     public Set<Item> getItems() {
+>         return items;
+>     }
+> 
+>     public void setItems(Set<Item> items) {
+>         this.items = items;
+>     }
+> }
+> ```
+>
+> ```java
+> package com.example.helloworld;
+> import javax.persistence.*;
+> import java.util.HashSet;
+> import java.util.Set;
+> 
+> @Table(name = "items")
+> @Entity
+> public class Item {
+>     private Integer id;
+>     private String itemName;
+>     private Set<Category> categories = new HashSet<Category>();
+> 
+>     @GeneratedValue
+>     @Id
+>     public Integer getId() {
+>         return id;
+>     }
+> 
+>     public void setId(Integer id) {
+>         this.id = id;
+>     }
+> 
+>     @Column(name = "item_name")
+>     public String getItemName() {
+>         return itemName;
+>     }
+> 
+>     public void setItemName(String itemName) {
+>         this.itemName = itemName;
+>     }
+> 
+>     /**
+>      *  使用 @ManyToMany注解来映射多对多关联关系
+>      *  使用 @JoinTable来映射中间表
+>      *  1.name指向中间表的名字
+>      *  2.joinColumns映射当前类所在的表在中间表中的外键
+>      *      2.1 name指定外键列的列名
+>      *      2.2 referencedColumnName指定外键列关联当前表的哪一列
+>      *  3.inverseJoinColumns 映射关联的类所在中间表的外键
+>      * @return
+>      */
+>     @JoinTable(name = "category_item",joinColumns = {@JoinColumn(name = "item_id",referencedColumnName = "id")},inverseJoinColumns = {@JoinColumn(name = "category_id",referencedColumnName = "id")})
+>     @ManyToMany
+>     public Set<Category> getCategories() {
+>         return categories;
+>     }
+> 
+>     public void setCategories(Set<Category> categories) {
+>         this.categories = categories;
+>     }
+> }
+> ```
+>
+> ```java
+> package com.example.test;
+> import com.example.helloworld.Category;
+> import com.example.helloworld.Item;
+> import org.junit.After;
+> import org.junit.Before;
+> import org.junit.Test;
+> import javax.persistence.EntityManager;
+> import javax.persistence.EntityManagerFactory;
+> import javax.persistence.EntityTransaction;
+> import javax.persistence.Persistence;
+> 
+> public class JPATest {
+> 
+>     private EntityManagerFactory entityManagerFactory;
+>     private EntityManager entityManager;
+>     private EntityTransaction transaction;
+> 
+>     @Before
+>     public void init(){
+>         entityManagerFactory = Persistence.createEntityManagerFactory("JPA-1");
+>         entityManager = entityManagerFactory.createEntityManager();
+>         transaction = entityManager.getTransaction();
+>         transaction.begin();
+>     }
+> 
+>     @After
+>     public void destroy(){
+>         transaction.commit();
+>         entityManager.close();
+>         entityManagerFactory.close();
+>     }
+> 
+>     /**
+>      *  多对多的保存
+>      */
+>     @Test
+>     public void testManyToMany(){
+>         Item item1 = new Item();
+>         item1.setItemName("item-1");
+>         Item item2 = new Item();
+>         item2.setItemName("item-2");
+> 
+>         Category category1 = new Category();
+>         category1.setCategoryName("cat-1");
+>         Category category2 = new Category();
+>         category2.setCategoryName("cat-2");
+> 
+>         // 设置关联关系
+>         item1.getCategories().add(category1);
+>         item1.getCategories().add(category2);
+>         item2.getCategories().add(category1);
+>         item2.getCategories().add(category2);
+> 
+>         category1.getItems().add(item1);
+>         category1.getItems().add(item2);
+>         category2.getItems().add(item1);
+>         category2.getItems().add(item2);
+> 
+>         // 执行保存
+>         entityManager.persist(item1);
+>         entityManager.persist(item2);
+>         entityManager.persist(category1);
+>         entityManager.persist(category2);
+>     }
+> 
+>     /**
+>      *  对于关联的集合对象，默认使用懒加载的策略
+>      *  使用维护关联关系的一方获取，还是使用不维护关联关系的一方获取，SQL语句相同
+>      */
+>     @Test
+>     public void testManyToManyFind(){
+> //        Item item = entityManager.find(Item.class, 5);
+> //        System.out.println(item.getItemName());
+> //        System.out.println(item.getCategories().size());
+> 
+>         Category category = entityManager.find(Category.class, 7);
+>         System.out.println(category.getCategoryName());
+>         System.out.println(category.getItems().size());
+>     }
+> }
+> ```
+
+### 二级缓存
+
+> **使用二级缓存**
+>
+> * <shared-cache-mode> 节点：若 JPA 实现支持二级缓存，该节点可以配置在当前的持久化单元中是否启用二级缓存，可配置如下值：
+>   * ALL：所有的实体类都被缓存
+>   * NONE：所有的实体类都不被缓存. 
+>   * ENABLE_SELECTIVE：标识 @Cacheable(true) 注解的实体类将被缓存
+>   * DISABLE_SELECTIVE：缓存除标识 @Cacheable(false) 以外的所有实体类
+>   * UNSPECIFIED：默认值，JPA 产品默认值将被使用
+>
+> ```xml
+> <?xml version="1.0" encoding="UTF-8"?>
+> <project xmlns="http://maven.apache.org/POM/4.0.0"
+>          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+>          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+>     <modelVersion>4.0.0</modelVersion>
+> 
+>     <groupId>groupId</groupId>
+>     <artifactId>jpa</artifactId>
+>     <version>1.0-SNAPSHOT</version>
+> 
+>     <dependencies>
+>         <!--  hibernate 依赖 -->
+>         <!-- https://mvnrepository.com/artifact/org.hibernate/hibernate-entitymanager -->
+>         <dependency>
+>             <groupId>org.hibernate</groupId>
+>             <artifactId>hibernate-entitymanager</artifactId>
+>             <version>5.4.1.Final</version>
+>         </dependency>
+>         <!-- https://mvnrepository.com/artifact/org.hibernate/hibernate-ehcache -->
+>         <dependency>
+>             <groupId>org.hibernate</groupId>
+>             <artifactId>hibernate-ehcache</artifactId>
+>             <version>5.4.1.Final</version>
+>         </dependency>
+>         <!-- mysql 驱动 -->
+>         <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
+>         <dependency>
+>             <groupId>mysql</groupId>
+>             <artifactId>mysql-connector-java</artifactId>
+>             <version>8.0.13</version>
+>         </dependency>
+>         <dependency>
+>             <groupId>junit</groupId>
+>             <artifactId>junit</artifactId>
+>             <version>4.13</version>
+>             <scope>test</scope>
+>         </dependency>
+>     </dependencies>
+> </project>
+> ```
+>
+> ```xml
+> <?xml version="1.0" encoding="UTF-8"?>
+> <persistence xmlns="http://java.sun.com/xml/ns/persistence" version="2.0">
+>     <persistence-unit name="JPA-1" transaction-type="RESOURCE_LOCAL">
+> 
+>         <!--
+>         配置使用什么 ORM 产品来作为 JPA 的实现
+>         1. 实际上配置的是  javax.persistence.spi.PersistenceProvider 接口的实现类
+>         2. 若 JPA 项目中只有一个 JPA 的实现产品, 则也可以不配置该节点.
+>         -->
+>         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+> 
+>         <!--添加持久化类-->
+>         <class>com.example.helloworld.Category</class>
+>         <class>com.example.helloworld.Item</class>
+>         <!--配置二级缓存的策略-->
+>         <shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>
+>         <properties>
+>             <!-- 连接数据库的基本信息 -->
+>             <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver"/>
+>             <property name="javax.persistence.jdbc.url" value="jdbc:mysql://192.168.0.199/test"/>
+>             <property name="javax.persistence.jdbc.user" value="root"/>
+>             <property name="javax.persistence.jdbc.password" value="root"/>
+> 
+>             <!-- 配置 JPA 实现产品的基本属性. 配置 hibernate 的基本属性 -->
+>             <property name="hibernate.format_sql" value="true"/>
+>             <property name="hibernate.show_sql" value="true"/>
+>             <property name="hibernate.hbm2ddl.auto" value="update"/>
+>             <!--二级缓存相关-->
+>             <property name="hibernate.cache.use_second_level_cache" value="true"/>
+>             <property name="hibernate.cache.region.factory_class" value="org.hibernate.cache.ehcache.internal.EhcacheRegionFactory"/>
+>             <property name="hibernate.cache.use_query_cache" value="true"/>
+>         </properties>
+>     </persistence-unit>
+> </persistence>
+> ```
+>
+> ```xml
+> <ehcache>
+>     <!-- Sets the path to the directory where cache .data files are created.
+> 
+>          If the path is a Java System Property it is replaced by
+>          its value in the running VM.
+> 
+>          The following properties are translated:
+>          user.home - User's home directory
+>          user.dir - User's current working directory
+>          java.io.tmpdir - Default temp file path -->
+>     <diskStore path="java.io.tmpdir"/>
+> 
+> 
+>     <!--Default Cache configuration. These will applied to caches programmatically created through
+>         the CacheManager.
+> 
+>         The following attributes are required for defaultCache:
+> 
+>         maxInMemory       - Sets the maximum number of objects that will be created in memory
+>         eternal           - Sets whether elements are eternal. If eternal,  timeouts are ignored and the element
+>                             is never expired.
+>         timeToIdleSeconds - Sets the time to idle for an element before it expires. Is only used
+>                             if the element is not eternal. Idle time is now - last accessed time
+>         timeToLiveSeconds - Sets the time to live for an element before it expires. Is only used
+>                             if the element is not eternal. TTL is now - creation time
+>         overflowToDisk    - Sets whether elements can overflow to disk when the in-memory cache
+>                             has reached the maxInMemory limit.
+> 
+>         -->
+>     <defaultCache
+>         maxElementsInMemory="10000"
+>         eternal="false"
+>         timeToIdleSeconds="120"
+>         timeToLiveSeconds="120"
+>         overflowToDisk="true"
+>         />
+> 
+>     <!--Predefined caches.  Add your cache configuration settings here.
+>         If you do not have a configuration for your cache a WARNING will be issued when the
+>         CacheManager starts
+> 
+>         The following attributes are required for defaultCache:
+> 
+>         name              - Sets the name of the cache. This is used to identify the cache. It must be unique.
+>         maxInMemory       - Sets the maximum number of objects that will be created in memory
+>         eternal           - Sets whether elements are eternal. If eternal,  timeouts are ignored and the element
+>                             is never expired.
+>         timeToIdleSeconds - Sets the time to idle for an element before it expires. Is only used
+>                             if the element is not eternal. Idle time is now - last accessed time
+>         timeToLiveSeconds - Sets the time to live for an element before it expires. Is only used
+>                             if the element is not eternal. TTL is now - creation time
+>         overflowToDisk    - Sets whether elements can overflow to disk when the in-memory cache
+>                             has reached the maxInMemory limit.
+> 
+>         -->
+> 
+>     <!-- Sample cache named sampleCache1
+>         This cache contains a maximum in memory of 10000 elements, and will expire
+>         an element if it is idle for more than 5 minutes and lives for more than
+>         10 minutes.
+> 
+>         If there are more than 10000 elements it will overflow to the
+>         disk cache, which in this configuration will go to wherever java.io.tmp is
+>         defined on your system. On a standard Linux system this will be /tmp"
+>         -->
+>     <cache name="sampleCache1"
+>         maxElementsInMemory="10000"
+>         eternal="false"
+>         timeToIdleSeconds="300"
+>         timeToLiveSeconds="600"
+>         overflowToDisk="true"
+>         />
+> 
+>     <!-- Sample cache named sampleCache2
+>         This cache contains 1000 elements. Elements will always be held in memory.
+>         They are not expired. -->
+>     <cache name="sampleCache2"
+>         maxElementsInMemory="1000"
+>         eternal="true"
+>         timeToIdleSeconds="0"
+>         timeToLiveSeconds="0"
+>         overflowToDisk="false"
+>         /> -->
+> 
+>     <!-- Place configuration for your caches following -->
+> </ehcache>
+> ```
+>
+> ```java
+> package com.example.helloworld;
+> import javax.persistence.*;
+> import java.util.HashSet;
+> import java.util.Set;
+> 
+> @Cacheable(true)
+> @Table(name = "categories")
+> @Entity
+> public class Category {
+>     private Integer id;
+>     private String categoryName;
+>     private Set<Item> items = new HashSet<Item>();
+> 
+>     @GeneratedValue
+>     @Id
+>     public Integer getId() {
+>         return id;
+>     }
+> 
+>     public void setId(Integer id) {
+>         this.id = id;
+>     }
+> 
+>     @Column(name = "category_name")
+>     public String getCategoryName() {
+>         return categoryName;
+>     }
+> 
+>     public void setCategoryName(String categoryName) {
+>         this.categoryName = categoryName;
+>     }
+> 
+>     @ManyToMany(mappedBy = "categories")
+>     public Set<Item> getItems() {
+>         return items;
+>     }
+> 
+>     public void setItems(Set<Item> items) {
+>         this.items = items;
+>     }
+> }
+> ```
+>
+> ```java
+> package com.example.test;
+> import com.example.helloworld.Category;
+> import org.junit.After;
+> import org.junit.Before;
+> import org.junit.Test;
+> import javax.persistence.EntityManager;
+> import javax.persistence.EntityManagerFactory;
+> import javax.persistence.EntityTransaction;
+> import javax.persistence.Persistence;
+> 
+> public class JPATest {
+> 
+>     private EntityManagerFactory entityManagerFactory;
+>     private EntityManager entityManager;
+>     private EntityTransaction transaction;
+> 
+>     @Before
+>     public void init(){
+>         entityManagerFactory = Persistence.createEntityManagerFactory("JPA-1");
+>         entityManager = entityManagerFactory.createEntityManager();
+>         transaction = entityManager.getTransaction();
+>         transaction.begin();
+>     }
+> 
+>     @After
+>     public void destroy(){
+>         transaction.commit();
+>         entityManager.close();
+>         entityManagerFactory.close();
+>     }
+> 
+>     @Test
+>     public void testSecondLevelCache(){
+>         Category c1 = entityManager.find(Category.class, 7);
+> 
+>         transaction.commit();
+>         entityManager.close();
+>         entityManager = entityManagerFactory.createEntityManager();
+>         transaction = entityManager.getTransaction();
+>         transaction.begin();
+> 
+>         Category c2 = entityManager.find(Category.class, 7);
+>     }
+> }
+> ```
+
+### JPQL
+
+##### 概念以及常用方法
+> **JPQL语言**
+>
+> * JPQL语言，即 Java Persistence Query Language 的简称。JPQL 是一种和 SQL 非常类似的中间性和对象化查询语言，它最终会被编译成针对不同底层数据库的 SQL 查询，从而屏蔽不同数据库的差异。
+> * JPQL语言的语句可以是 select 语句、update 语句或delete语句，它们都通过 Query 接口封装执行
+>
+> **javax.persistence.Query**
+>
+> * Query接口封装了执行数据库查询的相关方法。调用 EntityManager 的 createQuery、create NamedQuery 及 createNativeQuery 方法可以获得查询对象，进而可调用 Query 接口的相关方法来执行查询操作。
+>
+> * Query接口的主要方法
+>
+>   * int executeUpdate()：用于执行update或delete语句。
+>   * List getResultList()：用于执行select语句并返回结果集实体列表。
+>   * Object getSingleResult()：用于执行只返回单个结果实体的select语句。
+>   * Query setFirstResult(int startPosition)：用于设置从哪个实体记录开始返回查询结果。
+>   * Query setMaxResults(int maxResult) ：用于设置返回结果实体的最大数。与setFirstResult结合使用可实现分页查询。
+>   * Query setFlushMode(FlushModeType flushMode) ：设置查询对象的Flush模式。参数可以取2个枚举值：FlushModeType.AUTO 为自动更新数据库记录，FlushMode Type.COMMIT 为直到提交事务时才更新数据库记录。
+>   * setHint(String hintName, Object value) ：设置与查询对象相关的特定供应商参数或提示信息。参数名及其取值需要参考特定 JPA 实现库提供商的文档。如果第二个参数无效将抛出IllegalArgumentException异常。
+>   * setParameter(int position, Object value) ：为查询语句的指定位置参数赋值。Position 指定参数序号，value 为赋给参数的值。
+>   * setParameter(int position, Date d, TemporalType type) ：为查询语句的指定位置参数赋 Date 值。Position 指定参数序号，value 为赋给参数的值，temporalType 取 TemporalType 的枚举常量，包括 DATE、TIME 及 TIMESTAMP 三个，，用于将 Java 的 Date 型值临时转换为数据库支持的日期时间类型（java.sql.Date、java.sql.Time及java.sql.Timestamp）。
+>   * setParameter(int position, Calendar c, TemporalType type) ：为查询语句的指定位置参数赋 Calenda r值。position 指定参数序号，value 为赋给参数的值，temporalType 的含义及取舍同前。
+>   * setParameter(String name, Object value) ：为查询语句的指定名称参数赋值。
+>   * setParameter(String name, Date d, TemporalType type) ：为查询语句的指定名称参数赋 Date 值。用法同前。
+>   * setParameter(String name, Calendar c, TemporalType type) ：为查询语句的指定名称参数设置Calendar值。name为参数名，其它同前。该方法调用时如果参数位置或参数名不正确，或者所赋的参数值类型不匹配，将抛出 IllegalArgumentException 异常。
+>
+>   
+>
+> ```xml
+> <?xml version="1.0" encoding="UTF-8"?>
+> <persistence xmlns="http://java.sun.com/xml/ns/persistence" version="2.0">
+>  <persistence-unit name="JPA-1" transaction-type="RESOURCE_LOCAL">
+> 
+>      <!--
+>      配置使用什么 ORM 产品来作为 JPA 的实现
+>         1. 实际上配置的是  javax.persistence.spi.PersistenceProvider 接口的实现类
+>         2. 若 JPA 项目中只有一个 JPA 的实现产品, 则也可以不配置该节点.
+>         -->
+>         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+> 
+>         <!--添加持久化类-->
+>         <class>com.example.helloworld.Customer</class>
+>         <!--配置二级缓存的策略-->
+>         <shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>
+>         <properties>
+>             <!-- 连接数据库的基本信息 -->
+>             <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver"/>
+>             <property name="javax.persistence.jdbc.url" value="jdbc:mysql://192.168.0.199/test"/>
+>             <property name="javax.persistence.jdbc.user" value="root"/>
+>             <property name="javax.persistence.jdbc.password" value="root"/>
+> 
+>             <!-- 配置 JPA 实现产品的基本属性. 配置 hibernate 的基本属性 -->
+>             <property name="hibernate.format_sql" value="true"/>
+>             <property name="hibernate.show_sql" value="true"/>
+>             <property name="hibernate.hbm2ddl.auto" value="update"/>
+>             <!--二级缓存相关-->
+>             <property name="hibernate.cache.use_second_level_cache" value="true"/>
+>             <property name="hibernate.cache.region.factory_class" value="org.hibernate.cache.ehcache.internal.EhcacheRegionFactory"/>
+>             <property name="hibernate.cache.use_query_cache" value="true"/>
+>         </properties>
+>     </persistence-unit>
+> </persistence>
+> ```
+>
+> ```java
+> package com.example.helloworld;
+> import javax.persistence.*;
+> import java.util.Date;
+> import java.util.HashSet;
+> import java.util.Set;
+> 
+> @NamedQuery(name = "testNamedQuery",query = "FROM Customer c WHERE c.id = ?1")
+> @Table(name = "CUSTOMERS")
+> @Entity
+> public class Customer {
+> 
+>     private Integer id;
+>     private String lastName;
+>     private String email;
+>     private Integer age;
+>     private Date createdTime;
+>     private Date birth;
+>     private Set<Order> orders = new HashSet<Order>();
+> 
+>     public Customer() {
+>     }
+> 
+>     public Customer(String lastName, Integer age) {
+>         this.lastName = lastName;
+>         this.age = age;
+>     }
+> 
+>     @Column(name = "ID")
+>     @GeneratedValue(strategy = GenerationType.AUTO)
+>     @Id
+>     public Integer getId() {
+>         return id;
+>     }
+> 
+>     public void setId(Integer id) {
+>         this.id = id;
+>     }
+> 
+>     @Column(name = "LAST_NAME")
+>     public String getLastName() {
+>         return lastName;
+>     }
+> 
+>     public void setLastName(String lastName) {
+>         this.lastName = lastName;
+>     }
+> 
+>     /**
+>      *  如果数据库字段名和属性名一致，则不用写@Column注解
+>      */
+>     public String getEmail() {
+>         return email;
+>     }
+> 
+>     public void setEmail(String email) {
+>         this.email = email;
+>     }
+> 
+>     public Integer getAge() {
+>         return age;
+>     }
+> 
+>     public void setAge(Integer age) {
+>         this.age = age;
+>     }
+> 
+>     @Temporal(TemporalType.TIMESTAMP)
+>     public Date getCreatedTime() {
+>         return createdTime;
+>     }
+> 
+>     public void setCreatedTime(Date createdTime) {
+>         this.createdTime = createdTime;
+>     }
+> 
+>     @Temporal(TemporalType.DATE)
+>     public Date getBirth() {
+>         return birth;
+>     }
+> 
+>     public void setBirth(Date birth) {
+>         this.birth = birth;
+>     }
+> 
+>     /**
+>      *  映射单向1-n关联关系
+>      *  使用@OneToMany来映射1-n的关联关系
+>      *  使用@JoinColumn来映射外键列的名称
+>      *  可以使用@OneToMany的fetch属性来修改默认的加载策略
+>      *
+>      * @return
+>      */
+> //    @JoinColumn(name = "CUSTOMER_ID")
+>     @OneToMany(fetch = FetchType.EAGER,cascade = {CascadeType.REMOVE},mappedBy = "customer")
+>     public Set<Order> getOrders() {
+>         return orders;
+>     }
+> 
+>     public void setOrders(Set<Order> orders) {
+>         this.orders = orders;
+>     }
+> 
+>     @Transient
+>     public String getInfo(){
+>         return "lastName : " + lastName + " email : " + email;
+>     }
+> 
+>     @Override
+>     public String toString() {
+>         return "Customer{" +
+>                 "id=" + id +
+>                 ", lastName='" + lastName + '\'' +
+>                 ", email='" + email + '\'' +
+>                 ", age=" + age +
+>                 ", createdTime=" + createdTime +
+>                 ", birth=" + birth +
+>                 '}';
+>     }
+> }
+> ```
+>
+> ```java
+> package com.example.test;
+> import com.example.helloworld.Customer;
+> import org.junit.After;
+> import org.junit.Before;
+> import org.junit.Test;
+> import javax.persistence.*;
+> import java.util.List;
+> 
+> public class JPATest {
+> 
+>     private EntityManagerFactory entityManagerFactory;
+>     private EntityManager entityManager;
+>     private EntityTransaction transaction;
+> 
+>     @Before
+>     public void init(){
+>         entityManagerFactory = Persistence.createEntityManagerFactory("JPA-1");
+>         entityManager = entityManagerFactory.createEntityManager();
+>         transaction = entityManager.getTransaction();
+>         transaction.begin();
+>     }
+> 
+>     @After
+>     public void destroy(){
+>         transaction.commit();
+>         entityManager.close();
+>         entityManagerFactory.close();
+>     }
+> 
+>     /**
+>      *  在高版本的Hibernate中需要在?后面加上index，从1开始，低版本不需要加
+>      */
+>     @Test
+>     public void testJPQL(){
+>         String jpql = "FROM Customer c WHERE c.age > ?1";
+>         Query query = entityManager.createQuery(jpql);
+>         query.setParameter( 1, 15);
+>         List<Customer> customers = query.getResultList();
+>         System.out.println(customers.size());
+>     }
+> 
+>     /**
+>      *  获取部分属性
+>      *  默认情况下，若只查询部分属性，则将返回Object[]类型的结果，或者Object[]类型的List
+>      *  也可以在实体类中创建对应的构造器，然后在JPQL语句中利用对应的构造器，返回实体类的对象
+>      */
+>     @Test
+>     public void testPartlyProperties(){
+>         String jpql = "SELECT new Customer(c.lastName,c.age) FROM Customer c WHERE c.id > ?1";
+>         Query query = entityManager.createQuery(jpql);
+>         query.setParameter(1, 6);
+>         List<Customer> customers = query.getResultList();
+>         System.out.println(customers);
+>     }
+> 
+>     /**
+>      *  在实体类前使用@NamedQuery注解，写JPQL语句
+>      */
+>     @Test
+>     public void testNamedQuery(){
+>         Query query = entityManager.createNamedQuery("testNamedQuery");
+>         query.setParameter(1,1 );
+>         Customer customer = (Customer) query.getSingleResult();
+>         System.out.println(customer);
+>     }
+> 
+>     /**
+>      *  本地SQL查询
+>      */
+>     @Test
+>     public void testNativeQuery(){
+>         String sql = "SELECT age FROM CUSTOMERS WHERE id = ?";
+>         Query query = entityManager.createNativeQuery(sql);
+>         query.setParameter(1, 1);
+>         Object result = query.getSingleResult();
+>         System.out.println(result);
+>     }
+> }
+> ```
+
+##### 查询缓存
+
+> ```xml
+> <?xml version="1.0" encoding="UTF-8"?>
+> <persistence xmlns="http://java.sun.com/xml/ns/persistence" version="2.0">
+>     <persistence-unit name="JPA-1" transaction-type="RESOURCE_LOCAL">
+> 
+>         <!--
+>         配置使用什么 ORM 产品来作为 JPA 的实现
+>         1. 实际上配置的是  javax.persistence.spi.PersistenceProvider 接口的实现类
+>         2. 若 JPA 项目中只有一个 JPA 的实现产品, 则也可以不配置该节点.
+>         -->
+>         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+> 
+>         <!--添加持久化类-->
+>         <class>com.example.helloworld.Customer</class>
+>         <!--配置二级缓存的策略-->
+>         <shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>
+>         <properties>
+>             <!-- 连接数据库的基本信息 -->
+>             <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver"/>
+>             <property name="javax.persistence.jdbc.url" value="jdbc:mysql://192.168.0.199/test"/>
+>             <property name="javax.persistence.jdbc.user" value="root"/>
+>             <property name="javax.persistence.jdbc.password" value="root"/>
+> 
+>             <!-- 配置 JPA 实现产品的基本属性. 配置 hibernate 的基本属性 -->
+>             <property name="hibernate.format_sql" value="true"/>
+>             <property name="hibernate.show_sql" value="true"/>
+>             <property name="hibernate.hbm2ddl.auto" value="update"/>
+>             <!--二级缓存相关-->
+>             <property name="hibernate.cache.use_second_level_cache" value="true"/>
+>             <property name="hibernate.cache.region.factory_class" value="org.hibernate.cache.ehcache.internal.EhcacheRegionFactory"/>
+>             <property name="hibernate.cache.use_query_cache" value="true"/>
+>         </properties>
+>     </persistence-unit>
+> </persistence>
+> ```
+>
+> ```java
+> /**
+>      *  使用Hibernate的查询缓存
+>      */
+> @Test
+> public void testQueryCache(){
+>     String jpql = "FROM Customer c WHERE c.age > ?1";
+>     Query query = entityManager.createQuery(jpql).setHint(QueryHints.HINT_CACHEABLE, true);
+>     query.setParameter(1, 6);
+>     List<Customer> customers = query.getResultList();
+> 
+>     query = entityManager.createQuery(jpql).setHint(QueryHints.HINT_CACHEABLE, true);
+>     query.setParameter(1, 6);
+>     customers = query.getResultList();
+> }
+> ```
+
+##### 查询子句
+
+> **order by子句**
+>
+> * order by子句用于对查询结果集进行排序。和SQL的用法类似，可以用 “asc“ 和 "desc“ 指定升降序。如果不显式注明，默认为升序。
+>
+> ```java
+> @Test
+> public void testOrderBy() {
+>     String jpql = "FROM Customer c WHERE c.age > ?1 ORDER BY c.age DESC";
+>     Query query = entityManager.createQuery(jpql).setHint(QueryHints.HINT_CACHEABLE, true);
+>     query.setParameter(1, 6);
+>     List<Customer> customers = query.getResultList();
+>     System.out.println(customers);
+> }
+> ```
+>
+> **group by子句与聚合查询**
+>
+> * group by 子句用于对查询结果分组统计，通常需要使用聚合函数。常用的聚合函数主要有 AVG、SUM、COUNT、MAX、MIN 等，它们的含义与SQL相同。例如：
+>
+>   * `select max(o.id) from Orders o`
+>
+> * 没有 group by 子句的查询是基于整个实体类的，使用聚合函数将返回单个结果值，可以使用Query.getSingleResult()得到查询结果。例如：
+>
+>   * ```java
+>     Query query = entityManager.createQuery("select max(o.id) from Orders o");
+>     Object result = query.getSingleResult();
+>     Long max = (Long)result;
+>     ```
+>
+> ```java
+> @Test
+> public void testGroupBy(){
+>     String jpql = "SELECT o.customer FROM Order o GROUP BY o.customer HAVING count(o.id) > 2";
+>     Query query = entityManager.createQuery(jpql).setHint(QueryHints.HINT_CACHEABLE, true);
+>     List<Customer> customers = query.getResultList();
+>     System.out.println(customers);
+> }
+> ```
+>
+> **关联查询**
+>
+> * 在JPQL中，很多时候都是通过在实体类中配置实体关联的类属性来实现隐含的关联(join)查询。例如：
+>   * `select o from Orders o where o.address.streetNumber=2000 `
+> * 上述JPQL语句编译成以下SQL时就会自动包含关联，默认为左关联。
+> * 在某些情况下可能仍然需要对关联做精确的控制。为此，JPQL 也支持和 SQL 中类似的关联语法。如：
+>   * left out join / left join 
+>   * inner join 
+>   * left join / inner join fetch 
+>   * 其中，left join和left out join等义，都是允许符合条件的右边表达式中的实体为空。
+> * 例如，以下外关联查询可以找出所有客户实体记录，即使它未曾订货： 
+>   * `select c from Customers c left join c.orders o`
+> * 以下内关联查询只找出所有曾订过商品的客户实体记录：
+>   * `select c from Customers c inner join c.orders o`
+> * 如果001号客户下过5次订单的话，以下fetch关联查询将得到 5个客户实体的引用，并且执行了 5 个订单的查询：
+>   * `select c from Customers c left join fetch c.orders o where c.id=001`
+>
+> ```java
+> /**
+>      *  JPQL的关联查询同HQL的关联查询
+>      */
+> @Test
+> public void testLeftOuterJoinFetch(){
+>     String jpql = "FROM Customer c LEFT OUTER JOIN FETCH c.orders WHERE c.id = ?1";
+>     Query query = entityManager.createQuery(jpql);
+>     query.setParameter(1, 25);
+>     Customer customer = (Customer) query.getSingleResult();
+>     System.out.println(customer);
+>     System.out.println(customer.getOrders().size());
+> }
+> ```
+
+##### 子查询和内建函数
+
+> **子查询**
+>
+> * JPQL也支持子查询，在 where 或 having 子句中可以包含另一个查询。当子查询返回多于 1 个结果集时，它常出现在 any、all、exist s表达式中用于集合匹配查询。它们的用法与SQL语句基本相同。
+>
+> ```java
+> @Test
+> public void testSubQuery(){
+>     String jpql = "SELECT o FROM Order o WHERE o.customer = (SELECT c FROM Customer c WHERE c.lastName = ?1)";
+>     Query query = entityManager.createQuery(jpql);
+>     query.setParameter(1, "AA");
+>     List<Order> orders = query.getResultList();
+>     System.out.println(orders);
+> }
+> ```
+>
+> **JPQL函数**
+>
+> * JPQL提供了以下一些内建函数，包括字符串处理函数、算术函数和日期函数。
+> * 字符串处理函数主要有：
+>   * concat(String s1, String s2)：字符串合并/连接函数。
+>   * substring(String s, int start, int length)：取字串函数。
+>   * trim([leading|trailing|both,] [char c,] String s)：从字符串中去掉首/尾指定的字符或空格。
+>   * lower(String s)：将字符串转换成小写形式。
+>   * upper(String s)：将字符串转换成大写形式。
+>   * length(String s)：求字符串的长度。
+>   * locate(String s1, String s2[, int start])：从第一个字符串中查找第二个字符串(子串)出现的位置。若未找到则返回0。
+> * 算术函数主要有 abs、mod、sqrt、size 等。Size 用于求集合的元素个数。
+> * 日期函数主要为三个，即 current_date、current_time、current_timestamp，它们不需要参数，返回服务器上的当前日期、时间和时戳。
+>
+> ```java
+> /**
+>      *  使用JPQL内建函数
+>      */
+> @Test
+> public void testJPQLFunc(){
+>     String jpql = "SELECT upper(c.email) FROM Customer c";
+>     List<String> emails = entityManager.createQuery(jpql).getResultList();
+>     System.out.println(emails);
+> }
+> ```
+
+##### update和delete
+
+> **update语句**
+>
+> * update语句用于执行数据更新操作。主要用于针对单个实体类的批量更新
+> * 以下语句将帐户余额不足万元的客户状态设置为未偿付：
+>   * `update Customers c set c.status = '未偿付' where c.balance < 10000`
+>
+> ```java
+> @Test
+> public void testUpdate(){
+>     String jpql = "UPDATE Customer c SET c.lastName = ?1 WHERE c.id = ?2";
+>     Query query = entityManager.createQuery(jpql);
+>     query.setParameter(1, "YYY");
+>     query.setParameter(2, 25);
+>     query.executeUpdate();
+> }
+> ```
+>
+> **delete语句**
+>
+> * delete语句用于执行数据更新操作。
+> * 以下语句删除不活跃的、没有订单的客户：
+>   * `delete from Customers c where c.status = inactive' and c.orders is empty`
+>
+> ```java
+> @Test
+> public void testDelete(){
+>     String jpql = "DELETE FROM Order o WHERE o.id = ?1";
+>     Query query = entityManager.createQuery(jpql);
+>     query.setParameter(1, 23);
+>     query.executeUpdate();
+> }
+> ```
+
