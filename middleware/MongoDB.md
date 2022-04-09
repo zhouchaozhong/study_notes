@@ -94,5 +94,118 @@
 > db.createUser({user:"uadd",pwd:"uaad",roles:[{role:"userAdminAnyDatabase",db:"admin"}]});
 > ```
 >
-> 
+
+##### 创建普通用户
+
+> 普通用户需要由管理员用户创建，所以先使用管理员用户登录数据库
+>
+> **管理员登录数据库**
+>
+> ```javascript
+> > use admin
+> switched to db admin
+> > db.auth("uadd","uaad")
+> ```
+>
+> **创建数据库**
+>
+> MongoDB没有特定创建数据库的语法，在使用use切换数据库时，如果对应的数据库不存在则直接创建并切换
+>
+> ```javascript
+> > use test
+> switched to db test
+> > use admin
+> > db.createUser({user"testuser",pwd:"12345",roles:[{role:"readWrite",db:"test"}]});
+> > use test;
+> > db.auth("testuser","12345");
+> ```
+>
+> **插入数据**
+>
+> ```javascript
+> > db.user.insert({"name":"zhangsan"})
+> // 这里的user是创建一个集合叫user，相当于mysql里面的表
+> ```
+>
+> **查找数据**
+>
+> ```javascript
+> > db.user.find()
+> // 这里是查找user集合里面的所有数据，相当于select * from user
+> ```
+
+##### 更新用户
+
+> 如果我们需要对已存在的用户进行角色更改，可以使用` db.updateUser()`函数来更新用户角色。注意：执行该函数需要当前用户具有`userAdmin`或`userAdminAnyDatabase`或`root`角色。
+>
+> ```javascript
+> db.updateUser("用户名",{"roles":[{"role":"角色名称",db:"数据库"},{"更新项2":"更新内容"}]})
+> ```
+>
+> 比如给之前的uadd用户添加`readWriteAnyDatabase`和`dbAdminAnyDatabase`权限。
+>
+> ```javascript
+> db.updateUser("uadd",{roles:[{role:"userAdminAnyDatabase",db:"admin"},{role:"readWriteAnyDatabase",db:"admin"}]})
+> ```
+
+##### 更新密码
+
+> 更新密码有以下两种方式，更新密码时需要切换到该用户所在的数据库。注意：需要使用具有`userAdmin`或`userAdminAnyDatabase`或`root`角色的用户执行：
+>
+> * 使用`db.updateUser("用户名",{pwd:"新密码"})` 函数更新密码
+> * 使用`db.changeUserPassword("用户名","新密码")` 函数更新密码
+
+##### 删除用户
+
+> 通过`db.dropUser()`函数可以删除指定用户，删除成功以后会返回true。删除用户时，需要切换到该用户所在的数据库。注意：需要具有`userAdmin`或`userAdminAnyDatabase`或`root`角色的用户才可以删除其他用户
+>
+> ```javascript
+> db.dropUser("testuser")
+> ```
+
+### 数据库操作
+
+> **创建数据库**
+>
+> `use 数据库名`
+>
+> **显示数据库**
+>
+> `show dbs`或`show databases`
+>
+> **删除数据库**
+>
+> ```javascript
+> use test  // 先切换到该数据库
+> db.dropDatabase() // 然后删除
+> ```
+
+### Collection操作
+
+> **创建集合**
+>
+> 可以使用db.COLLECTION_NAME来隐式创建集合如`db.user`
+>
+> 也可以显式创建集合
+>
+> `db.createCollection(name,options)`
+>
+> name: 要创建的集合名称  options:可选参数，指定有关内存大小及索引的选项
+>
+> | 字段        | 类型 | 描述                                                         |
+> | ----------- | ---- | ------------------------------------------------------------ |
+> | capped      | 布尔 | （可选）如果为true，则创建固定集合。固定集合是指有固定大小的集合，当达到最大值时，它会自动覆盖最早的文档。当该值为true时，必须指定size参数 |
+> | size        | 数值 | （可选）限制集合空间的大小，默认为没有限制（以字节计）。如果capped为true，必须指定该字段 |
+> | autoIndexId | 布尔 | （可选）如果为true，自动在 _id 字段创建索引。默认为true      |
+> | max         | 数值 | （可选）限制集合中包含文档的最大数量，默认为没有限制         |
+>
+> **查看集合**
+>
+> `show tables` 或者`show collections`
+>
+> **删除集合**
+>
+> 使用`db.COLLECTION_NAME.drop()` 来删除集合，例如：`db.user.drop()`就把user集合删除掉了
+
+### Document操作
 
