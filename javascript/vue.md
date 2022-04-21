@@ -298,25 +298,25 @@
 
 > ```javascript
 > <div id="root">
->     <h2>欢迎来到 {{name}} 学习</h2>
+>  <h2>欢迎来到 {{name}} 学习</h2>
 > <button v-on:click="showInfo(66,$event)">点我提示信息</button>
 > </div>
 > <script>
->     Vue.config.productionTip = false;
+>  Vue.config.productionTip = false;
 > const v = new Vue({
->     el: '#root',
->     data(){
->         return {
->             name: '白鹿书院',
->         }
->     },
->     methods:{
->         showInfo(num,e){
->             console.log(num)
->             console.log(e)
->             // alert('同学你好！')
->         }
->     }
+>  el: '#root',
+>  data(){
+>      return {
+>          name: '白鹿书院',
+>      }
+>  },
+>  methods:{
+>      showInfo(num,e){
+>          console.log(num)
+>          console.log(e)
+>          // alert('同学你好！')
+>      }
+>  }
 > });
 > </script>
 > ```
@@ -336,6 +336,8 @@
 > <div id="root">
 >     <h2>欢迎来到 {{name}} 学习</h2>
 >     <a href="http://www.baidu.com" @click.prevent="showInfo">点我提示信息</a>
+>    <!-- 事件修饰符可以连写-->
+>     <a href="http://www.baidu.com" @click.prevent.stop="showInfo">点我提示信息</a>
 > </div>
 > <script>
 >     Vue.config.productionTip = false;
@@ -350,6 +352,116 @@
 >             showInfo(){
 >                 alert('同学你好！')
 >             }
+>         }
+>     });
+> </script>
+> ```
+>
+> **键盘事件**
+>
+> Ⅰ. Vue中常用的按键别名
+>
+> 1. 回车：enter
+> 2. 删除：delete：（捕获“删除”和“退格”键）
+> 3. 退出：esc
+> 4. 空格：space
+> 5. 换行：tab（特殊，必须配合keydown使用）
+> 6. 上：up
+> 7. 下：down
+> 8. 左：left 
+> 9. 右：right
+>
+> Ⅱ. Vue未提供别名的按键，可以使用按键原始的key值去绑定，但注意要转为kebab-case(短横线命名)
+>
+> Ⅲ. 系统修饰键（用法特殊）：ctrl、alt、shift、meta
+>
+> 1. 配合keyup使用：按下修饰键的同时，再按下其他键，随后释放其他键，事件才被触发。
+> 2. 配合keydown使用：正常触发事件。
+>
+> Ⅳ. 也可以使用keyCode去指定具体的按键（不推荐）
+>
+> Ⅴ. Vue.config.keyCodes.自定义键名 = 键码，可以定制按键别名
+>
+> ```html
+> <div id="root">
+>     <h2>欢迎来到 {{name}} 学习</h2>
+>     <input type="text" placeholder="按下回车，提示输入" @keyup.enter="showInfo">
+> </div>
+> <script>
+>     Vue.config.productionTip = false;
+>     const v = new Vue({
+>         el: '#root',
+>         data(){
+>             return {
+>                 name: '白鹿书院',
+>             }
+>         },
+>         methods:{
+>             showInfo(e){
+>                 console.log(e.key);
+>             }
+>         }
+>     });
+> </script>
+> ```
+
+##### 计算属性
+
+> **定义**：要用的属性不存在，要通过已有的属性计算得来
+>
+> **原理**：底层借助了Object.defineProperty方法提供的getter和setter
+>
+> **优势**：与methods实现相比，内部有缓存机制（复用），效率更高，调试方便
+>
+> **备注**：
+>
+> 1. 计算属性最终会出现在vm上，直接读取使用即可
+> 2. 如果计算属性要被修改，就必须写set函数响应修改，且set中要引起计算时依赖的数据发生改变
+>
+> ```html
+> <div id="root">
+>     长：<input type="text" v-model="length"><br/>
+>     宽：<input type="text" v-model="width"><br/>
+>     高：<input type="text" v-model="height"><br/>
+>     体积：<span>{{volume}}</span>
+> </div>
+> <script>
+>     Vue.config.productionTip = false;
+>     const v = new Vue({
+>         el: '#root',
+>         data(){
+>             return {
+>                 length:0,
+>                 width:0,
+>                 height:0
+>             }
+>         },
+>         computed:{
+>             // 完整写法
+>             // volume:{
+>             //     // 当读取volume，get就会被调用，且返回值就是volume的值
+>             //     // get调用时机，1.初次读取volume时 2.所依赖的数据发生变化时
+>             //     get(){
+>             //         // 此处的this是vm
+>             //         console.log("volume被调用");
+>             //         return this.length * this.width * this.height
+>             //     },
+>             //     // set调用时机：当volume被修改时
+>             //     set(value){
+>             //         this.length = 2;
+>             //         this.width = 1;
+>             //         this.height = value / this.length / this.width;
+>             //     }
+>             // }
+> 
+>             // 简写（前提：只需要get方法，不需要set方法）
+>             // 函数名即为计算属性名
+>             volume(){
+>                 return this.length * this.width * this.height
+>             }
+>         },
+>         methods:{
+> 
 >         }
 >     });
 > </script>
