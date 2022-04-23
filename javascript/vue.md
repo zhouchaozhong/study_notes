@@ -640,5 +640,118 @@
 > </script>
 > ```
 >
+
+##### 绑定样式
+
+> **绑定class样式**
+>
+> ```html
+> <!DOCTYPE html>
+> <html lang="zh-CN">
+> <head>
+>     <meta charset="UTF-8">
+>     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+>     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+>     <title>Document</title>
+>     <script src="../src/vue.js"></script>
+>     <style>
+>         .basic{
+>             width: 200px;
+>             height:100px;
+>             border: 4px solid red;
+>         }
+>         .happy{
+>             border: 4px solid red;
+>             background-color: rgba(255, 255, 0, 0.644);
+>             background: linear-gradient(30deg,yellow,pink,orange,yellow);
+>         }
+>         .sad{
+>             background-color: aqua;
+>         }
+>         .normal{
+>             background-color: gray;
+>         }
+>     </style>
+> </head>
+> <body>
+>     <div id="root">
+>         <!-- 绑定class样式--字符串写法，适用于：样式的类名不确定，需要动态指定 -->
+>         <div class="basic" :class="mood" @click="changeMood">{{name}}</div>
+>         <!-- 绑定class样式数组写法，适用于：要绑定的样式个数不确定，名字也不确定 -->
+>         <div :class="arr">{{name}}</div>
+>         <!-- 绑定class样式对象写法，适用于：要绑定的样式个数确定，名字也确定，但要动态决定用不用 -->
+>         <div :class="obj">{{name}}</div>
+>     </div>
+>     <script>
+>        Vue.config.productionTip = false;
+>        const vm = new Vue({
+>             el: '#root',
+>             data: {
+>                 name:'九纹龙-史进',
+>                 mood:'normal',
+>                 arr:['basic','happy'],
+>                 obj:{
+>                     happy:false,
+>                     basic:true
+>                 }
+>             },
+>             methods:{
+>                 changeMood(){
+>                     const arr = ['happy','sad','normal'];
+>                     const index = Math.floor(Math.random()*3)
+>                     this.mood = arr[index]
+>                 }
+>             }
+>         });
+>     </script>
+> </body>
+> </html>
+> ```
+>
+> **绑定style样式**
+>
+> ```html
+> <!DOCTYPE html>
+> <html lang="zh-CN">
+>     <head>
+>         <meta charset="UTF-8">
+>         <meta http-equiv="X-UA-Compatible" content="IE=edge">
+>         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+>         <title>Document</title>
+>         <script src="../src/vue.js"></script>
+>         <style>
+>             .basic{
+>                 width: 200px;
+>                 height:100px;
+>                 border: 4px solid red;
+>             }
+>         </style>
+>     </head>
+>     <body>
+>         <div id="root">
+>             <div class="basic" :style="styleObj">{{name}}</div>
+>             <div class="basic" :style="[styleObj,styleObj2]">{{name}}</div>
+>         </div>
+>         <script>
+>             Vue.config.productionTip = false;
+>             const vm = new Vue({
+>                 el: '#root',
+>                 data: {
+>                     name:'九纹龙-史进',
+>                     styleObj:{
+>                         fontSize:'40px'
+>                     },
+>                     styleObj2:{
+>                         backgroundColor:'red'
+>                     }
+>                 },
+>                 methods:{
+>                 }
+>             });
+>         </script>
+>     </body>
+> </html>
+> ```
+>
 > 
 
