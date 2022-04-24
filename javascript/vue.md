@@ -753,5 +753,119 @@
 > </html>
 > ```
 >
+
+##### 条件渲染
+
+> **v-if**
+>
+> 写法：
+>
+> ​	① v-if="表达式"
+>
+> ​	② v-else-if="表达式"
+>
+> ​	③ v-else="表达式"
+>
+> 适用于切换频率较低的场景
+>
+> 特点：不展示的DOM直接被移除
+>
+> 注意：v-if可以和v-else-if、v-else一起使用，但要求结构不能被打断
+>
+> **v-show**
+>
+> 写法：v-show="表达式"
+>
+> 适用于切换频率较高的场景
+>
+> 特点：不展示的DOM元素未被移除，仅仅是使用样式隐藏掉
+>
+> 备注：使用 v-if 时，元素可能无法获取到，而使用v-show一定可以获取到
+>
+> ```html
+> <div id="root">
+>     <h2 v-show="isShow">欢迎来到{{name}}</h2>
+>     <h2 v-if="isShow">欢迎来到{{name}}</h2>
+> </div>
+> <script>
+>     Vue.config.productionTip = false;
+>     const vm = new Vue({
+>         el: '#root',
+>         data: {
+>             name:"花果山",
+>             isShow:false
+>         },
+>         methods:{
+>         }
+>     });
+> </script>
+> ```
+
+##### 列表渲染
+
+> **v-for指令**
+>
+> 1. 用于展示列表数据
+> 2. 语法：v-for="(item,index) in xxx" :key="yyy"
+> 3. 可遍历：数组，对象，字符串，指定次数
+>
+> ```html
+> <div id="root">
+>     <ul>
+>         <!-- key 的特殊 attribute 主要用在 Vue 的虚拟 DOM 算法，在新旧 nodes 对比时辨识 VNodes。如果不使用 key，
+> Vue 会使用一种最大限度减少动态元素并且尽可能的尝试就地修改/复用相同类型元素的算法。而使用 key 时，
+> 它会基于 key 的变化重新排列元素顺序，并且会移除 key 不存在的元素。
+> 有相同父元素的子元素必须有独特的 key。重复的 key 会造成渲染错误。 -->
+>         <li v-for="p in personList" :key="p.id">
+>             {{p.id}}-{{p.name}}-{{p.age}}
+>         </li>
+>         <hr/>
+>         <li v-for="(p,index) in personList" :key="index">
+>             {{p.id}}-{{p.name}}-{{p.age}}
+>         </li>
+>     </ul>
+> 
+>     <!-- 遍历对象 -->
+>     <ul>
+>         <li v-for="(v,k) of car" :key="k">
+>             {{k}} --- {{v}}
+>         </li>
+>     </ul>
+>     <!-- 遍历字符串 -->
+>     <ul>
+>         <li v-for="(char,index) of str" :key="index">
+>             {{index}}---{{char}}
+>         </li>
+>     </ul>
+>     <!-- 遍历指定次数 -->
+>     <ul>
+>         <li v-for="(number,index) of 5">
+>             {{number}} --- {{index}}
+>         </li>
+>     </ul>
+> </div>
+> <script>
+>     Vue.config.productionTip = false;
+>     const vm = new Vue({
+>         el: '#root',
+>         data: {
+>             personList:[
+>                 {id:'001',name:'张三',age:18},
+>                 {id:'002',name:'李四',age:20},
+>                 {id:'003',name:'王五',age:16}
+>             ],
+>             car:{
+>                 name:'奥迪A8',
+>                 price:'70w',
+>                 color:'黑色'
+>             },
+>             str:'hello'
+>         },
+>         methods:{
+>         }
+>     });
+> </script>
+> ```
+>
 > 
 
