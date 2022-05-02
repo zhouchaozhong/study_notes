@@ -1413,86 +1413,86 @@
 >
 > ```html
 > <div id="root">
->     <school></school>
->     <hr/>
->     <student></student>
->     <hr/>
->     <hello></hello>
+> <school></school>
+> <hr/>
+> <student></student>
+> <hr/>
+> <hello></hello>
 > </div>
 > <script>
->     Vue.config.productionTip = false;
->     // 创建school组件
->     const _school = Vue.extend({
->         template:`
->           <div>  
->             <h2>学校名称：{{schoolName}}</h2>
->             <h2>学校地址：{{address}}</h2>
->             <button @click="showName">点我提示学校名</button>
->           </div>  
->          `,
->         // el: '#root', 一定不要写el配置项，因为最终所有的组件都要被一个vm管理，由vm决定服务于哪个容器
->         // data必须写成函数，避免组件被复用时，存在引用关系
->         data(){
->             return {
->                 schoolName:'复旦大学',
->                 address:'上海校区',
->             }
->         },
->         methods:{
->             showName(){
->                 alert(this.schoolName)
->             }
->         }
->     })
->     // 创建student组件
->     const _student = Vue.extend({
->         template:`
->           <div>  
->              <h2>学生姓名：{{studentName}}</h2>
->              <h2>学生年龄：{{age}}</h2>
->     	  </div>  
->         `,
->         data(){
->             return {
->                 studentName:'张三',
->                 age:18
->             }
->         },
->         methods:{
->         }
->     })
->     // 创建hello组件
->     const hello = Vue.extend({
->         template:`
->            <div>
->             <h2>你好啊！{{name}}</h2>
->            </div>    
->         `,
->         data(){
->             return{
->                 name:'Tom'
->             }
->         }
->     })
->     // 全局注册组件
->     Vue.component('hello',hello)
->     new Vue({
->         el: '#root',
->         // 注册组件(局部注册)
->         components:{
->             // 如果组件名，跟上面定义的变量名一样，可以简写为school
->             school:_school,
->             student:_student
->         },
->         data: {
->             schoolName:'复旦大学',
->             address:'上海校区',
->             studentName:'张三',
->             age:18
->         },
->         methods:{
->         }
->     });
+> Vue.config.productionTip = false;
+> // 创建school组件
+> const _school = Vue.extend({
+>   template:`
+>     <div>  
+>       <h2>学校名称：{{schoolName}}</h2>
+>       <h2>学校地址：{{address}}</h2>
+>       <button @click="showName">点我提示学校名</button>
+>     </div>  
+>    `,
+>   // el: '#root', 一定不要写el配置项，因为最终所有的组件都要被一个vm管理，由vm决定服务于哪个容器
+>   // data必须写成函数，避免组件被复用时，存在引用关系
+>   data(){
+>       return {
+>           schoolName:'复旦大学',
+>           address:'上海校区',
+>       }
+>   },
+>   methods:{
+>       showName(){
+>           alert(this.schoolName)
+>       }
+>   }
+> })
+> // 创建student组件
+> const _student = Vue.extend({
+>   template:`
+>     <div>  
+>        <h2>学生姓名：{{studentName}}</h2>
+>        <h2>学生年龄：{{age}}</h2>
+> 	  </div>  
+>   `,
+>   data(){
+>       return {
+>           studentName:'张三',
+>           age:18
+>       }
+>   },
+>   methods:{
+>   }
+> })
+> // 创建hello组件
+> const hello = Vue.extend({
+>   template:`
+>      <div>
+>       <h2>你好啊！{{name}}</h2>
+>      </div>    
+>   `,
+>   data(){
+>       return{
+>           name:'Tom'
+>       }
+>   }
+> })
+> // 全局注册组件
+> Vue.component('hello',hello)
+> new Vue({
+>   el: '#root',
+>   // 注册组件(局部注册)
+>   components:{
+>       // 如果组件名，跟上面定义的变量名一样，可以简写为school
+>       school:_school,
+>       student:_student
+>   },
+>   data: {
+>       schoolName:'复旦大学',
+>       address:'上海校区',
+>       studentName:'张三',
+>       age:18
+>   },
+>   methods:{
+>   }
+> });
 > </script>
 > ```
 >
@@ -1527,5 +1527,532 @@
 >   * new Vue(options)配置中：data函数、methods中的函数、watch中的函数、computed中的函数 它们的 this 均是 Vue实例对象
 > * VueComponent的实例对象，以后简称vc（组件实例对象）Vue的实例对象，以后简称vm
 >
+> ![](./images/vue_component.jpg)
+>
+> **单文件组件**
+>
+> index.html
+>
+> ```html
+> <!DOCTYPE html>
+> <html lang="zh-CN">
+> <head>
+>     <meta charset="UTF-8">
+>     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+>     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+>     <title>Document</title>
+> </head>
+> <body>
+>     <div id="root"></div>
+>     <script src="../src/vue.js"></script>
+>     <script src="./main.js"></script>
+> </body>
+> </html>
+> ```
+>
+> main.js
+>
+> ```javascript
+> import App from './App.vue'
+> new Vue({
+>     el:'#root',
+>     template:`<App></App>`,
+>     components:{App}
+> })
+> ```
+>
+> App.vue
+>
+> ```vue
+> <template>
+>     <div>
+>         <school></school>
+>         <student></student>
+>     </div>
+> </template>
 > 
+> <script>
+>     // 引入组件
+>     import School from './School.vue'
+>     import Student from './Student.vue'
+> 
+>     export default {
+>         name:'App',
+>         components:{
+>             School,
+>             Student
+>         }
+>     }
+> </script>
+> 
+> <style>
+> 
+> </style>
+> ```
+>
+> School.vue
+>
+> ```vue
+> <template>
+>     <!-- 组件的结构 -->
+> <div class="demo">  
+>     <h2>学校名称：{{schoolName}}</h2>
+>     <h2>学校地址：{{address}}</h2>
+>     <button @click="showName">点我提示学校名</button>
+> </div>  
+> </template>
+> <script>
+>     // 组件交互相关的代码（数据方法等）
+>     export default {
+>         name:'School',
+>         data(){
+>             return {
+>                 schoolName:'复旦大学',
+>                 address:'上海校区',
+>             }
+>         },
+>         methods: {
+>             showName(){
+>                 alert(this.schoolName)
+>             }
+>         },
+>     }
+> </script>
+> <style scoped>
+>     /* 组件的样式 */
+>     .demo{
+>         background-color: orange;
+>     }
+> </style>
+> ```
+>
+> Student.vue
+>
+> ```vue
+> <template>
+> <div class="demo">  
+>     <h2>学生姓名：{{name}}</h2>
+>     <h2>学生年龄：{{age}}</h2>
+> </div>  
+> </template>
+> <script>
+>     export default {
+>         name:'Student',
+>         data(){
+>             return {
+>                 name:'张三',
+>                 age:18,
+>             }
+>         }
+>     }
+> </script>
+> <style scoped>
+> </style>
+> ```
+>
+> **关于不同版本的函数**
+>
+> 1. vue.js与vue.runtime.xxx.js的区别 
+>    * vue.js 是完整版的Vue，包含：核心功能+模板解析器
+>    * vue.runtime.xxx.js 是运行版的Vue，只包含核心功能，没有模板解析器，esm 就是 ES6 module
+> 2. 因为 vue.runtime.xxx.js 没有模板解析器，所以不能使用template配置项，需要使用render函数接收到的createElement函数去指定具体内容
+>
+> ```javascript
+> import Vue from 'vue'
+> import App from './App.vue'
+> 
+> Vue.config.productionTip = false
+> 
+> new Vue({
+>   render: h => h(App),
+> }).$mount('#app')
+> 
+> ```
+>
+> **render**
+>
+> 类型：(createElement: () => VNode) => VNode
+>
+> 字符串模板的代替方案，允许你发挥 JavaScript 最大的编程能力。该渲染函数接收一个 createElement 方法作为第一个参数用来创建 VNode。
+>
+> *注意事项：*
+>
+> Vue 选项中的 render 函数若存在，则 Vue 构造函数不会从 template 选项或通过 el 选项指定的挂载元素中提取出的 HTML 模板编译渲染函数。
 
+### Vue进阶
+
+##### ref属性
+
+> **ref属性介绍**
+>
+> 1. 被用来给元素或子组件注册引用信息（id的替代者）
+> 2. 应用在html标签上获取的是真实DOM元素，应用在组件标签上是组件实例对象（vc）
+> 3. 使用方式：
+>    * 打标识：`<h1 ref="xxx" ...</h1>`或`<School ref="xxx"></School>`
+>    * 获取：`this.$refs.xxx`
+>
+> 代码示例：
+>
+> ```vue
+> <template>
+> <div>
+>     <img src="./assets/logo.png" alt="logo">
+>     <h1 ref="title">{{msg}}</h1>
+>     <button @click="showDom">点我输出dom</button>
+>     <Student ref="school"/>
+>     <Student ref="student" name="李四" age="18"/>
+>     </div>
+> </template>
+> 
+> <script>
+>     import School from './components/School'
+>     import Student from './components/Student'
+> 
+>     export default {
+>         name: 'App',
+>         components: {
+>             School,
+>             Student
+>         },
+>         data(){
+>             return{
+>                 msg:'欢迎学习Vue'
+>             }
+>         },
+>         methods: {
+>             showDom(){
+>                 console.log(this.$refs.title)   // 真实DOM元素
+>                 console.log(this.$refs.school)  // School组件的实例对象（VueComponent）
+>             }
+>         }
+>     }
+> </script>
+> 
+> <style>
+> 
+> </style>
+> 
+> ```
+
+##### props 配置项
+
+> props让组件接收外部传过来的数据 
+>
+> * 传递数据`<Demo name="xxx" :age="18"/>`这里age前加:，通过v-bind使得里面的18是数字
+> * 接收数据
+>   * 第一种方式（只接收）`props:['name', 'age'] `
+>   * 第二种方式（限制类型）`props:{name:String, age:Number}`
+>   *  第三种方式（限制类型、限制必要性、指定默认值）
+> * props是只读的，Vue底层会监测你对props的修改，如果进行了修改，就会发出警告，若业务需求确实需要修改，那么请复制props的内容到data中，然后去修改data中的数据
+>
+> 代码示例：
+>
+> App.vue
+>
+> ```vue
+> <template>
+>     <div>
+>         <img src="./assets/logo.png" alt="logo">
+>         <Student ref="student" name="李四" :age="20"/>
+>     </div>
+> </template>
+> 
+> <script>
+>     import School from './components/School'
+>     import Student from './components/Student'
+> 
+>     export default {
+>         name: 'App',
+>         components: {
+>             School,
+>             Student
+>         },
+>         data(){
+>             return{
+>                 msg:'欢迎学习Vue'
+>             }
+>         },
+>         methods: {
+>         }
+>     }
+> </script>
+> 
+> <style>
+> 
+> </style>
+> ```
+>
+> Student.vue
+>
+> ```vue
+> <template>
+> <div class="demo">
+>     <h1>{{msg}}</h1>  
+>     <h2>学生姓名：{{name}}</h2>
+>     <h2>学生年龄：{{age+1}}</h2>
+> </div>  
+> </template>
+> <script>
+>     export default {
+>         name:'Student',
+>         data(){
+>             return {
+>                 msg:'我是一个学生',
+>                 // props里的属性原则上不允许修改，如果需要修改，可以在这里重新定义一个跟age不同名的属性
+>                 // 间接修改
+>                 myAge:this.age
+>             }
+>         },
+>         // props:['name','age']  // 简单接收
+>         // 接收的同时，对数据进行限制
+>         // props:{
+>         //     name:String,
+>         //     age:Number
+>         // }
+> 
+>         // 接收的同时进行类型限制，必要性限制，默认值
+>         props:{
+>             name:{
+>                 type:String,    // name的类型是String
+>                 required:true  // name是必须要传的
+>             },
+>             age:{
+>                 type:Number, // age类型是Number
+>                 default:99   // 不传的话，默认99
+>             }
+>         }
+>     }
+> </script>
+> <style scoped>
+> 
+> </style>
+
+##### mixin
+
+> 功能：可以把多个组件共用的配置提取成一个混入对象 
+>
+> **注意事项：**
+>
+> 1. 组件和混入对象含有相同的data选项或者methods选项，发生冲突时，将以组件自身的定义为主，不冲突的选项将会进行组合
+> 2. 同名生命周期钩子（例如created,mounted,updated等）将合并为一个数组，因此都将被调用。另外，混入对象的钩子将在组件自身钩子之前调用
+>
+> 代码示例：
+>
+> mixin.js
+>
+> ```javascript
+> export const mixin = {
+>     methods: {
+>         showName(){
+>             alert(this.name)
+>         }
+>     },
+>     mounted() {
+>         console.log("组件加载成功！")
+>     },
+> }
+> ```
+>
+> Student.vue
+>
+> ```vue
+> <template>
+> <div class="demo">
+>     <h2 @click="showName">学生姓名：{{name}}</h2>
+>     <h2>学生年龄：{{age+1}}</h2>
+> </div>  
+> </template>
+> <script>
+>     // 引入一个混入
+>     import {mixin} from '../mixin'
+>     export default {
+>         name:'Student',
+>         data(){
+>             return {
+>                 name:"张三",
+>                 age:18
+>             }
+>         },
+>         mixins:[mixin]
+>         
+>     }
+> </script>
+> <style scoped>
+> 
+> </style>
+> ```
+>
+> School.vue
+>
+> ```vue
+> <template>
+> <div class="demo">  
+>     <h2 @click="showName">学校名称：{{name}}</h2>
+>     <h2>学校地址：{{address}}</h2>
+> </div>  
+> </template>
+> <script>
+>     import {mixin} from '../mixin'
+>     export default {
+>         name:'School',
+>         data(){
+>             return {
+>                 name:'复旦大学',
+>                 address:'上海校区',
+>             }
+>         },
+>         mixins:[mixin]
+>     }
+> </script>
+> <style scoped>
+>     /* 组件的样式 */
+>     .demo{
+>         background-color: orange;
+>     }
+> </style>
+> ```
+>
+> **全局混入**
+>
+> 混入也可以进行全局注册。使用时格外小心！一旦使用全局混入，它将影响每一个之后创建的 Vue 实例。使用恰当时，这可以用来为自定义选项注入处理逻辑。
+>
+> ```javascript
+> // 为自定义的选项 'myOption' 注入一个处理器。
+> Vue.mixin({
+>   created: function () {
+>     var myOption = this.$options.myOption
+>     if (myOption) {
+>       console.log(myOption)
+>     }
+>   }
+> })
+> 
+> new Vue({
+>   myOption: 'hello!'
+> })
+> // => "hello!"
+> ```
+>
+> 注意事项:
+>
+> 请谨慎使用全局混入，因为它会影响每个单独创建的 Vue 实例 (包括第三方组件)。大多数情况下，只应当应用于自定义选项，就像上面示例一样。推荐将其作为插件发布，以避免重复应用混入。
+
+##### 插件(Plugin)
+
+> **基本介绍**
+>
+> 1. 功能：用于增强Vue
+> 2. 本质：包含install方法的一个对象，install的第一个参数是Vue，第二个以后的参数是插件使用者传递的数据
+>
+> 代码示例：
+>
+> plugins.js(定义插件)
+>
+> ```javascript
+> export default {
+>     install(Vue){
+> 
+>        // 全局过滤器 
+>        Vue.filter('mySlice',function(value){
+>             return value.slice(0,4)
+>        })
+>        // 全局指令
+>        Vue.directive('fbind',{
+>         bind(element,binding){
+>            element.value = binding.value
+>         },
+>         inserted(element,binding){
+>             element.focus()
+>         },
+>         update(element,binding){
+>             element.value = binding.value
+>         }
+>        })
+>        // 全局混入
+>        Vue.mixin({
+>            data(){
+>                return {
+>                    x:100,
+>                    y:60
+>                }
+>            }
+>        })
+>        // 给Vue原型上添加一个方法，（Vue实例和VueComponent实例都能用）
+>        Vue.prototype.hello = ()=>{alert('你好啊')}
+>     }
+> }
+> ```
+>
+> main.js(使用插件)
+>
+> ```javascript
+> import Vue from 'vue'
+> import App from './App.vue'
+> 
+> // 引入插件
+> import plugins from './plugins'
+> 
+> Vue.config.productionTip = false
+> 
+> // 使用插件
+> Vue.use(plugins)
+> 
+> new Vue({
+>   render: h => h(App),
+> }).$mount('#app')
+> ```
+>
+> School.vue(使用插件提供的功能)
+>
+> ```vue
+> <template>
+> <div class="demo">  
+>     <h2>学校名称：{{name | mySlice}}</h2>
+>     <h2>学校地址：{{address}}</h2>
+>     <input type="text" v-fbind:value="name"><br/>
+>     <button @click="hello">点我测试一下</button>
+> </div>  
+> </template>
+> <script>
+>     export default {
+>         name:'School',
+>         data(){
+>             return {
+>                 name:'复旦大学fdfdfdfd',
+>                 address:'上海校区',
+>             }
+>         }
+>     }
+> </script>
+> ```
+
+##### scoped样式
+
+> 功能：限定CSS样式只在当前组件生效
+>
+> ```vue
+> <template>
+> <div class="demo">  
+>     <h2>学校名称：{{name}}</h2>
+>     <h2>学校地址：{{address}}</h2>
+> </div>  
+> </template>
+> <script>
+>     export default {
+>         name:'School',
+>         data(){
+>             return {
+>                 name:'复旦大学',
+>                 address:'上海校区',
+>             }
+>         }
+>     }
+> </script>
+> <style scoped>
+>     .demo{
+>         background-color: skyblue;
+>     }
+> </style>
+> ```
+>
+> 
