@@ -2055,4 +2055,349 @@
 > </style>
 > ```
 >
+
+##### 组件自定义事件
+
+> **基本介绍**
+>
+> 1. 一种组件间通信的方式，适用于：子组件 ===> 父组件
+> 2. 使用场景：子组件想给父组件传数据，那么就要在父组件中给子组件绑定自定义事件（事件的回调在父组件中）
+> 3. 绑定自定义事件
+>    * 第一种方式，在父组件中`<Demo @事件名="方法"/>`或`<Demo v-on:事件名="方法"/>`
+>    * 第二种方式，在父组件中`this.$refs.demo.$on('事件名',方法)`
+>
+> 代码示例：
+>
+> App.vue
+>
+> ```vue
+> <template>
+>   <div>
+>     <!-- 通过父组件给子组件传递函数类型的props实现子给父传递数据 -->
+>     <School ref="school" :getSchoolName="getSchoolName"/>
+>     <!-- 通过父组件给子组件绑定一个自定义事件(事件名为：myevent)实现：子给父传递数据 -->
+>     <!-- <Student ref="student" v-on:myevent="getStudentName"/> -->
+>     <!-- 第2种写法，简写形式 自定义事件也是可以使用事件修饰符的，如@myevent.once表示事件只触发一次-->
+>     <Student ref="student" @myevent="getStudentName"/>
+>     <!-- 给组件绑定原生事件 -->
+>     <Student @click.native="show"/>
+>     <!-- 第3种写法 通过refs-->
+>     <!-- <Student ref="student"/> -->
+>   </div>  
+> </template>
+> 
+> <script>
+> import School from './components/School'
+> import Student from './components/Student'
+> 
+> export default {
+>   name: 'App',
+>   components: {
+>     School,
+>     Student
+>   },
+>   data(){
+>     return{
+>       msg:'欢迎学习Vue'
+>     }
+>   },
+>   methods: {
+>     getSchoolName(name){
+>       console.log("App收到了学校名: ",name)
+>     },
+>     // 传多个参数时，可以用可变参数这种形式，也可以把所有的参数封装成一个对象，也可以一个一个接收
+>     getStudentName(name,...params){
+>       console.log('App收到了学生名: ',name,params)
+>     },
+>     show(){
+>       alert(123)
+>     }
+>   },
+>   mounted() {
+>      // 这种方式更灵活，可以延时绑定，或者等请求成功之后绑定
+>      this.$refs.student.$on('myevent',this.getStudentName)
+>   },
+> }
+> </script>
+> 
+> <style>
+> 
+> </style>
+> 
+> ```
+>
+> School.vue
+>
+> ```vue
+> <template>
+> <div class="demo">  
+>     <h2>学校名称：{{name}}</h2>
+>     <h2>学校地址：{{address}}</h2>
+>     <button @click="sendSchoolName">把学校名给App</button>
+> </div>  
+> </template>
+> <script>
+>     export default {
+>         name:'School',
+>         props:['getSchoolName'],
+>         data(){
+>             return {
+>                 name:'复旦大学',
+>                 address:'上海校区',
+>             }
+>         },
+>         methods: {
+>             sendSchoolName(){
+>                 this.getSchoolName(this.name)
+>             }
+>         },
+>         
+>     }
+> </script>
+> <style scoped>
+>     .demo{
+>         background-color: skyblue;
+>     }
+> </style>
+> ```
+>
+> Student.vue
+>
+> ```vue
+> <template>
+> <div class="demo">
+>     <h2>学生姓名：{{name}}</h2>
+>     <h2>学生年龄：{{age}}</h2>
+>     <button @click="age++">点我年龄加1</button>
+>     <button @click="sendStudentName">把学生名给App</button>
+>     <button @click="unbind">解绑myevent事件</button>
+>     <button @click="clear">销毁当前组件</button>
+> </div>  
+> </template>
+> <script>
+>     export default {
+>         name:'Student',
+>         data(){
+>             return {
+>                 name:"张三",
+>                 age:18
+>             }
+>         },
+>         methods: {
+>             sendStudentName(){
+>                 // 触发Student组件实例上的myevent事件
+>                 this.$emit('myevent',this.name,666,888,999)
+>             },
+>             unbind(){
+>                 // 解绑自定义事件
+>                 this.$off('myevent')
+>                 // 解绑多个自定义事件
+>                 // this.$off(['myevent','myevent1','myevent2'])
+>                 // 解绑所有的自定义事件
+>                 // this.$off()
+>             },
+>             clear(){
+>                 console.log('clear')
+>                 // 销毁当前组件Student组件实例，销毁后所有Student实例的自定义事件全部失效
+>                 this.$destroy()
+>             }
+>         },   
+>     }
+> </script>
+> <style scoped>
+> .demo{
+>     background-color: orange;
+> }
+> </style>
+> ```
+
+##### 全局事件总线
+
+> **全局事件总线（GlobalEventBus）**
+>
+> 一种可以在任意组件间通信的方式，本质上就是一个对象，它必须满足以下条件:
+>
+> 1. 所有的组件对象都必须能看见他 
+> 2. 这个对象必须能够使用$on$emit$off方法去绑定、触发和解绑事件
+>
+> 代码示例：
+>
+> main.js
+>
+> ```javascript
+> import Vue from 'vue'
+> import App from './App.vue'
+> 
+> Vue.config.productionTip = false
+> 
+> new Vue({
+>   render: h => h(App),
+>   beforeCreate(){
+>     // 安装全局事件总线
+>     Vue.prototype.$bus = this
+>   }
+> }).$mount('#app')
+> ```
+>
+> School.vue
+>
+> ```vue
+> <template>
+> <div class="demo">  
+>     <h2>学校名称：{{name}}</h2>
+>     <h2>学校地址：{{address}}</h2>
+> </div>  
+> </template>
+> <script>
+>     export default {
+>         name:'School',
+>         data(){
+>             return {
+>                 name:'复旦大学',
+>                 address:'上海校区',
+>             }
+>         },
+>         methods: {
+>             receive(data){
+>                 console.log('我是School组件,收到了数据: ',data)
+>             }
+>         },
+>         mounted() {
+>             // 组件加载完成后绑定事件
+>             this.$bus.$on('myEvent',this.receive)
+>         },
+>         beforeDestroy() {
+>             // 销毁组件之前一定要解绑事件
+>             this.$bus.$off('myEvent')
+>         },
+>         
+>     }
+> </script>
+> <style scoped>
+>     .demo{
+>         background-color: skyblue;
+>     }
+> </style>
+> ```
+>
+> Student.vue
+>
+> ```vue
+> <template>
+> <div class="demo">
+>     <h2>学生姓名：{{name}}</h2>
+>     <h2>学生年龄：{{age}}</h2>
+>     <button @click="send">发送学生名给School组件</button>
+> </div>  
+> </template>
+> <script>
+>     export default {
+>         name:'Student',
+>         data(){
+>             return {
+>                 name:"张三",
+>                 age:18
+>             }
+>         },
+>         methods: {
+>             send(){
+>                 this.$bus.$emit('myEvent',this.name)
+>             }
+>         } 
+>     }
+> </script>
+> <style scoped>
+> .demo{
+>     background-color: orange;
+> }
+> </style>
+> ```
+
+##### 消息的订阅与发布
+
+> 消息订阅与发布（pubsub）消息订阅与发布是一种组件间通信的方式，适用于任意组件间通信 
+>
+> **使用步骤**
+>
+> 1. 安装pubsub：`npm i pubsub-js`
+> 2. 引入：`import pubsub from 'pubsub-js' `
+> 3. 接收数据：A组件想接收数据，则在A组件中订阅消息，订阅的回调留在A组件自身 
+>
+> 代码示例：
+>
+> School.vue
+>
+> ```vue
+> <template>
+> <div class="demo">  
+>     <h2>学校名称：{{name}}</h2>
+>     <h2>学校地址：{{address}}</h2>
+> </div>  
+> </template>
+> <script>
+>     import pubsub from 'pubsub-js'
+>     export default {
+>         name:'School',
+>         data(){
+>             return {
+>                 name:'复旦大学',
+>                 address:'上海校区',
+>             }
+>         },
+>         methods: {
+>             // 第一个参数为消息名，第二个为收到的消息
+>             receive(msgName,data){
+>                 console.log('我是School组件,收到了消息: ',data)
+>             }
+>         },
+>         mounted() {
+>             this.pubId = pubsub.subscribe('msgName',this.receive)
+>         },
+>         beforeDestroy() {
+>             pubsub.unsubscribe(this.pubId)
+>         },
+>         
+>     }
+> </script>
+> <style scoped>
+>     .demo{
+>         background-color: skyblue;
+>     }
+> </style>
+> ```
+>
+> Student.vue
+>
+> ```vue
+> <template>
+> <div class="demo">
+>     <h2>学生姓名：{{name}}</h2>
+>     <h2>学生年龄：{{age}}</h2>
+>     <button @click="send">发送学生名给School组件</button>
+> </div>  
+> </template>
+> <script>
+>     import pubsub from 'pubsub-js'
+>     export default {
+>         name:'Student',
+>         data(){
+>             return {
+>                 name:"张三",
+>                 age:18
+>             }
+>         },
+>         methods: {
+>             send(){
+>                 pubsub.publish('msgName',this.name)
+>             }
+>         } 
+>     }
+> </script>
+> <style scoped>
+> .demo{
+>     background-color: orange;
+> }
+> </style>
+> ```
+>
 > 
