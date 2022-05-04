@@ -2400,4 +2400,222 @@
 > </style>
 > ```
 >
+
+##### $nextTick
+
+> **基本介绍**
+>
+> 这是一个生命周期钩子
+>
+> `this.$nextTick(回调函数)`在下一次DOM更新结束后执行其指定的回调
+>
+> 什么时候用：当改变数据后，要基于更新后的新DOM进行某些操作时，要在nextTick所指定的回调函数中执行
+>
+> 用法：将回调延迟到下次 DOM 更新循环之后执行。在修改数据之后立即使用它，然后等待 DOM 更新。它跟全局方法 Vue.nextTick 一样，不同的是回调的 this 自动绑定到调用它的实例上。
+>
+
+##### 动画效果
+
+> 代码示例：
+>
+> ```vue
+> <template>
+>   <div>
+>       <button @click="isShow = !isShow">显示/隐藏</button>
+>       <!-- appear属性表示出现就应用动画效果 -->
+>       <transition name='my' appear>
+>           <h1 v-show="isShow" class="come">你好啊</h1>
+>       </transition>    
+>   </div>
+> </template>
 > 
+> <script>
+> export default {
+>     name:'Test',
+>     data() {
+>         return {
+>             isShow:true
+>         }
+>     },
+> }
+> </script>
+> 
+> <style scoped>
+>     h1{
+>         background-color: orange;
+>     }
+> 
+>     /* .v-enter-active{
+>         animation: ani 1s linear;
+>     } */
+> 
+>     /* .v-leave-active{
+>         animation: ani 1s linear reverse;
+>     } */
+> 
+>     /* 如果上面的transition配置了name属性，类型应该如下 */
+>     .my-enter-active{
+>         animation: ani 1s linear;
+>     }
+> 
+>     .my-leave-active{
+>         animation: ani 1s linear reverse;
+>     }
+> 
+>     @keyframes ani {
+>         from{
+>             transform: translateX(-100%);
+>         }
+>         to{
+>             transform: translateX(0px);
+>         }
+>     }
+> </style>>
+> ```
+>
+> **过渡动画**
+>
+> 代码示例：
+>
+> ```vue
+> <template>
+>   <div>
+>       <button @click="isShow = !isShow">显示/隐藏</button>
+>       <transition name='my' appear>
+>           <h1 v-show="isShow">你好啊</h1>
+>       </transition>    
+>   </div>
+> </template>
+> 
+> <script>
+> export default {
+>     name:'Test',
+>     data() {
+>         return {
+>             isShow:true
+>         }
+>     },
+> }
+> </script>
+> 
+> <style scoped>
+>     h1{
+>         background-color: orange;
+>     }
+>     /* 进入的起点,离开的终点 */
+>     .my-enter,.my-leave-to{
+>         transform: translateX(-100%);
+>     }
+>     /* 进入的终点,离开的起点 */
+>     .my-enter-to,.my-leave{
+>         transform: translateX(0);
+>     }
+>     .my-enter-active,.my-leave-active{
+>         transition:0.5s linear;
+>     }
+> </style>>
+> ```
+>
+> **多个元素过渡**
+>
+> ```vue
+> <template>
+>   <div>
+>       <button @click="isShow = !isShow">显示/隐藏</button>
+>       <transition-group name='my' appear>
+>           <!-- 必须要有key值 -->
+>           <h1 v-show="isShow" key="1">你好啊</h1>
+>           <h1 v-show="isShow" key="2">你好啊2</h1>
+>       </transition-group>    
+>   </div>
+> </template>
+> 
+> <script>
+> export default {
+>     name:'Test',
+>     data() {
+>         return {
+>             isShow:true
+>         }
+>     },
+> }
+> </script>
+> 
+> <style scoped>
+>     h1{
+>         background-color: orange;
+>     }
+>     /* 进入的起点,离开的终点 */
+>     .my-enter,.my-leave-to{
+>         transform: translateX(-100%);
+>     }
+>     /* 进入的终点,离开的起点 */
+>     .my-enter-to,.my-leave{
+>         transform: translateX(0);
+>     }
+>     .my-enter-active,.my-leave-active{
+>         transition:0.5s linear;
+>     }
+> </style>>
+> ```
+>
+> 引入第三方库animate.css来实现动画效果
+>
+> 首先安装animate.css  ` npm install animate.css --save`
+>
+> ```vue
+> <template>
+>   <div>
+>       <button @click="isShow = !isShow">显示/隐藏</button>
+>       <transition-group 
+>       name='animate__animated animate__bounce' 
+>       enter-active-class="animate__swing" 
+>       leave-active-class="animate__backOutUp" appear>
+>           <!-- 必须要有key值 -->
+>           <h1 v-show="isShow" key="1">你好啊</h1>
+>           <h1 v-show="isShow" key="2">你好啊2</h1>
+>       </transition-group>    
+>   </div>
+> </template>
+> 
+> <script>
+> import 'animate.css'
+> export default {
+>     name:'Test',
+>     data() {
+>         return {
+>             isShow:true
+>         }
+>     },
+> }
+> </script>
+> 
+> <style scoped>
+>     h1{
+>         background-color: orange;
+>     }
+> </style>>
+> ```
+>
+> **总结**
+>
+> Vue封装的过度与动画：在插入、更新或移除DOM元素时，在合适的时候给元素添加样式类名
+>
+> ![](./images/vue_animate.png)
+>
+> 写法：
+>
+> 1. 准备好样式
+>    * 元素进入的样式
+>      * `v-enter`		 进入的起点
+>      * `v-enter-active`	进入过程中
+>      * `v-enter-to`	 	进入的终点
+>    * 元素离开的样式
+>      * `v-leave`			离开的起点
+>      * `v-leave-active`	离开过程中
+>      * `v-leave-to`		离开的终点
+> 2. 使用`<transition>`包裹要过度的元素，并配置`name`属性，此时需要将上面样式名的`v`换为`name`
+> 3. 要让页面一开始就显示动画，需要添加`appear`
+>
+> 
+
