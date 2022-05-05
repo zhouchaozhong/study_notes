@@ -2619,3 +2619,88 @@
 >
 > 
 
+##### 配置代理服务器
+
+> vue.config.js
+>
+> ```javascript
+> const { defineConfig } = require('@vue/cli-service')
+> module.exports = defineConfig({
+>   transpileDependencies: true,
+>   // 关闭语法检查
+>   lintOnSave:false,
+>   // 开启代理服务器，方式1
+>   // devServer:{
+>   //   proxy:'http://localhost:5000'
+>   // }
+> 
+>   // 开启代理服务器，方式2
+>   devServer: {
+>     proxy: {
+>       '/api': {
+>         target: 'http://localhost:5000',
+>         // 路径重写
+>         pathRewrite:{'^/api':''},
+>         // 用于支持websocket
+>         ws: true,
+>         // 用于控制请求头中的host值，如果为true，则跟请求的目标服务器一直，如果为false则为自己真实的host，默认为true
+>         changeOrigin: true
+>       },
+>       '/dev-api': {
+>         target: 'http://localhost:5001',
+>         pathRewrite:{'^/dev-api':''},
+>         ws: true,
+>         changeOrigin: true
+>       }
+>     }
+>   }
+> 
+> })
+> ```
+>
+> App.vue
+>
+> ```vue
+> <template>
+>   <div>
+>     <button @click="getStudents">获取学生信息</button>
+>     <button @click="getCars">获取汽车信息</button>
+>   </div>  
+> </template>
+> 
+> <script>
+> import axios from 'axios'
+> export default {
+>   name: 'App',
+>   data(){
+>     return{
+>       msg:'欢迎学习Vue'
+>     }
+>   },
+>   methods: {
+>     getStudents(){
+>         axios.get('/api/students').then(
+>           response => {
+>             console.log('请求成功',response.data)
+>           },
+>           error => {
+>             console.log('请求失败',error.msg)
+>           }
+>         )
+>     },
+>     getCars(){
+>         axios.get('/dev-api/cars').then(
+>           response => {
+>             console.log('请求成功',response.data)
+>           },
+>           error => {
+>             console.log('请求失败',error.msg)
+>           }
+>         )
+>     }
+>   }
+> }
+> </script>
+> ```
+>
+> 
