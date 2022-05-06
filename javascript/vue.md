@@ -2703,4 +2703,1407 @@
 > </script>
 > ```
 >
+
+##### vue-resource
+
+> 代码示例
+>
+> main.js
+>
+> ```javascript
+> import Vue from 'vue'
+> import App from './App.vue'
+> import vueResource from 'vue-resource'
 > 
+> Vue.config.productionTip = false
+> Vue.use(vueResource)
+> 
+> new Vue({
+>   render: h => h(App),
+>   beforeCreate(){
+>    
+>   }
+> }).$mount('#app')
+> ```
+>
+> App.vue
+>
+> ```vue
+> <template>
+>   <div>
+>     <button @click="getStudents">获取学生信息</button>
+>     <button @click="getCars">获取汽车信息</button>
+>   </div>  
+> </template>
+> 
+> <script>
+> export default {
+>   name: 'App',
+>   data(){
+>     return{
+>       msg:'欢迎学习Vue'
+>     }
+>   },
+>   methods: {
+>     getStudents(){
+>         this.$http.get('/api/students').then(
+>           response => {
+>             console.log('请求成功',response.data)
+>           },
+>           error => {
+>             console.log('请求失败',error.msg)
+>           }
+>         )
+>     },
+>     getCars(){
+>         this.$http.get('/dev-api/cars').then(
+>           response => {
+>             console.log('请求成功',response.data)
+>           },
+>           error => {
+>             console.log('请求失败',error.msg)
+>           }
+>         )
+>     }
+>   }
+> }
+> </script>
+> ```
+
+##### 插槽（slot）
+
+> **默认插槽**
+>
+> 代码示例：
+>
+> App.vue
+>
+> ```vue
+> <template>
+>   <div class="container">
+>     <category title="美食">
+>       <img src="https://s3.ax1x.com/2021/01/16/srJlq0.jpg" alt="美食">
+>     </category>
+>     <category title="游戏">
+>       <ul>
+>         <li v-for="(g,index) in games" :key="index">{{g}}</li>
+>       </ul>
+>     </category>
+>     <category title="电影">
+>       <video controls src="http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4"></video>
+>     </category>
+>   </div>  
+> </template>
+> 
+> <script>
+> import Category from './components/Category'
+> export default {
+>   name: 'App',
+>   components:{Category},
+>   data(){
+>     return{
+>       foods:['火锅','烧烤','小龙虾','牛排'],
+>       games:['红色警戒','穿越火线','劲舞团','超级玛丽'],
+>       films:['《九品芝麻官》','《赌圣》','《逃学威龙》','《唐伯虎点秋香》']
+>     }
+>   },
+>   methods: {
+> 
+>   }
+> }
+> </script>
+> <style>
+> .container{
+>   display: flex;
+>   justify-content: space-around;
+> }
+> </style>
+> ```
+>
+> Category.vue
+>
+> ```vue
+> <template>
+>   <div class="category">
+>       <h3>{{title}}分类</h3>
+>       <slot></slot>
+>   </div>
+> </template>
+> 
+> <script>
+> export default {
+>     name:'Category',
+>     props:['title']
+> }
+> </script>
+> 
+> <style scoped>
+>     .category{
+>         background-color: skyblue;
+>         width: 200px;
+>         height: 300px;
+>     }
+>     h3{
+>         text-align: center;
+>         background-color: orange;
+>     }
+>     video{width: 100%;}
+>     img{width: 100%;}
+> </style>>
+> ```
+>
+> **具名插槽**
+>
+> 代码示例：
+>
+> App.vue
+>
+> ```vue
+> <template>
+>   <div class="container">
+>     <category title="美食">
+>       <!-- 利用slot属性指定具体放到哪个插槽 -->
+>       <img src="https://s3.ax1x.com/2021/01/16/srJlq0.jpg" alt="美食" slot="center">
+>       <a href="#" slot="footer">更多美食</a>
+>     </category>
+>     <category title="游戏">
+>       <ul slot="center">
+>         <li v-for="(g,index) in games" :key="index">{{g}}</li>
+>       </ul>
+>       <!-- 当多个元素指定同一个插槽，会以追加的形式添加到插槽，不会覆盖 -->
+>       <!-- <a href="#" slot="footer">单机游戏</a>
+>       <a href="#" slot="footer">网络游戏</a> -->
+>       <div class="foot" slot="footer">
+>          <a href="#">单机游戏</a>
+>          <a href="#">网络游戏</a>
+>       </div>
+>     </category>
+>     <category title="电影">
+>       <video controls src="http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4" slot="center"></video>
+>       <!-- 使用template标签不会生成具体html结构 -->
+>       <template slot="footer">
+>         <div class="foot" slot="footer">
+>          <a href="#">经典</a>
+>          <a href="#">热门</a>
+>          <a href="#">推荐</a>
+>         </div>
+>         <h4>欢迎前来观影</h4>
+>       </template>
+>       <!-- 如果使用template标签，可以如下简写 -->
+>       <!-- <template v-slot:footer>
+>         <div class="foot" slot="footer">
+>          <a href="#">经典</a>
+>          <a href="#">热门</a>
+>          <a href="#">推荐</a>
+>         </div>
+>         <h4>欢迎前来观影</h4>
+>       </template> -->
+>     </category>
+>   </div>  
+> </template>
+> 
+> <script>
+> import Category from './components/Category'
+> export default {
+>   name: 'App',
+>   components:{Category},
+>   data(){
+>     return{
+>       foods:['火锅','烧烤','小龙虾','牛排'],
+>       games:['红色警戒','穿越火线','劲舞团','超级玛丽'],
+>       films:['《九品芝麻官》','《赌圣》','《逃学威龙》','《唐伯虎点秋香》']
+>     }
+>   },
+>   methods: {
+> 
+>   }
+> }
+> </script>
+> <style>
+> .container{
+>   display: flex;
+>   justify-content: space-around;
+> }
+> </style>
+> ```
+>
+> Category.vue
+>
+> ```vue
+> <template>
+>   <div class="category">
+>       <h3>{{title}}分类</h3>
+>       <!-- 定义一个插槽，（等组件使用者进行填充）name属性指定插槽名 -->
+>       <slot name="center">这里是一些默认值，如果组件使用者没有传递具体结构，这里的内容就会出现</slot>
+>       <slot name="footer">这里是一些默认值，如果组件使用者没有传递具体结构，这里的内容就会出现</slot>
+>   </div>
+> </template>
+> 
+> <script>
+> export default {
+>     name:'Category',
+>     props:['title']
+> }
+> </script>
+> 
+> <style scoped>
+>     .category{
+>         background-color: skyblue;
+>         width: 200px;
+>         height: 300px;
+>     }
+>     h3{
+>         text-align: center;
+>         background-color: orange;
+>     }
+>     h4{
+>         text-align: center;
+>     }
+>     video{width: 100%;}
+>     img{width: 100%;}
+>     .foot{
+>         display: flex;
+>         justify-content: space-around;
+>     }
+> </style>>
+> ```
+>
+> **作用域插槽**
+>
+> `scope`用于父组件往子组件插槽放的html结构接收子组件的数据
+>
+> 理解：数据在组件的自身，但根据数据生成的结构需要组件的使用者来决定（games数据在Category组件中，但使用数据所遍历出来的结构由App组件决定）
+>
+> 代码示例
+>
+> App.vue
+>
+> ```vue
+> <template>
+>   <div class="container">
+>     <category title="游戏">
+>       <template scope="listData">
+>         <ul>
+>           <li v-for="(g,index) in listData.games" :key="index">{{g}}</li>
+>         </ul>
+>       </template>
+>     </category>
+>     <category title="游戏">
+>       <template slot-scope="listData">
+>         <ol>
+>           <li v-for="(g,index) in listData.games" :key="index">{{g}}</li>
+>         </ol>
+>       </template>
+>     </category>
+>     <category title="游戏">
+>       <!-- 解构赋值 -->
+>       <template scope="{games}">
+>         <ol>
+>           <h4 v-for="(g,index) in games" :key="index">{{g}}</h4>
+>         </ol>
+>       </template>
+>     </category>
+>   </div>  
+> </template>
+> 
+> <script>
+> import Category from './components/Category'
+> export default {
+>   name: 'App',
+>   components:{Category},
+>   data(){
+>     return{
+>     }
+>   },
+>   methods: {
+>   }
+> }
+>     
+> </script>
+> <style>
+> .container{
+>   display: flex;
+>   justify-content: space-around;
+> }
+> </style>
+> ```
+>
+> Category.vue
+>
+> ```vue
+> <template>
+>   <div class="category">
+>       <h3>{{title}}分类</h3>
+>       <slot :games="games"></slot>
+>   </div>
+> </template>
+> 
+> <script>
+> export default {
+>     name:'Category',
+>     props:['title'],
+>     data(){
+>         return{
+>             games:['红色警戒','穿越火线','劲舞团','超级玛丽']
+>         }
+>     },
+> }
+> </script>
+> 
+> <style scoped>
+>     .category{
+>         background-color: skyblue;
+>         width: 200px;
+>         height: 300px;
+>     }
+>     h3{
+>         text-align: center;
+>         background-color: orange;
+>     }
+>     h4{
+>         text-align: center;
+>     }
+>     video{width: 100%;}
+>     img{width: 100%;}
+>     .foot{
+>         display: flex;
+>         justify-content: space-around;
+>     }
+> </style>>
+> ```
+
+##### Vuex
+
+> **理解Vuex**
+>
+> 概念：专门在Vue中实现集中式状态（数据）管理的一个Vue插件，对Vue应用中多个组件的共享状态进行集中式的管理（读/写），也是一种组件间通信的方式，且适用于任意组件间通信
+>
+> <img src="./images/vuex1.png" style="zoom:80%;" />
+>
+> <img src="./images/vuex2.png" style="zoom:50%;" />
+>
+> **什么时候使用 Vuex**
+>
+> 1. 多个组件依赖于同一状态
+> 2. 来自不同组件的行为需要变更同一状态
+>
+> **Vuex 工作原理图**
+>
+> ![](./images/vuex3.png)
+>
+> **注意**：注意vue2.x版本对应的vuex 3.x版本，vue3.x版本对应vuex 4.x版本
+>
+> 代码示例：
+>
+> main.js
+>
+> ```javascript
+> import Vue from 'vue'
+> import App from './App.vue'
+> import vueResource from 'vue-resource'
+> import Vuex from 'vuex'
+> import store from './store/index'
+> 
+> Vue.config.productionTip = false
+> Vue.use(vueResource)
+> 
+> new Vue({
+>   render: h => h(App),
+>   store
+> }).$mount('#app')
+> ```
+>
+> store/index.js
+>
+> ```javascript
+> // 该文件用于创建vuex中最为核心的store
+> import Vue from 'vue'
+> // 引入Vuex
+> import Vuex from 'vuex'
+> // 使用Vuex插件，这里必须先import，use 再 new Vuex.Store,而vue脚手架会默认先执行import语句，所以必须把use移到本文件
+> Vue.use(Vuex)
+> 
+> // 准备actions---用于响应组件中的动作
+> const actions = {
+>     add(context,value){
+>         context.commit('ADD',value)
+>     },
+>     minus(context,value){
+>         context.commit('MINUS',value)
+>     },
+>     addOdd(context,value){
+>         if(context.state.sum % 2 != 0){
+>             context.commit('ADD',value)
+>         }
+>     },
+>     addWait(context,value){
+>         setTimeout(() => {
+>             context.commit('ADD',value)
+>         }, 2000);
+>     }
+> }
+> // 准备mutations---用于操作数据（state）
+> const mutations = {
+>     ADD(state,value){
+>         state.sum += value
+>     },
+>     MINUS(state,value){
+>         state.sum -= value
+>     }
+> }
+> // 准备state---用于存储数据
+> const state = {
+>     sum:0  // 当前的和
+> }
+> 
+> // 创建store
+> export default new Vuex.Store({
+>     // key和value重名，可以简写
+>     actions,
+>     mutations,
+>     state
+> })
+> ```
+>
+> App.vue
+>
+> ```vue
+> <template>
+>   <div>
+>     <Count/>
+>   </div>  
+> </template>
+> 
+> <script>
+> import Count from './components/Count'
+> export default {
+>   name: 'App',
+>   components:{Count},
+>   data(){
+>     return{
+>     }
+>   },
+>   methods: {
+>   }
+> }  
+> </script>
+> ```
+>
+> Count.vue
+>
+> ```vue
+> <template>
+> 	<div>
+> 		<h1>当前求和为：{{$store.state.sum}}</h1>
+> 		<select v-model.number="n">
+> 			<option value="1">1</option>
+> 			<option value="2">2</option>
+> 			<option value="3">3</option>
+> 		</select>
+> 		<button @click="increment">+</button>
+> 		<button @click="decrement">-</button>
+> 		<button @click="incrementOdd">当前求和为奇数再加</button>
+> 		<button @click="incrementWait">等一等再加</button>
+> 	</div>
+> </template>
+> 
+> <script>
+> 	export default {
+> 		name:'Count',
+> 		data() {
+> 			return {
+> 				n:1, //用户选择的数字
+> 			}
+> 		},
+> 		methods: {
+> 			increment(){
+> 				this.$store.commit('ADD',this.n)
+> 			},
+> 			decrement(){
+> 				this.$store.commit('MINUS',this.n)
+> 			},
+> 			incrementOdd(){
+> 				this.$store.dispatch('addOdd',this.n)
+> 			},
+> 			incrementWait(){
+> 				this.$store.dispatch('addWait',this.n)
+> 			},
+> 		},
+> 		mounted() {
+> 			
+> 		},
+> 	}
+> </script>
+> 
+> <style scoped>
+> 	button{
+> 		margin-left: 5px;
+> 	}
+> </style>
+> ```
+>
+> **getters 配置项**
+>
+> 概念：当state中的数据需要经过加工后再使用时，可以使用getters加工，相当于全局计算属性
+>
+> store/index.js
+>
+> ```javascript
+> // 该文件用于创建vuex中最为核心的store
+> import Vue from 'vue'
+> // 引入Vuex
+> import Vuex from 'vuex'
+> // 使用Vuex插件，这里必须先import，use 再 new Vuex.Store,而vue脚手架会默认先执行import语句，所以必须把use移到本文件
+> Vue.use(Vuex)
+> 
+> // 准备actions---用于响应组件中的动作
+> const actions = {
+>     add(context,value){
+>         context.commit('ADD',value)
+>     },
+>     minus(context,value){
+>         context.commit('MINUS',value)
+>     },
+>     addOdd(context,value){
+>         if(context.state.sum % 2 != 0){
+>             context.commit('ADD',value)
+>         }
+>     },
+>     addWait(context,value){
+>         setTimeout(() => {
+>             context.commit('ADD',value)
+>         }, 2000);
+>     }
+> }
+> // 准备mutations---用于操作数据（state）
+> const mutations = {
+>     ADD(state,value){
+>         state.sum += value
+>     },
+>     MINUS(state,value){
+>         state.sum -= value
+>     }
+> }
+> // 准备state---用于存储数据
+> const state = {
+>     sum:0  // 当前的和
+> }
+> 
+> // 准备getters---用于将state中的数据进行加工
+> // 类似于全局的计算属性，多个组件可以共享
+> const getters = {
+>     bigSum(state){
+>         return state.sum * 10
+>     }
+> }
+> 
+> // 创建store
+> export default new Vuex.Store({
+>     // key和value重名，可以简写
+>     actions,
+>     mutations,
+>     state,
+>     getters
+> })
+> ```
+>
+> Count.vue
+>
+> ```vue
+> <template>
+> 	<div>
+> 		<h1>当前求和为：{{$store.state.sum}}</h1>
+> 		<h3>当前求和放大10倍为: {{$store.getters.bigSum}} </h3>
+> 		<select v-model.number="n">
+> 			<option value="1">1</option>
+> 			<option value="2">2</option>
+> 			<option value="3">3</option>
+> 		</select>
+> 		<button @click="increment">+</button>
+> 		<button @click="decrement">-</button>
+> 		<button @click="incrementOdd">当前求和为奇数再加</button>
+> 		<button @click="incrementWait">等一等再加</button>
+> 	</div>
+> </template>
+> 
+> <script>
+> 	export default {
+> 		name:'Count',
+> 		data() {
+> 			return {
+> 				n:1, //用户选择的数字
+> 			}
+> 		},
+> 		methods: {
+> 			increment(){
+> 				this.$store.commit('ADD',this.n)
+> 			},
+> 			decrement(){
+> 				this.$store.commit('MINUS',this.n)
+> 			},
+> 			incrementOdd(){
+> 				this.$store.dispatch('addOdd',this.n)
+> 			},
+> 			incrementWait(){
+> 				this.$store.dispatch('addWait',this.n)
+> 			},
+> 		},
+> 		mounted() {
+> 			
+> 		},
+> 	}
+> </script>
+> 
+> <style scoped>
+> 	button{
+> 		margin-left: 5px;
+> 	}
+> </style>
+> ```
+>
+> **四个 map 方法的使用**
+>
+> 1. mapState方法：用于帮助映射state中的数据为计算属性
+> 2. mapGetters方法：用于帮助映射getters中的数据为计算属性  
+> 3. mapActions方法：用于帮助生成与actions对话的方法，即包含$store.dispatch(xxx)的函数  
+> 4. mapMutations方法：用于帮助生成与mutations对话的方法，即包含$store.commit(xxx)的函数  
+>
+> *注意*：mapActions与mapMutations使用时，若需要传递参数需要：在模板中绑定事件时传递好参数，否则参数是事件对象
+>
+> 代码示例：
+>
+> Count.vue
+>
+> ```vue
+> <template>
+> 	<div>
+> 		<h1>当前求和为：{{sum}}</h1>
+> 		<h3>当前求和放大10倍为: {{bigSum}} </h3>
+> 		<h3>我在 {{school}} 学习 {{subject}}</h3>
+> 		<select v-model.number="n">
+> 			<option value="1">1</option>
+> 			<option value="2">2</option>
+> 			<option value="3">3</option>
+> 		</select>
+> 		<button @click="increment(n)">+</button>
+> 		<button @click="decrement(n)">-</button>
+> 		<button @click="incrementOdd(n)">当前求和为奇数再加</button>
+> 		<button @click="incrementWait(n)">等一等再加</button>
+> 	</div>
+> </template>
+> 
+> <script>
+> 	import {mapState,mapGetters,mapMutations,mapActions} from 'vuex'
+> 	export default {
+> 		name:'Count',
+> 		data() {
+> 			return {
+> 				n:1, //用户选择的数字
+> 			}
+> 		},
+> 		computed:{
+> 			// 借助mapState生成计算属性，从state中读取数据(对象写法)
+> 			// ...mapState({sum:'sum',school:'school',subject:'subject'}),
+> 			// 数组写法，这里的值，有两个用途，作为计算属性的名，通知作为取state中的数据的key名
+> 			...mapState(['sum','school','subject']),
+> 			//借助mapGetters生成计算属性，从getters中读取数据。（对象写法）
+> 			// ...mapGetters({bigSum:'bigSum'})
+> 			
+> 			//借助mapGetters生成计算属性，从getters中读取数据。（数组写法）
+> 			...mapGetters(['bigSum'])
+> 		},
+> 		methods: {
+> 			//借助mapMutations生成对应的方法，方法中会调用commit去联系mutations(对象写法)
+> 			...mapMutations({increment:'ADD',decrement:'MINUS'}),
+> 			//借助mapMutations生成对应的方法，方法中会调用commit去联系mutations(数组写法)
+> 			// ...mapMutations(['ADD','MINUS']),
+> 
+> 			//借助mapActions生成对应的方法，方法中会调用dispatch去联系actions(对象写法)
+> 			...mapActions({incrementOdd:'addOdd',incrementWait:'addWait'})
+> 			//借助mapActions生成对应的方法，方法中会调用dispatch去联系actions(数组写法)
+> 			// ...mapActions(['addOdd','addWait'])
+> 		},
+> 		mounted() {
+> 			
+> 		},
+> 	}
+> </script>
+> 
+> <style scoped>
+> 	button{
+> 		margin-left: 5px;
+> 	}
+> </style>
+> ```
+>
+> store/index.js
+>
+> ```javascript
+> // 准备actions---用于响应组件中的动作
+> const actions = {
+>     add(context,value){
+>         context.commit('ADD',value)
+>     },
+>     minus(context,value){
+>         context.commit('MINUS',value)
+>     },
+>     addOdd(context,value){
+>         if(context.state.sum % 2 != 0){
+>             context.commit('ADD',value)
+>         }
+>     },
+>     addWait(context,value){
+>         setTimeout(() => {
+>             context.commit('ADD',value)
+>         }, 2000);
+>     }
+> }
+> // 准备mutations---用于操作数据（state）
+> const mutations = {
+>     ADD(state,value){
+>         state.sum += value
+>     },
+>     MINUS(state,value){
+>         state.sum -= value
+>     }
+> }
+> // 准备state---用于存储数据
+> const state = {
+>     sum:0,  // 当前的和
+>     school:'复旦大学',
+>     subject:'计算机科学与技术'
+> }
+> 
+> // 准备getters---用于将state中的数据进行加工
+> // 类似于全局的计算属性，多个组件可以共享
+> const getters = {
+>     bigSum(state){
+>         return state.sum * 10
+>     }
+> }
+> 
+> // 创建store
+> export default new Vuex.Store({
+>     // key和value重名，可以简写
+>     actions,
+>     mutations,
+>     state,
+>     getters
+> })
+> ```
+>
+> **多组件共享数据**
+>
+> 代码示例：
+>
+> store/index.js
+>
+> ```javascript
+> // 该文件用于创建vuex中最为核心的store
+> import Vue from 'vue'
+> // 引入Vuex
+> import Vuex from 'vuex'
+> // 使用Vuex插件，这里必须先import，use 再 new Vuex.Store,而vue脚手架会默认先执行import语句，所以必须把use移到本文件
+> Vue.use(Vuex)
+> 
+> // 准备actions---用于响应组件中的动作
+> const actions = {
+>     add(context,value){
+>         context.commit('ADD',value)
+>     },
+>     minus(context,value){
+>         context.commit('MINUS',value)
+>     },
+>     addOdd(context,value){
+>         if(context.state.sum % 2 != 0){
+>             context.commit('ADD',value)
+>         }
+>     },
+>     addWait(context,value){
+>         setTimeout(() => {
+>             context.commit('ADD',value)
+>         }, 2000);
+>     }
+> }
+> // 准备mutations---用于操作数据（state）
+> const mutations = {
+>     ADD(state,value){
+>         state.sum += value
+>     },
+>     MINUS(state,value){
+>         state.sum -= value
+>     },
+>     ADD_PERSON(state,value){
+>         state.personList.unshift(value)
+>     }
+> }
+> // 准备state---用于存储数据
+> const state = {
+>     sum:0,  // 当前的和
+>     school:'复旦大学',
+>     subject:'计算机科学与技术',
+>     personList:[
+>         {id:'001',name:'张三'}
+>     ]
+> }
+> 
+> // 准备getters---用于将state中的数据进行加工
+> // 类似于全局的计算属性，多个组件可以共享
+> const getters = {
+>     bigSum(state){
+>         return state.sum * 10
+>     }
+> }
+> 
+> // 创建store
+> export default new Vuex.Store({
+>     // key和value重名，可以简写
+>     actions,
+>     mutations,
+>     state,
+>     getters
+> })
+> ```
+>
+> App.vue
+>
+> ```vue
+> <template>
+>   <div>
+>     <Count/>
+>     <hr/>
+>     <Person/>
+>   </div>  
+> </template>
+> 
+> <script>
+> import Count from './components/Count'
+> import Person from './components/Person'
+> export default {
+>   name: 'App',
+>   components:{Count,Person},
+>   data(){
+>     return{
+>     }
+>   },
+>   methods: {
+>   }
+> }  
+> </script>
+> ```
+>
+> Count.vue
+>
+> ```vue
+> <template>
+> 	<div>
+> 		<h1>当前求和为：{{sum}}</h1>
+> 		<h3>当前求和放大10倍为: {{bigSum}} </h3>
+> 		<h3>我在 {{school}} 学习 {{subject}}</h3>
+> 		<h3 style="color:red">Person组件的总人数是：{{personList.length}}</h3>
+> 		<select v-model.number="n">
+> 			<option value="1">1</option>
+> 			<option value="2">2</option>
+> 			<option value="3">3</option>
+> 		</select>
+> 		<button @click="increment(n)">+</button>
+> 		<button @click="decrement(n)">-</button>
+> 		<button @click="incrementOdd(n)">当前求和为奇数再加</button>
+> 		<button @click="incrementWait(n)">等一等再加</button>
+> 	</div>
+> </template>
+> 
+> <script>
+> 	import {mapState,mapGetters,mapMutations,mapActions} from 'vuex'
+> 	export default {
+> 		name:'Count',
+> 		data() {
+> 			return {
+> 				n:1, //用户选择的数字
+> 			}
+> 		},
+> 		computed:{
+> 			...mapState(['sum','school','subject','personList']),
+> 			...mapGetters(['bigSum'])
+> 		},
+> 		methods: {
+> 			...mapMutations({increment:'ADD',decrement:'MINUS'}),
+> 			...mapActions({incrementOdd:'addOdd',incrementWait:'addWait'})
+> 		},
+> 		mounted() {
+> 			
+> 		},
+> 	}
+> </script>
+> 
+> <style scoped>
+> 	button{
+> 		margin-left: 5px;
+> 	}
+> </style>
+> ```
+>
+> Person.vue
+>
+> ```vue
+> <template>
+>   <div>
+>       <h1>人员列表</h1>
+>       <h3 style="color:red">Count组件的求和为：{{sum}}</h3>
+>       <input type="text" placeholder="请输入名字" v-model="name">
+>       <button @click="add">添加</button>
+>       <ul>
+>           <li v-for="p in personList" :key="p.id">{{p.name}}</li>
+>       </ul>
+>   </div>
+> </template>
+> 
+> <script>
+> import {nanoid} from 'nanoid'
+> export default {
+>    name:'Person',
+>    data() {
+>        return {
+>            name:''
+>        }
+>    },
+>    computed:{
+>        personList(){
+>            return this.$store.state.personList
+>        },
+>        sum(){
+>            return this.$store.state.sum
+>        }
+>    },
+>    methods: {
+>        add(){
+>            const personObj = {id:nanoid(),name:this.name}
+>            this.$store.commit('ADD_PERSON',personObj)
+>        }
+>    }
+> }
+> </script>
+> ```
+>
+> **Vuex模块化和namespace**
+>
+> 代码示例：
+>
+> main.js
+>
+> ```javascript
+> import Vue from 'vue'
+> import App from './App.vue'
+> import vueResource from 'vue-resource'
+> import Vuex from 'vuex'
+> import store from './store/index'
+> 
+> Vue.config.productionTip = false
+> Vue.use(vueResource)
+> 
+> new Vue({
+>   render: h => h(App),
+>   store
+> }).$mount('#app')
+> ```
+>
+> store/index.js
+>
+> ```javascript
+> // 该文件用于创建vuex中最为核心的store
+> import Vue from 'vue'
+> // 引入Vuex
+> import Vuex from 'vuex'
+> // 使用Vuex插件，这里必须先import，use 再 new Vuex.Store,而vue脚手架会默认先执行import语句，所以必须把use移到本文件
+> import countOptions from './count'
+> import personOptions from './person'
+> 
+> Vue.use(Vuex)
+> 
+> // 创建store
+> export default new Vuex.Store({
+>     modules:{
+>         countAbout:countOptions,
+>         personAbout:personOptions
+>     }
+> })
+> ```
+>
+> store/count.js
+>
+> ```javascript
+> // 求和相关配置
+> export default {
+>     // 这里必须写namespace，mapState才能认识分类名
+>     namespaced:true,
+>     actions:{
+>         add(context,value){
+>             context.commit('ADD',value)
+>         },
+>         minus(context,value){
+>             context.commit('MINUS',value)
+>         },
+>         addOdd(context,value){
+>             if(context.state.sum % 2 != 0){
+>                 context.commit('ADD',value)
+>             }
+>         },
+>         addWait(context,value){
+>             setTimeout(() => {
+>                 context.commit('ADD',value)
+>             }, 2000);
+>         }
+>     },
+>     mutations:{
+>         ADD(state,value){
+>             state.sum += value
+>         },
+>         MINUS(state,value){
+>             state.sum -= value
+>         }
+>     },
+>     state:{
+>         sum:0,  // 当前的和
+>         school:'复旦大学',
+>         subject:'计算机科学与技术',
+>     },
+>     getters:{
+>         bigSum(state){
+>             return state.sum * 10
+>         }
+>     }  
+> }
+> ```
+>
+> store/person.js
+>
+> ```javascript
+> // 人员管理相关配置
+> export default {
+>     namespaced:true,
+>     actions:{
+>         addPersonWang(context,value){
+>             if(value.name.indexOf('王') === 0){
+>                 context.commit('ADD_PERSON',value)
+>             }else{
+>                 alert('添加的人必须姓王！')
+>             }
+>         }
+>     },
+>     mutations:{
+>         ADD_PERSON(state,value){
+>             state.personList.unshift(value)
+>         }
+>     },
+>     state:{
+>         personList:[
+>             {id:'001',name:'张三'}
+>         ]
+>     },
+>     getters:{
+>         firstPersonName(state){
+>             return state.personList[0].name
+>         }
+>     }  
+> }
+> ```
+>
+> App.vue
+>
+> ```vue
+> <template>
+>   <div>
+>     <Count/>
+>     <hr/>
+>     <Person/>
+>   </div>  
+> </template>
+> 
+> <script>
+> import Count from './components/Count'
+> import Person from './components/Person'
+> export default {
+>   name: 'App',
+>   components:{Count,Person},
+>   data(){
+>     return{
+>     }
+>   },
+>   methods: {
+>   }
+> }  
+> </script>
+> ```
+>
+> Count.vue
+>
+> ```vue
+> <template>
+> 	<div>
+> 		<h1>当前求和为：{{sum}}</h1>
+> 		<h3>当前求和放大10倍为: {{bigSum}} </h3>
+> 		<h3>我在 {{school}} 学习 {{subject}}</h3>
+> 		<h3 style="color:red">Person组件的总人数是：{{personList.length}}</h3>
+> 		<select v-model.number="n">
+> 			<option value="1">1</option>
+> 			<option value="2">2</option>
+> 			<option value="3">3</option>
+> 		</select>
+> 		<button @click="increment(n)">+</button>
+> 		<button @click="decrement(n)">-</button>
+> 		<button @click="incrementOdd(n)">当前求和为奇数再加</button>
+> 		<button @click="incrementWait(n)">等一等再加</button>
+> 	</div>
+> </template>
+> 
+> <script>
+> 	import {mapState,mapGetters,mapMutations,mapActions} from 'vuex'
+> 	export default {
+> 		name:'Count',
+> 		data() {
+> 			return {
+> 				n:1, //用户选择的数字
+> 			}
+> 		},
+> 		computed:{
+> 			...mapState('countAbout',['sum','school','subject','personList']),
+> 			...mapState('personAbout',['personList']),
+> 			...mapGetters('countAbout',['bigSum'])
+> 		},
+> 		methods: {
+> 			...mapMutations('countAbout',{increment:'ADD',decrement:'MINUS'}),
+> 			...mapActions('countAbout',{incrementOdd:'addOdd',incrementWait:'addWait'})
+> 		},
+> 		mounted() {
+> 			
+> 		},
+> 	}
+> </script>
+> 
+> <style scoped>
+> 	button{
+> 		margin-left: 5px;
+> 	}
+> </style>
+> ```
+>
+> Person.vue
+>
+> ```vue
+> <template>
+>   <div>
+>       <h1>人员列表</h1>
+>       <h3 style="color:red">Count组件的求和为：{{sum}}</h3>
+>       <h3>列表中第一个人的名字是: {{firstPersonName}}</h3>
+>       <input type="text" placeholder="请输入名字" v-model="name">
+>       <button @click="add">添加</button>
+>       <button @click="addWang">添加一个姓王的人</button>
+>       <ul>
+>           <li v-for="p in personList" :key="p.id">{{p.name}}</li>
+>       </ul>
+>   </div>
+> </template>
+> 
+> <script>
+> import {nanoid} from 'nanoid'
+> export default {
+>    name:'Person',
+>    data() {
+>        return {
+>            name:''
+>        }
+>    },
+>    computed:{
+>        personList(){
+>            return this.$store.state.personAbout.personList
+>        },
+>        sum(){
+>            return this.$store.state.countAbout.sum
+>        },
+>        firstPersonName(){
+>            return this.$store.getters['personAbout/firstPersonName']
+>        }
+>    },
+>    methods: {
+>        add(){
+>            const personObj = {id:nanoid(),name:this.name}
+>            this.$store.commit('personAbout/ADD_PERSON',personObj)
+>        },
+>        addWang(){
+>            const personObj = {id:nanoid(),name:this.name}
+>            this.$store.dispatch('personAbout/addPersonWang',personObj)
+>        }
+>    }
+> }
+> </script>
+> ```
+
+### 路由
+
+##### 基本路由
+
+> **vue-router 的理解**
+>
+> vue的一个插件库，专门用来实现SPA应用
+>
+>  **对SPA应用的理解**
+>
+> 1. 单页Web应用（single page web application，SPA）
+> 2. 整个应用只有一个完整的页面
+> 3. 点击页面中的导航链接不会刷新页面，只会做页面的局部更新
+> 4. 数据需要通过ajax请求获取
+>
+> **路由的理解**
+>
+> 1. 什么是路由?
+>    * 一个路由就是一组映射关系（key - value）
+>    * key为路径，value可能是function或component
+>
+> **基本路由**
+>
+> 1. 安装vue-router，命令`npm i vue-router@3` （注意vue2.x版本对应的vue-router3.x版本，vue3.x版本对应vue-router4.x版本）
+> 2. 应用插件`Vue.use(VueRouter)`
+> 3. 编写router配置项
+>
+> 代码示例：
+>
+> main.js
+>
+> ```javascript
+> import Vue from 'vue'
+> import App from './App.vue'
+> import VueRouter from 'vue-router'
+> //index可以省略
+> // import router from './router/index'
+> import router from './router'
+> 
+> Vue.config.productionTip = false
+> Vue.use(VueRouter)
+> 
+> new Vue({
+>   router:router,
+>   render: h => h(App),
+> }).$mount('#app')
+> ```
+>
+> router/index.js
+>
+> ```javascript
+> // 该文件专门用于创建整个应用的路由器
+> import VueRouter from "vue-router";
+> // 引入组件
+> import About from '../pages/About'
+> import Home from '../pages/Home'
+> 
+> // 创建并暴露一个路由器
+> export default new VueRouter({
+>     routes:[
+>         {
+>             path:'/about',
+>             component:About
+>         },
+>         {
+>             path:'/home',
+>             component:Home
+>         } 
+>     ]
+> })
+> ```
+>
+> App.vue
+>
+> ```vue
+> <template>
+>   <div>
+>     <div class="row">
+>       <Banner/>
+>     </div>
+>     <div class="row">
+>       <div class="col-xs-2 col-xs-offset-2">
+>         <div class="list-group">
+>           <!-- Vue中借助router-link标签实现路由的切换 -->
+>           <router-link class="list-group-item" active-class="active" to="/about">About</router-link>
+>           <router-link class="list-group-item" active-class="active" to="/home">Home</router-link>
+>         </div>
+>       </div>
+>       <div class="col-xs-6">
+>         <div class="panel">
+>           <div class="panel-body">
+>               <!-- Vue中借助router-view标签实现路由视图的展示 -->
+>               <router-view></router-view>
+>           </div>
+>         </div>
+>       </div>
+>     </div>
+>   </div>
+> </template>
+> 
+> <script>
+> import Banner from './components/Banner'
+> export default {
+>   name: 'App',
+>   components:{Banner},
+>   data(){
+>     return{
+>     }
+>   },
+>   methods: {
+>   }
+> }  
+> </script>
+> ```
+>
+> Home.vue
+>
+> ```vue
+> <template>
+>   <h2>我是Home的内容</h2>
+> </template>
+> <script>
+> export default {
+>     name:'Home',
+>     mounted() {
+>       console.log('Home组件挂载完毕',this)
+>     }
+> }
+> </script>
+> ```
+>
+> About.vue
+>
+> ```vue
+> <template>
+>   <h2>我是About的内容</h2>
+> </template>
+> <script>
+> export default {
+>     name:'About',
+>     mounted() {
+>       console.log('About组件挂载完毕',this)
+>     }
+> }
+> </script>
+> ```
+>
+> **几个注意事项**
+>
+> 1. 路由组件通常存放在pages文件夹，一般组件通常存放在components文件夹，比如上面的案例文件结构为
+>
+>    `src/pages/Home.vue`
+>
+>    `src/pages/About.vue`
+>
+>    `src/router/index.js`
+>
+>    `src/components/Banner.vue`
+>
+>    `src/App.vue`
+>
+> 2. 通过切换，“隐藏”了的路由组件，默认是被销毁掉的，需要的时候再去挂载
+>
+> 3. 每个组件都有自己的`$route`属性，里面存储着自己的路由信息
+>
+> 4. 整个应用只有一个`router`，可以通过组件的$router属性获取到
+>
+> 
+
