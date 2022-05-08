@@ -5055,3 +5055,162 @@
 > export default router
 > ```
 
+### Vue3
+
+##### Vue3简介
+
+> **Vue3带来了什么**
+>
+> 1. 性能提升
+>    * 打包大小减少41%
+>    * 初次渲染快55%, 更新渲染快133%
+>    - 内存减少54%
+> 2. 源码的升级
+>    * 使用Proxy代替defineProperty实现响应式
+>    - 重写虚拟DOM的实现和Tree-Shaking
+> 3. 拥抱TypeScript\
+>    * Vue3可以更好的支持TypeScript
+> 4. 新的特性
+>    1. Composition API（组合API）
+>
+>       - setup配置
+>       - ref与reactive
+>       - watch与watchEffect
+>       - provide与inject
+>       - ......
+>    2. 新的内置组件
+>       - Fragment 
+>       - Teleport
+>       - Suspense
+>    3. 其他改变
+>
+>       - 新的生命周期钩子
+>       - data 选项应始终被声明为一个函数
+>       - 移除keyCode支持作为 v-on 的修饰符
+>       - ......
+
+##### 创建Vue3.0工程
+
+> **1.使用 vue-cli 创建**
+>
+> 官方文档：https://cli.vuejs.org/zh/guide/creating-a-project.html#vue-create
+>
+> ```bash
+> ## 查看@vue/cli版本，确保@vue/cli版本在4.5.0以上
+> vue --version
+> ## 安装或者升级你的@vue/cli
+> npm install -g @vue/cli
+> ## 创建
+> vue create vue_test
+> ## 启动
+> cd vue_test
+> npm run serve
+> ```
+>
+> **2.使用 vite 创建**
+>
+> 官方文档：https://v3.cn.vuejs.org/guide/installation.html#vite
+>
+> vite官网：https://vitejs.cn
+>
+> - 什么是vite？—— 新一代前端构建工具。
+> - 优势如下：
+>   - 开发环境中，无需打包操作，可快速的冷启动。
+>   - 轻量快速的热重载（HMR）。
+>   - 真正的按需编译，不再等待整个应用编译完成。
+> - 传统构建 与 vite构建对比图
+>
+> <img src="./images/vue3_1.png" style="width:600px;height:380px;float:left"/><img src="./images/vue3_2.png" style="width:600px;height:380px" />
+>
+> ```bash
+> ## 创建工程
+> npm init vite-app <project-name>
+> ## 进入工程目录
+> cd <project-name>
+> ## 安装依赖
+> npm install
+> ## 运行
+> npm run dev
+> ```
+
+##### 常用 Composition API
+
+> **setup**
+>
+> 1.  理解：Vue3.0中一个新的配置项，值为一个函数。
+> 2. setup是所有Composition API（组合API）“ 表演的舞台 ”。
+> 3. 组件中所用到的：数据、方法等等，均要配置在setup中
+> 4. setup函数的两种返回值：
+>    * 若返回一个对象，则对象中的属性、方法, 在模板中均可以直接使用。（重点关注！）
+>    * 若返回一个渲染函数：则可以自定义渲染内容。（了解）
+> 5. 注意点：
+>    * 尽量不要与Vue2.x配置混用
+>      * Vue2.x配置（data、methos、computed...）中可以访问到setup中的属性、方法
+>      * 但在setup中不能访问到Vue2.x配置（data、methos、computed...）
+>      * 如果有重名, setup优先。
+>    * setup不能是一个async函数，因为返回值不再是return的对象, 而是promise, 模板看不到return对象中的属性。（后期也可以返回一个Promise实例，但需要Suspense和异步组件的配合）
+>
+> 代码示例：
+>
+> main.js
+>
+> ```javascript
+> // 这里引入的不再是Vue构造函数了，引入的是一个名为createApp的工厂函数
+> import { createApp } from 'vue'
+> import App from './App.vue'
+> 
+> createApp(App).mount('#app')
+> ```
+>
+> App.vue
+>
+> ```vue
+> <template>
+>   <!-- Vue3组件中的模板结构可以没有根元素 -->
+>   <img alt="Vue logo" src="./assets/logo.png">
+>   <h1>我是APP组件</h1>
+>   <h2>个人信息</h2>
+>   <h3>姓名：{{name}}</h3>
+>   <h3>年龄：{{age}}</h3>
+>   <button @click="sayHello">说话</button>
+> </template>
+> 
+> <script>
+> // import {h} from 'vue'
+> export default {
+>   name: 'App',
+>   components: {},
+>   setup(){
+>     // 数据
+>     let name = '张三'
+>     let age = 18
+>     // 方法
+>     function sayHello(){
+>       alert(`我叫${name}，我今年${age}岁，大家好!`)
+>     }
+> 
+>     return {
+>       name,
+>       age,
+>       sayHello
+>     }
+> 
+>     // 返回一个渲染函数，当返回渲染函数式，页面内容以渲染函数为准，模板里面写的内容将被忽略
+>     // return ()=> h('h1','剑气纵横三万里，一剑光寒十九洲。')
+>   }
+> }
+> </script>
+> 
+> <style>
+> #app {
+>   font-family: Avenir, Helvetica, Arial, sans-serif;
+>   -webkit-font-smoothing: antialiased;
+>   -moz-osx-font-smoothing: grayscale;
+>   text-align: center;
+>   color: #2c3e50;
+>   margin-top: 60px;
+> }
+> </style>
+> ```
+>
+> 
