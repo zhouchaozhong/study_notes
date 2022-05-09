@@ -5213,4 +5213,343 @@
 > </style>
 > ```
 >
+> **ref函数**
+>
+> * 作用: 定义一个响应式的数据
+> * 语法: `const xxx = ref(initValue)`
+>   * 创建一个包含响应式数据的引用对象（reference对象，简称ref对象）。
+>   * JS中操作数据： `xxx.value`
+>   * 模板中读取数据: 不需要.value，直接：`<div>{{xxx}}</div>`
+> * 备注
+>   * 接收的数据可以是：基本类型、也可以是对象类型。
+>   * 基本类型的数据：响应式依然是靠`Object.defineProperty()`的`get`与`set`完成的。
+>   * 对象类型的数据：内部 “ 求助 ” 了Vue3.0中的一个新函数—— `reactive`函数。
+>
+> 代码示例：
+>
+> ```vue
+> <template>
+>   <!-- Vue3组件中的模板结构可以没有根元素 -->
+>   <img alt="Vue logo" src="./assets/logo.png">
+>   <h1>我是APP组件</h1>
+>   <h2>个人信息</h2>
+>   <h3>姓名：{{name}}</h3>
+>   <h3>年龄：{{age}}</h3>
+>   <h3>工作种类：{{job.type}}</h3>
+>   <h3>工作薪水：{{job.salary}}</h3>
+>   <h3>地址：{{job.address.country}}-{{job.address.city}}</h3>
+>   姓名：<input type="text" v-model="name"> <br>
+>   年龄：<input type="text" v-model="age">
+>   <button @click="changeInfo">修改人的信息</button>
+> </template>
+> 
+> <script>
+> import {ref} from 'vue'
+> export default {
+>   name: 'App',
+>   components: {},
+>   setup(){
+>     // 用ref函数包裹数据后，返回的是一个RefImpl对象，要修改值的话，需要对象名.value来修改
+>     let name = ref('张三')
+>     let age = ref(18)
+>     let job = ref({
+>       type:'前端工程师',
+>       salary:30000,
+>       address:{
+>         country:'中国',
+>         city:'上海'
+>       }
+>     })
+>     function changeInfo(){
+>       name.value = '李四'
+>       age.value = 20
+>       // 如果是对象，后面不需要再写.value
+>       job.value.type = '后端工程师'
+>       job.value.salary = '50k'
+>       job.value.address.city = '湖南'
+>       console.log(name,age,job)
+>     }
+>     return {
+>       name,
+>       age,
+>       job,
+>       changeInfo
+>     }
+>   }
+> }
+> </script>
+> 
+> <style>
+> #app {
+>   font-family: Avenir, Helvetica, Arial, sans-serif;
+>   -webkit-font-smoothing: antialiased;
+>   -moz-osx-font-smoothing: grayscale;
+>   text-align: center;
+>   color: #2c3e50;
+>   margin-top: 60px;
+> }
+> </style>
+> ```
+>
+> **reactive函数**
+>
+> * 作用: 定义一个对象类型的响应式数据（基本类型不要用它，要用`ref`函数）
+> * 语法：`const 代理对象= reactive(源对象)`接收一个对象（或数组），返回一个代理对象（Proxy的实例对象，简称proxy对象）
+> * reactive定义的响应式数据是“深层次的”，会被对应里面的嵌套的所有属性都递归变成响应式的数据。
+> * 内部基于 ES6 的 Proxy 实现，通过代理对象操作源对象内部数据进行操作。
+>
+> 代码示例：
+>
+> ```vue
+> <template>
+>   <!-- Vue3组件中的模板结构可以没有根元素 -->
+>   <img alt="Vue logo" src="./assets/logo.png">
+>   <h1>我是APP组件</h1>
+>   <h2>个人信息</h2>
+>   <h3>姓名：{{name}}</h3>
+>   <h3>年龄：{{age}}</h3>
+>   <h3>工作种类：{{job.type}}</h3>
+>   <h3>工作薪水：{{job.salary}}</h3>
+>   <h3>地址：{{job.address.country}}-{{job.address.city}}</h3>
+>   <h3>爱好：{{hobbies}}</h3>
+>   <button @click="changeInfo">修改人的信息</button>
+> </template>
+> 
+> <script>
+> import {ref,reactive} from 'vue'
+> export default {
+>   name: 'App',
+>   components: {},
+>   setup(){
+>     // 用ref函数包裹数据后，返回的是一个RefImpl对象，要修改值的话，需要对象名.value来修改
+>     let name = ref('张三')
+>     let age = ref(18)
+>     // 对象类型和数组类型的响应式数据建议用reactive函数处理，基本类型的数据不能用reactive处理
+>     let job = reactive({
+>       type:'前端工程师',
+>       salary:30000,
+>       address:{
+>         country:'中国',
+>         city:'上海'
+>       }
+>     })
+>     let hobbies = reactive(['唱歌','跳舞','游戏'])
+>     function changeInfo(){
+>       name.value = '李四'
+>       age.value = 20
+>       job.type = '后端工程师'
+>       job.salary = '50K'
+>       job.address.city = '广州'
+>       hobbies[1] = '游泳'
+>       console.log(job)
+>     }
+>     return {
+>       name,
+>       age,
+>       job,
+>       hobbies,
+>       changeInfo
+>     }
+>   }
+> }
+> </script>
+> 
+> <style>
+> #app {
+>   font-family: Avenir, Helvetica, Arial, sans-serif;
+>   -webkit-font-smoothing: antialiased;
+>   -moz-osx-font-smoothing: grayscale;
+>   text-align: center;
+>   color: #2c3e50;
+>   margin-top: 60px;
+> }
+> </style>
+> ```
+>
+> **reactive对比ref**
+>
+> -  从定义数据角度对比：
+>    -  ref用来定义：<strong style="color:#DD5145">基本类型数据</strong>。
+>    -  reactive用来定义：<strong style="color:#DD5145">对象（或数组）类型数据</strong>。
+>    -  备注：ref也可以用来定义<strong style="color:#DD5145">对象（或数组）类型数据</strong>, 它内部会自动通过```reactive```转为<strong style="color:#DD5145">代理对象</strong>。
+> -  从原理角度对比：
+>    -  ref通过``Object.defineProperty()``的```get```与```set```来实现响应式（数据劫持）。
+>    -  reactive通过使用<strong style="color:#DD5145">Proxy</strong>来实现响应式（数据劫持）, 并通过<strong style="color:#DD5145">Reflect</strong>操作<strong style="color:orange">源对象</strong>内部的数据。
+> -  从使用角度对比：
+>    -  ref定义的数据：操作数据<strong style="color:#DD5145">需要</strong>```.value```，读取数据时模板中直接读取<strong style="color:#DD5145">不需要</strong>```.value```。
+>    -  reactive定义的数据：操作数据与读取数据：<strong style="color:#DD5145">均不需要</strong>```.value```。
+>
+> **setup的两个注意点**
+>
+> - setup执行的时机
+>   - 在beforeCreate之前执行一次，this是undefined。
+> - setup的参数
+>   - props：值为对象，包含：组件外部传递过来，且组件内部声明接收了的属性。
+>   - context：上下文对象
+>     - attrs: 值为对象，包含：组件外部传递过来，但没有在props配置中声明的属性, 相当于 ```this.$attrs```。
+>     - slots: 收到的插槽内容, 相当于 ```this.$slots```。
+>     - emit: 分发自定义事件的函数, 相当于 ```this.$emit```。
+>
+> **计算属性与监视**
+>
+> ==computed函数==
+>
+> 与Vue2.x中computed配置功能一致
+>
+> 代码示例：
+>
+> ```vue
+> import {computed} from 'vue'
+> 
+> setup(){
+>     ...
+> 	//计算属性——简写
+>     let fullName = computed(()=>{
+>         return person.firstName + '-' + person.lastName
+>     })
+>     //计算属性——完整
+>     let fullName = computed({
+>         get(){
+>             return person.firstName + '-' + person.lastName
+>         },
+>         set(value){
+>             const nameArr = value.split('-')
+>             person.firstName = nameArr[0]
+>             person.lastName = nameArr[1]
+>         }
+>     })
+> }
+> ```
+>
+> ```vue
+> <template>
+>   <!-- Vue3组件中的模板结构可以没有根元素 -->
+>   <img alt="Vue logo" src="./assets/logo.png">
+>   <h1>我是APP组件</h1>
+>   <h2>个人信息</h2>
+>   姓：<input type="text" v-model="person.firstName"> <br>
+>   名: <input type="text" v-model="person.lastName"> <br>
+>   全名：<span>{{person.fullName}}</span>
+> </template>
+> 
+> <script>
+> import {computed,reactive} from 'vue'
+> export default {
+>   name: 'App',
+>   components: {},
+>   setup(){
+>     let person = reactive({
+>        firstName: '张',
+>        lastName:'三'
+>     })
+>     person.fullName = computed(()=>{
+>       return person.firstName + '_' + person.lastName
+>     })
+>     return {
+>       person
+>     }
+>   }
+> }
+> </script>
+> 
+> <style>
+> #app {
+>   font-family: Avenir, Helvetica, Arial, sans-serif;
+>   -webkit-font-smoothing: antialiased;
+>   -moz-osx-font-smoothing: grayscale;
+>   text-align: center;
+>   color: #2c3e50;
+>   margin-top: 60px;
+> }
+> </style>
+> ```
+>
+> 
+>
+> ==watch函数==
+>
+> 与Vue2.x中watch配置功能一致
+>
+> 两个小“坑”：
+>
+> - 监视reactive定义的响应式数据时：oldValue无法正确获取、强制开启了深度监视（deep配置失效）。
+> - 监视reactive定义的响应式数据中某个属性时：deep配置有效。
+>
+> 代码示例：
+>
+> ```vue
+> // 在setup函数里面写
+> //情况一：监视ref定义的响应式数据
+> watch(sum,(newValue,oldValue)=>{
+> 	console.log('sum变化了',newValue,oldValue)
+> },{immediate:true})
+> 
+> //情况二：监视多个ref定义的响应式数据
+> watch([sum,msg],(newValue,oldValue)=>{
+> 	console.log('sum或msg变化了',newValue,oldValue)
+> }) 
+> 
+> /* 情况三：监视reactive定义的响应式数据
+> 			若watch监视的是reactive定义的响应式数据，则无法正确获得oldValue！！
+> 			若watch监视的是reactive定义的响应式数据，则强制开启了深度监视 
+> */
+> watch(person,(newValue,oldValue)=>{
+> 	console.log('person变化了',newValue,oldValue)
+> },{immediate:true,deep:false}) //此处的deep配置不再奏效
+> 
+> //情况四：监视reactive定义的响应式数据中的某个属性
+> watch(()=>person.job,(newValue,oldValue)=>{
+> 	console.log('person的job变化了',newValue,oldValue)
+> },{immediate:true,deep:true}) 
+> 
+> //情况五：监视reactive定义的响应式数据中的某些属性
+> watch([()=>person.job,()=>person.name],(newValue,oldValue)=>{
+> 	console.log('person的job变化了',newValue,oldValue)
+> },{immediate:true,deep:true})
+> 
+> //特殊情况
+> watch(()=>person.job,(newValue,oldValue)=>{
+>     console.log('person的job变化了',newValue,oldValue)
+> },{deep:true}) //此处由于监视的是reactive素定义的对象中的某个属性，所以deep配置有效
+> ```
+>
+> ==watchEffect函数==
+>
+> - watch的套路是：既要指明监视的属性，也要指明监视的回调。
+>
+> - watchEffect的套路是：不用指明监视哪个属性，监视的回调中用到哪个属性，那就监视哪个属性。
+>
+> - watchEffect有点像computed：
+>
+>   - 但computed注重的计算出来的值（回调函数的返回值），所以必须要写返回值。
+>   - 而watchEffect更注重的是过程（回调函数的函数体），所以不用写返回值。
+>
+> ```javascript
+> //watchEffect所指定的回调中用到的数据只要发生变化，则直接重新执行回调。
+> watchEffect(()=>{
+>     const x1 = sum.value
+>     const x2 = person.age
+>     console.log('watchEffect配置的回调执行了')
+> })
+> ```
+>
+> **生命周期**
+>
+> <img src="./images/vue3_lifecycle.jpg" style="zoom:50%;" />
+>
+> * Vue3.0中可以继续使用Vue2.x中的生命周期钩子，但有有两个被更名：
+>   * `beforeDestroy`改名为 `beforeUnmount`
+>   * `destroyed`改名为 `unmounted`
+> * Vue3.0也提供了 Composition API 形式的生命周期钩子，与Vue2.x中钩子对应关系如下：
+>   * `beforeCreate`===>`setup()`
+>   - `created`=======>`setup()`
+>   - `beforeMount` ===>`onBeforeMount`
+>   - `mounted`=======>`onMounted`
+>   - `beforeUpdate`===>`onBeforeUpdate`
+>   - `updated` =======>`onUpdated`
+>   - `beforeUnmount` ==>`onBeforeUnmount`
+>   - `unmounted` =====>`onUnmounted`
+>
+> **自定义hook函数**
+>
 > 
