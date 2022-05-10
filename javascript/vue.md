@@ -5552,4 +5552,443 @@
 >
 > **自定义hook函数**
 >
+> - 什么是hook？—— 本质是一个函数，把setup函数中使用的Composition API进行了封装。
+> - 类似于vue2.x中的mixin。
+> - 自定义hook的优势: 复用代码, 让setup中的逻辑更清楚易懂。
+>
+> 代码示例：
+>
+> hooks/usePoint.js
+>
+> ```javascript
+> import {reactive,onMounted,onBeforeUnmount} from 'vue'
+> export default function(){
 > 
+>     // 实现鼠标打点功能的数据
+>     let point = reactive({
+>         x:0,
+>         y:0
+>     })
+> 
+>     // 实现鼠标打点功能的方法
+>     function savePoint(event){
+>     // console.log(event.pageX,event.pageY)
+>         point.x = event.pageX
+>         point.y = event.pageY
+>     }
+>     // 实现鼠标打点功能的生命周期钩子
+>     onMounted(()=>{
+>         window.addEventListener('click',savePoint)
+>     })
+> 
+>     onBeforeUnmount(()=>{
+>         window.removeEventListener('click',savePoint)
+>     })
+> 
+>     return point
+> }
+> ```
+>
+> App.vue
+>
+> ```vue
+> <template>
+>   <!-- Vue3组件中的模板结构可以没有根元素 -->
+>   <img alt="Vue logo" src="./assets/logo.png">
+>   <h1>我是APP组件</h1>
+>   <h2>当前鼠标点击的坐标为：x:{{point.x}},y:{{point.y}}</h2>
+> </template>
+> 
+> <script>
+> import {ref} from 'vue'
+> import usePoint from './hooks/usePoint'
+> export default {
+>   name: 'App',
+>   components: {},
+>   setup(){
+>     let point = usePoint()
+> 
+>     return {
+>       point
+>     }
+>   }
+> }
+> </script>
+> 
+> <style>
+> #app {
+>   font-family: Avenir, Helvetica, Arial, sans-serif;
+>   -webkit-font-smoothing: antialiased;
+>   -moz-osx-font-smoothing: grayscale;
+>   text-align: center;
+>   color: #2c3e50;
+>   margin-top: 60px;
+> }
+> </style>
+> ```
+>
+> **toRef**
+>
+> - 作用：创建一个 ref 对象，其value值指向另一个对象中的某个属性。
+> - 语法：`const name = toRef(person,'name')`
+> - 应用:   要将响应式对象中的某个属性单独提供给外部使用时。
+>
+>
+> - 扩展：`toRefs` 与`toRef`功能一致，但可以批量创建多个 ref 对象，语法：`toRefs(person)`
+>
+> 代码示例：
+>
+> ```vue
+> <template>
+>   <h2>个人信息</h2>
+>   <h3>姓名：{{name}}</h3>
+>   <h3>年龄：{{age}}</h3>
+>   <h3>薪资：{{job.salary}}K</h3>
+>   <button @click="name += '~'">修改姓名</button>
+>   <button @click="age++">增长年龄</button>
+>   <button @click="job.salary++">涨薪</button>
+>   <h5>{{person}}</h5>
+> </template>
+> <script>
+> import { reactive,toRef, toRefs } from 'vue'
+> export default {
+>     name:'Test',
+>     setup(){
+>         let person = reactive({
+>             name:'张三',
+>             age:18,
+>             job:{
+>                 salary:20
+>             }
+>         })
+> 
+>         return{
+>             // 这样写，当修改这个name的时候，person.name也会相应修改
+>             // name:toRef(person,'name'),
+>             // age:toRef(person,'age'),
+>             // salary:toRef(person.job,'salary')
+> 
+>             //将person里面的第1层属性变成Ref对象
+>             ...toRefs(person),
+>             person
+>         }
+>     }
+> }
+> </script>
+> ```
+
+##### 其他Composition API
+
+> **shallowReactive 与 shallowRef**
+>
+> - shallowReactive：只处理对象最外层属性的响应式（浅响应式）。
+> - shallowRef：只处理基本数据类型的响应式, 不进行对象的响应式处理。
+> - 什么时候使用?
+>   -  如果有一个对象数据，结构比较深, 但变化时只是外层属性变化 ===> shallowReactive。
+>   -  如果有一个对象数据，后续功能不会修改该对象中的属性，而是生新的对象来替换 ===> shallowRef。
+>
+> **readonly 与 shallowReadonly**
+>
+> - readonly: 让一个响应式数据变为只读的（深只读）。
+> - shallowReadonly：让一个响应式数据变为只读的（浅只读）。
+> - 应用场景: 不希望数据被修改时。
+>
+> **toRaw 与 markRaw**
+>
+> - toRaw：
+>   - 作用：将一个由```reactive```生成的<strong style="color:orange">响应式对象</strong>转为<strong style="color:orange">普通对象</strong>。
+>   - 使用场景：用于读取响应式对象对应的普通对象，对这个普通对象的所有操作，不会引起页面更新。
+> - markRaw：
+>   - 作用：标记一个对象，使其永远不会再成为响应式对象。
+>   - 应用场景:
+>     1. 有些值不应被设置为响应式的，例如复杂的第三方类库等。
+>     2. 当渲染具有不可变数据源的大列表时，跳过响应式转换可以提高性能。
+>
+> **customRef**
+>
+> 作用：创建一个自定义的 ref，并对其依赖项跟踪和更新触发进行显式控制。
+>
+> 代码示例：
+>
+> ```vue
+> <template>
+>   <input type="text" v-model="keyword">
+>   <h3>{{keyword}}</h3>
+> </template>
+> <script>
+> import {customRef } from 'vue'
+> export default {
+>     name:'Test',
+>     setup(){
+>         // 自定义一个ref
+>         function myRef(value){
+>             return customRef((track,trigger)=>{
+>                 // 函数节流，实现数据延迟更新
+>                 let timer
+>                 return {
+>                     get(){
+>                         // 通知vue追踪数据的变化
+>                         track()
+>                         return value
+>                     },
+>                     set(newValue){
+>                         console.log('有人修改了',newValue)
+>                         clearTimeout(timer)
+>                         timer = setTimeout(() => {
+>                             value = newValue
+>                             // 通知vue重新解析模板
+>                             trigger()
+>                         }, 500);
+>                         
+>                     }
+>                 }
+>             })
+>         }
+>         let keyword = myRef('hello')
+> 
+>         return{
+>             keyword
+>         }
+>     }
+> }
+> </script>
+> ```
+>
+> **provide 与 inject**
+>
+> ![](./images/components_provide.png)
+>
+> - 作用：实现<strong style="color:#DD5145">祖与后代组件间</strong>通信
+>
+> - 套路：父组件有一个 `provide` 选项来提供数据，后代组件有一个 `inject` 选项来开始使用这些数据
+>
+>   代码示例：
+>
+>   app.vue
+>
+>   ```vue
+>   <template>
+>     <div class="app">
+>       <h3>app  {{name}} -- {{price}}</h3>
+>       <Test/>
+>     </div>
+>   </template>
+>   
+>   <script>
+>   import { reactive,toRefs,provide} from 'vue'
+>   import Test from './components/Test'
+>   export default {
+>     name: 'App',
+>     components: {Test},
+>     setup(){
+>       let car = reactive({name:'兰博基尼',price:'1000W'})
+>       provide('car',car) // 给自己的后代组件传递数据
+>       return{...toRefs(car)}
+>     }
+>   }
+>   </script>
+>   ```
+>
+>   Test.vue
+>
+>   ```vue
+>   <template>
+>   <div class="test">
+>     <h3>test  {{name}} -- {{price}}</h3>
+>     <Son/>
+>   </div>
+>   </template>
+>   <script>
+>   import {inject} from 'vue'
+>   import Son from './Son'
+>   export default {
+>       name:'Test',
+>       components:{Son},
+>       setup(){
+>          let car = inject('car')
+>           return {
+>               ...car
+>           }
+>       }
+>   }
+>   </script>
+>   ```
+>
+>   Son.vue
+>
+>   ```vue
+>   <template>
+>     <div class="son">
+>         <h3>son  {{name}} -- {{price}}</h3>
+>     </div>
+>   </template>
+>   
+>   <script>
+>   import { inject } from "vue"
+>   export default {
+>       name:'Son',
+>       setup(){
+>           let car = inject('car')
+>           return {
+>               ...car
+>           }
+>       }
+>   }
+>   </script>
+>   ```
+>
+> **响应式数据的判断**
+>
+> - isRef: 检查一个值是否为一个 ref 对象
+> - isReactive: 检查一个对象是否是由 `reactive` 创建的响应式代理
+> - isReadonly: 检查一个对象是否是由 `readonly` 创建的只读代理
+> - isProxy: 检查一个对象是否是由 `reactive` 或者 `readonly` 方法创建的代理
+
+##### Fragment
+
+> - 在Vue2中: 组件必须有一个根标签
+> - 在Vue3中: 组件可以没有根标签, 内部会将多个标签包含在一个Fragment虚拟元素中
+> - 好处: 减少标签层级, 减小内存占用
+
+##### Teleport
+
+> 什么是Teleport？—— `Teleport` 是一种能够将我们的<strong style="color:#DD5145">组件html结构</strong>移动到指定位置的技术。
+>
+> ```vue
+> <teleport to="移动位置">
+> 	<div v-if="isShow" class="mask">
+> 		<div class="dialog">
+> 			<h3>我是一个弹窗</h3>
+> 			<button @click="isShow = false">关闭弹窗</button>
+> 		</div>
+> 	</div>
+> </teleport>
+> ```
+
+##### Suspense
+
+> - 等待异步组件时渲染一些额外内容，让应用有更好的用户体验
+>
+> - 使用步骤：
+>
+>   - 异步引入组件
+>   
+>   ```javascript
+>   import {defineAsyncComponent} from 'vue'
+>   const Child = defineAsyncComponent(()=>import('./components/Child.vue'))
+>   ```
+>   
+>   - 使用```Suspense```包裹组件，并配置好```default``` 与 ```fallback```
+>   
+>   ```vue
+>   <template>
+>   	<div class="app">
+>   		<h3>我是App组件</h3>
+>   		<Suspense>
+>   			<template v-slot:default>
+>   				<Child/>
+>   			</template>
+>   			<template v-slot:fallback>
+>   				<h3>加载中.....</h3>
+>   			</template>
+>   		</Suspense>
+>   	</div>
+>   </template>
+>   ```
+>   
+>   
+
+##### 全局API的转移
+
+> - Vue 2.x 有许多全局 API 和配置。
+>
+>   - 例如：注册全局组件、注册全局指令等。
+>
+>     ```js
+>     //注册全局组件
+>     Vue.component('MyButton', {
+>       data: () => ({
+>         count: 0
+>       }),
+>       template: '<button @click="count++">Clicked {{ count }} times.</button>'
+>     })
+>     
+>     //注册全局指令
+>     Vue.directive('focus', {
+>       inserted: el => el.focus()
+>     }
+>     ```
+>
+> - Vue3.0中对这些API做出了调整：
+>
+>   - 将全局的API，即：```Vue.xxx```调整到应用实例（```app```）上
+>
+>     | 2.x 全局 API（```Vue```） | 3.x 实例 API (`app`)                        |
+>     | ------------------------- | ------------------------------------------- |
+>     | Vue.config.xxxx           | app.config.xxxx                             |
+>     | Vue.config.productionTip  | <strong style="color:#DD5145">移除</strong> |
+>     | Vue.component             | app.component                               |
+>     | Vue.directive             | app.directive                               |
+>     | Vue.mixin                 | app.mixin                                   |
+>     | Vue.use                   | app.use                                     |
+>     | Vue.prototype             | app.config.globalProperties                 |
+>
+> **其他改变**
+>
+> - data选项应始终被声明为一个函数。
+>
+> - 过度类名的更改：
+>
+>   - Vue2.x写法
+>
+>     ```css
+>     .v-enter,
+>     .v-leave-to {
+>       opacity: 0;
+>     }
+>     .v-leave,
+>     .v-enter-to {
+>       opacity: 1;
+>     }
+>     ```
+>
+>   - Vue3.x写法
+>
+>     ```css
+>     .v-enter-from,
+>     .v-leave-to {
+>       opacity: 0;
+>     }
+>     
+>     .v-leave-from,
+>     .v-enter-to {
+>       opacity: 1;
+>     }
+>     ```
+>
+> - <strong style="color:#DD5145">移除</strong>keyCode作为 v-on 的修饰符，同时也不再支持```config.keyCodes```
+>
+> - <strong style="color:#DD5145">移除</strong>```v-on.native```修饰符
+>
+>   - 父组件中绑定事件
+>
+>     ```vue
+>     <my-component
+>       v-on:close="handleComponentEvent"
+>       v-on:click="handleNativeClickEvent"
+>     />
+>     ```
+>
+>   - 子组件中声明自定义事件
+>
+>     ```vue
+>     <script>
+>       export default {
+>         emits: ['close']
+>       }
+>     </script>
+>     ```
+>
+> - <strong style="color:#DD5145">移除</strong>过滤器（filter）
+>
+>   > 过滤器虽然这看起来很方便，但它需要一个自定义语法，打破大括号内表达式是 “只是 JavaScript” 的假设，这不仅有学习成本，而且有实现成本！建议用方法调用或计算属性去替换过滤器。
