@@ -142,8 +142,10 @@
 > print("hello") if True else print("how are you?") # 这里输出的结果是hello
 > ```
 
-### 条件判断语句【if语句】
+### 条件判断语句
 
+> **if语句**
+>
 > 语法：if 条件表达式  : 语句
 >
 > 1. 如果条件表达式结果为True，则会执行冒号后面的语句
@@ -152,13 +154,104 @@
 > ```python
 > # 这里if只会控制 : 后面的1条语句
 > num1 = 10
-> if num1 > 20 : print("num1 > 20")
+> if num1 > 20: print("num1 > 20")
 > 
 > # 这里 : 后面的两条语句必须使用缩进，来表示这2条语句都受if控制
 > num2 = 20
-> if num2 > 10 :
+> if num2 > 10:
 >     print("num2 > 10")
 >     print("success")
+> if num2 > 10 and num2 < 20:
+>     print("10 < num2 < 20")
+> if 10 < num2 < 20:
+>     print("10 < num2 < 20")
+> ```
+>
+> **if-else语句**
+>
+> ```python
+> # 语法
+> # if 条件表达式 : 
+> # 	代码块
+> # else:
+> # 	代码块
+> num = int(input())
+> if num > 10:
+>     print("num > 10")
+> else:
+>     print("num <= 10")
+> 
+> ```
+
+### 循环语句
+
+> **while语句**
+>
+> ```python
+> # 语法
+> # while 条件表达式:
+> # 	代码块
+> i = 0
+> while i < 10:
+>     i += 1
+>     print(i)
+> 
+> j = 0
+> 
+> # 如果while语句后接else，则退出循环后执行else后的代码块
+> while j < 10:
+>     j += 1
+>     print(j)
+> else:
+>     print("退出循环")
+> 
+> # break可以用来立即退出循环
+> k = 0
+> while k < 10:
+>     k += 1
+>     print(k)
+>     if k == 3:
+>         break
+>         
+> # continue表示立即完成本次循环，continue后的语句不再执行
+> k = 0
+> while k < 10:
+>     k += 1
+>     if k == 3:
+>         continue
+>     print(k)
+> ```
+
+### 列表(List)
+
+> 创建列表，通过[]创建一个列表
+>
+> ```python
+> # 创建空列表
+> myList = []
+> 
+> # 创建包含5个元素的列表
+> myList2 = [1, 2, 3, 4, 5]
+> print(myList2)
+> 
+> # 列表中可以保存任意类型的对象，但一般保存同一类型的对象
+> # 列表中的对象都会按照插入的顺序有序存储到列表中
+> myList3 = [1, "hello", 1.1, True, [1, 2, 3]]
+> print(myList3)
+> 
+> # 我们可以通过索引来访问列表中的元素，如果使用的索引超出了最大范围会抛出异常
+> print(myList3[1])
+> 
+> # len()函数可以获取列表长度
+> print(len(myList3))
+> 
+> # 向list中添加元素
+> myList.append("你")
+> myList.append("好")
+> print(myList)
+> 
+> # 截取list部分内容
+> print(myList2[1:])
 > ```
 >
 > 
