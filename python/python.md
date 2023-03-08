@@ -193,36 +193,50 @@
 > # 	代码块
 > i = 0
 > while i < 10:
->     i += 1
->     print(i)
+>  i += 1
+>  print(i)
 > 
 > j = 0
 > 
 > # 如果while语句后接else，则退出循环后执行else后的代码块
 > while j < 10:
->     j += 1
->     print(j)
+>  j += 1
+>  print(j)
 > else:
->     print("退出循环")
+>  print("退出循环")
 > 
 > # break可以用来立即退出循环
 > k = 0
 > while k < 10:
->     k += 1
->     print(k)
->     if k == 3:
->         break
->         
+>  k += 1
+>  print(k)
+>  if k == 3:
+>      break
+> 
 > # continue表示立即完成本次循环，continue后的语句不再执行
 > k = 0
 > while k < 10:
->     k += 1
->     if k == 3:
->         continue
->     print(k)
+>  k += 1
+>  if k == 3:
+>      continue
+>  print(k)
 > ```
+>
+> **for语句**
+>
+> for 语句用于对序列（例如字符串、元组或列表）或其他可迭代对象中的元素进行迭代
 
-### 列表(List)
+### 序列
+
+> **序列的分类**
+>
+> 1. 可变序列
+>    * 列表【List】
+> 2. 不可变序列
+>    * 字符串【str】
+>    * 元组 【tuple】
+
+### 列表(list)
 
 > 创建列表，通过[]创建一个列表
 >
@@ -250,8 +264,98 @@
 > myList.append("好")
 > print(myList)
 > 
-> # 截取list部分内容
+> # 截取list部分内容【切片】
 > print(myList2[1:])
 > ```
 >
+> **通用操作**
+>
+> ```python
+> myList1 = [1, 2, 3]
+> myList2 = [4, 5, 6]
+> # 拼接列表
+> myList3 = myList1 + myList2
+> print(myList3)  # 输出[1, 2, 3, 4, 5, 6]
+> # 将列表重复N次
+> myList4 = myList1 * 2
+> print(myList4)  # 输出 [1, 2, 3, 1, 2, 3]
 > 
+> # in 和 not in 检查指定元素是否存在于和不存在于列表中
+> print(1 in myList1)  # 输出True
+> print(2 not in myList1)  # 输出False
+> 
+> # len() 获取列表中元素个数
+> print(len(myList1))  # 输出3
+> 
+> # max() 获取列表中最大值
+> print(max(myList1))  # 输出3
+> 
+> # min() 获取列表中最小值
+> print(min(myList1))  # 输出1
+> 
+> # index()方法，获取指定元素在列表中第一次出现的索引
+> print(myList1.index(2))  # 输出1
+> 
+> # count()方法，统计指定元素在列表中出现的次数
+> print(myList1.count(2))  # 输出1，因为这里2在列表中总共出现了1次
+> 
+> # 删除元素
+> del myList1[2] # 删除索引为2的元素
+> 
+> # 通过切片修改列表，给切片赋值，必须是一个序列
+> myList1[0:1]=[5, 6] # myList1变为[5,6,2,3]
+> 
+> # 遍历列表
+> myList5 = [5, 6, 7]
+> for item in myList5:
+>     print(item) # 输出5 6 7
+> ```
+
+### range
+
+> range()是一个函数，可以用来生成一个自然数序列
+>
+> ```python
+> r = range(5)
+> print(list(r))  # 输出[0, 1, 2, 3, 4]
+> 
+> for i in range(5):
+>     print(i)  # 输出 0 1 2 3 4
+> ```
+
+### 元组(tuple)
+
+> 元组是一个不可变序列，它的操作方式基本上跟list一样
+>
+> ```python
+> # 创建空元组
+> myTuple = ()
+> myTuple = (1, 2, 3)
+> print(myTuple)
+> # myTuple[0] = 2 这里不能重新赋值，会报错，因为元组是不可变序列
+> 
+> # 当元组不为空时，括号可以省略
+> myTuple1 = 1, 2, 3, 4, 5
+> myTuple2 = 1,  # 当元组中只有一个元素，并且要省略括号时，必须要有一个逗号
+> print(myTuple1)
+> print(myTuple2)
+> 
+> # 元组的解构
+> a, b, c, d, e = myTuple1  # 这里的变量个数和元组里面的元组个数必须一样，否则会报错
+> print(a)  # 输出 1
+> print(b)  # 输出 2
+> print(c)  # 输出 3
+> print(d)  # 输出 4
+> print(e)  # 输出 5
+> 
+> # 交换a和b的值，可以利用元组的解构
+> a, b = b, a
+> print(a)
+> 
+> # 如果我们只想要解构元组的部分元组可以这样写，这样变量个数可以不和元组里的元素个数一样
+> # 不能同时出现2个及以上的*变量
+> a, b, *c = myTuple1
+> *a, b, c = myTuple1
+> a, *b, c = myTuple1
+> ```
+
