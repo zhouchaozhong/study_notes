@@ -591,4 +591,54 @@
 > print(t)
 > ```
 >
+
+### 文档字符串
+
+> 在定义函数时，可以在函数内部编写文档字符串，文档字符串就是函数的说明，当我们编写了文档字符串时，就可以通过help()函数来查看函数的说明
+>
+> ```python
+> def fn(a: int, b: bool, c: str) -> int:
+>     """
+>    这是一个文档字符串说明
+>    参数a 作用 类型:
+>    参数b:
+>    参数c:
+>    """
 > 
+> 
+> help(fn)
+> ```
+>
+
+### 高阶函数
+
+> 概念：接收函数作为参数，或者将函数作为返回值的函数是高阶函数
+>
+> ```python
+> def fn(func, v):
+>     func(v)
+> 
+> 
+> def fn3(v):
+>     if v % 2 == 0:
+>         print("%d是偶数！" % v)
+> 
+> 
+> fn(fn3, 2)
+> ```
+
+### 匿名函数
+
+> lambda 表达式（有时称为 lambda 构型）被用于创建匿名函数。 表达式 lambda parameters: expression 会产生一个函数对象 。 该未命名对象的行为类似于用以下方式定义的函数:
+>
+> ```python
+> def <lambda>(parameters):
+>     return expression
+> ```
+>
+> ```python
+> myList = [1, 2, 3, 4, 5, 6]
+> r = filter(lambda i: i % 3 == 0, myList)
+> print(list(r))
+> ```
+
