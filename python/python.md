@@ -612,7 +612,7 @@
 
 ### 高阶函数
 
-> 概念：接收函数作为参数，或者将函数作为返回值的函数是高阶函数
+> 概念：接收函数作为参数，或者将函数作为返回值的函数是高阶函数，将函数作为返回值返回的函数也叫闭包
 >
 > ```python
 > def fn(func, v):
@@ -642,3 +642,93 @@
 > print(list(r))
 > ```
 
+### 装饰器
+
+> 装饰器本质上是一个Python函数(其实就是闭包)，它可以让其他函数在不需要做任何代码变动的前提下增加额外功能，装饰器的返回值也是一个函数对象。装饰器用于有以下场景，比如:插入日志、性能测试、事务处理、缓存、权限校验等场景，装饰器可以嵌套使用
+>
+> ```python
+> def fnA(fn):
+>     def decorator(*args, **kwargs):
+>         print("=========start calculate==========")
+>         fn(*args, **kwargs)
+>         print("==========end============")
+>     return decorator
+> 
+> 
+> @fnA
+> def fnB(a, b):
+>     print("a + b = ", a + b)
+> 
+> 
+> fnB(2, 3)
+> 
+> ```
+
+### 类
+
+> **类的定义**
+>
+> ```python
+> class Person:
+>     print("代码块中的代码执行！")
+> 
+>     # 在类中可以定义一些特殊方法（魔术方法）
+>     # 特殊方法都是以__开头，__结尾
+>     # 特殊方法不需要自己调用
+> 
+>     # 创建对象的流程
+>     # 1. 创建一个变量
+>     # 2. 在内存中创建一个新对象
+>     # 3. 执行类的代码块中的代码（实际上不创建对象也会执行代码块中的代码，这个属于类的固有属性，定义类的时候就会执行）
+>     # 4. __init__(self)方法执行
+>     # 5. 将对象的id复制给变量
+>     def __init__(self, name, age, city, address):
+>         self.name = name
+>         self.age = age
+>         # 以双下划线开头的属性表示隐藏属性，不能在类外部访问
+>         # 一把以下划线开头的属性都是私有属性
+>         self.__address = address
+>         self._city = city
+> 
+>     def getAddress(self):
+>         return self.__address
+> 
+>     def setAddress(self, address):
+>         self.__address = address
+> 
+>     # 这里的self相当于其他语言的this指针
+>     def sayHello(self):
+>         print(self.name + "hello")
+> 
+>     # 添加property装饰器之后，可以像调用属性一样，使用get方法
+>     @property
+>     def city(self):
+>         print("get方法执行了----")
+>         return self._city
+> 
+>     # setter方法装饰器 @属性名.setter
+>     @city.setter
+>     def city(self, city):
+>         print("set 方法执行了=====")
+>         self._city = city
+> 
+> 
+> p1 = Person("宵宫", 16, "稻妻城", "稻妻")
+> # 实际上以__开头的属性也能在类外部访问(通过_类名__属性名访问)
+> print(p1._Person__address)
+> 
+> 
+> print(p1.getAddress())
+> p2 = Person("影", 18, "海祇岛", "稻妻")
+> p2.setAddress("璃月")
+> print(p2.getAddress())
+> 
+> p1.sayHello()
+> p2.sayHello()
+> 
+> p1.city = "蒙德城"
+> print(p1.city)
+> 
+> ```
+>
+> 
