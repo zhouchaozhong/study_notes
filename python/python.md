@@ -670,47 +670,47 @@
 >
 > ```python
 > class Person:
->  print("代码块中的代码执行！")
+> print("代码块中的代码执行！")
 > 
->  # 在类中可以定义一些特殊方法（魔术方法）
->  # 特殊方法都是以__开头，__结尾
->  # 特殊方法不需要自己调用
+> # 在类中可以定义一些特殊方法（魔术方法）
+> # 特殊方法都是以__开头，__结尾
+> # 特殊方法不需要自己调用
 > 
->  # 创建对象的流程
->  # 1. 创建一个变量
->  # 2. 在内存中创建一个新对象
->  # 3. 执行类的代码块中的代码（实际上不创建对象也会执行代码块中的代码，这个属于类的固有属性，定义类的时候就会执行）
->  # 4. __init__(self)方法执行
->  # 5. 将对象的id复制给变量
->  def __init__(self, name, age, city, address):
->      self.name = name
->      self.age = age
->      # 以双下划线开头的属性表示隐藏属性，不能在类外部访问
->      # 一把以下划线开头的属性都是私有属性
->      self.__address = address
->      self._city = city
+> # 创建对象的流程
+> # 1. 创建一个变量
+> # 2. 在内存中创建一个新对象
+> # 3. 执行类的代码块中的代码（实际上不创建对象也会执行代码块中的代码，这个属于类的固有属性，定义类的时候就会执行）
+> # 4. __init__(self)方法执行
+> # 5. 将对象的id复制给变量
+> def __init__(self, name, age, city, address):
+>   self.name = name
+>   self.age = age
+>   # 以双下划线开头的属性表示隐藏属性，不能在类外部访问
+>   # 一把以下划线开头的属性都是私有属性
+>   self.__address = address
+>   self._city = city
 > 
->  def getAddress(self):
->      return self.__address
+> def getAddress(self):
+>   return self.__address
 > 
->  def setAddress(self, address):
->      self.__address = address
+> def setAddress(self, address):
+>   self.__address = address
 > 
->  # 这里的self相当于其他语言的this指针
->  def sayHello(self):
->      print(self.name + "hello")
+> # 这里的self相当于其他语言的this指针
+> def sayHello(self):
+>   print(self.name + "hello")
 > 
->  # 添加property装饰器之后，可以像调用属性一样，使用get方法
->  @property
->  def city(self):
->      print("get方法执行了----")
->      return self._city
+> # 添加property装饰器之后，可以像调用属性一样，使用get方法
+> @property
+> def city(self):
+>   print("get方法执行了----")
+>   return self._city
 > 
->  # setter方法装饰器 @属性名.setter
->  @city.setter
->  def city(self, city):
->      print("set 方法执行了=====")
->      self._city = city
+> # setter方法装饰器 @属性名.setter
+> @city.setter
+> def city(self, city):
+>   print("set 方法执行了=====")
+>   self._city = city
 > 
 > 
 > p1 = Person("宵宫", 16, "稻妻城", "稻妻")
@@ -735,16 +735,16 @@
 >
 > ```python
 > class Animal:
->     def run(self):
->         print("animal run")
+>  def run(self):
+>      print("animal run")
 > 
->     def sleep(self):
->         print("animal sleep")
+>  def sleep(self):
+>      print("animal sleep")
 > 
 > 
 > class Dog(Animal):
->     def bark(self):
->         print("dog bark")
+>  def bark(self):
+>      print("dog bark")
 > 
 > 
 > d = Dog()
@@ -760,27 +760,27 @@
 >
 > ```python
 > class Animal:
->     def __init__(self, name):
->         self._name = name
+>  def __init__(self, name):
+>      self._name = name
 > 
->     def run(self):
->         print("animal run")
+>  def run(self):
+>      print("animal run")
 > 
->     def sleep(self):
->         print("animal sleep")
+>  def sleep(self):
+>      print("animal sleep")
 > 
 > 
 > class Dog(Animal):
->     def __init__(self, name, age):
->         # super()可以获取当前类的父类，并且通过super()返回对象调用父类方法不需要传递self
->         super().__init__(name)
->         self._age = age
+>  def __init__(self, name, age):
+>      # super()可以获取当前类的父类，并且通过super()返回对象调用父类方法不需要传递self
+>      super().__init__(name)
+>      self._age = age
 > 
->     def run(self):
->         print("dog run")
+>  def run(self):
+>      print("dog run")
 > 
->     def bark(self):
->         print("dog bark")
+>  def bark(self):
+>      print("dog bark")
 > 
 > 
 > d = Dog(" 旺财", 5)
@@ -792,21 +792,21 @@
 >
 > ```python
 > class A:
->     def test(self):
->         print("A test")
+>  def test(self):
+>      print("A test")
 > 
 > 
 > class B:
->     def test(self):
->         print("B test")
+>  def test(self):
+>      print("B test")
 > 
->     def test2(self):
->         print("B test2")
+>  def test2(self):
+>      print("B test2")
 > 
 > 
 > # C继承多个类A,B
 > class C(A, B):
->     pass
+>  pass
 > 
 > 
 > obj = C()
@@ -819,26 +819,26 @@
 >
 > ```python
 > class A:
->     # 类属性（类似Java静态属性）
->     name = "神里绫华"
+>  # 类属性（类似Java静态属性）
+>  name = "神里绫华"
 > 
->     def __init__(self, name):
->         # 实例属性
->         self._name = name
+>  def __init__(self, name):
+>      # 实例属性
+>      self._name = name
 > 
->     # 类方法，类方法的第一个参数是cls ，也会被自动传递,cls就是当前的类对象
->     @classmethod
->     def test(cls):
->         print("class method")
+>  # 类方法，类方法的第一个参数是cls ，也会被自动传递,cls就是当前的类对象
+>  @classmethod
+>  def test(cls):
+>      print("class method")
 > 
->     # 静态方法基本上是和当前类无关的方法，静态方法一般是工具方法
->     @staticmethod
->     def test2():
->         print("static method")
+>  # 静态方法基本上是和当前类无关的方法，静态方法一般是工具方法
+>  @staticmethod
+>  def test2():
+>      print("static method")
 > 
->     # 实例方法
->     def test3(self):
->         print("test3")
+>  # 实例方法
+>  def test3(self):
+>      print("test3")
 > 
 > 
 > a = A()
@@ -846,6 +846,126 @@
 > A.test()
 > A.test2()
 > a.test2()
+> ```
+>
+> **特殊方法（魔术方法）**
+>
+> ```python
+> class A:
+> 
+>     # 类似java构造方法
+>     def __init__(self, name, age):
+>         print("init")
+>         self.name = name
+>         self.age = age
+> 
+>     # 类似Java的toString方法
+>     def __str__(self):
+>         print("straaa")
+>         return "str method"
+> 
+>     # 比较对象的大小
+>     def __gt__(self, other):
+>         return self.age > other.age
+> 
+> 
+> a1 = A("神里绫华", 18)
+> a2 = A("胡桃", 16)
+> print(a1)
+> print(a1 > a2)
+> ```
+
+### 模块(module)
+
+> **模块化简介**
+>
+> 模块化是指将一个完整的程序分解成多个小模块，通过将模块组合来搭建一个完整的程序
+>
+> 模块化的优点：
+>
+> 1. 方便多人协同开发
+> 2. 方便维护
+> 3. 模块可以复用
+>
+> 在python中，一个py文件就是一个模块，要想创建一个模块，实际上就是创建一个python文件
+>
+> 注意：模块名要符合标识符规范
+>
+> **引入模块**
+>
+> 在一个模块中引入外部模块
+>
+> 1. import  模块名 （模块名就是python文件名，不需要.py）
+> 2. import 模块名 as 模块别名
+> 3. `__name__`值为`__main__`的模块为主模块，一个程序中只有一个主模块
+> 4. 也可以只引入模块中的部分内容  `from m import test`
+> 5. 引入模块中的多个内容`from m import Person,test`
+> 6. 引入模块所有内容：`from m import *`
+>
+> 代码示例：
+>
+> test_module.py
+>
+> ```python
+> a = 10
+> b = 20
+> 
+> 
+> def fn1():
+>     print("test_module fn1")
+> ```
+>
+> main.py
+>
+> ```python
+> import test_module as test
+> print(test.__name__)
+> print(__name__)
+> 
+> # 访问模块中的变量和函数
+> print(test.a)
+> print(test.b)
+> test.fn1()
+> ```
+
+### 包
+
+> **基础概念**
+>
+> 包也是一个模块，当我们模块中代码过多时，或者一个模块需要分解为多个模块时，这时就需要使用包，普通的模块是一个py文件，而包是一个文件夹
+>
+> 包中必须要有一个文件`__init__.py`，这个文件中可以包含包中的主要内容
+>
+> 包的结构
+>
+> ![包的结构](./images/package.jpg)
+>
+> 代码示例：
+>
+> ```python
+> # main.py
+> from utils import DateUtils, StrUtils
+> 
+> DateUtils.getTime()
+> StrUtils.getStr()
+> ```
+>
+> ```python
+> # utils/__init__.py
+> init_a = 10
+> init_b = 20
+> ```
+>
+> ```python
+> # utils/DateUtils.py
+> def getTime():
+>     print("now time")
+> ```
+>
+> ```python
+> # utils/StrUtils.py
+> def getStr():
+>     print("get str")
 > ```
 >
 > 
