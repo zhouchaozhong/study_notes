@@ -598,7 +598,7 @@
 >
 > ```python
 > def fn(a: int, b: bool, c: str) -> int:
->     """
+>    """
 >    这是一个文档字符串说明
 >    参数a 作用 类型:
 >    参数b:
@@ -966,6 +966,195 @@
 > # utils/StrUtils.py
 > def getStr():
 >     print("get str")
+> ```
+>
+> 
+
+### 异常
+
+> **基本概念**
+>
+> 程序在运行中不可避免的会出现一些错误，比如：
+>
+> 1. 使用了没有赋值过的变量
+> 2. 使用了不存在的索引
+> 3. 除0
+>
+> 这些错误我们称之为异常
+>
+> **处理异常**
+>
+> 程序运行时出现异常，目的并不是让我们的程序直接终止，我们希望在出现异常时，编写代码对异常进行处理
+>
+> 格式：
+>
+> ```python
+> try:
+>     代码块(可能出现错误的语句)
+> except: #这里可以出现多个except捕获各种异常
+>     代码块(出现错误之后的处理方式)
+> else:(可选)
+>     代码块(没出错要执行的语句)
+> finally:(可选)
+>     代码块(无论是否出现错误，都会执行的代码块)
+> ```
+>
+> ```python
+> try:
+>     a = 10 / 0
+> except Exception as e:
+>     print("error")
+>     print(e)
+> else:
+>     print("success")
+> finally:
+>     print("finally")
+> ```
+>
+> **异常传播**
+>
+> 当在函数中出现异常时，如果在函数中对异常进行了处理，则异常不会再继续传播，否则异常会继续向外层传播，如果到全局作用域依然没有进行处理，则程序终止，并显示异常信息
+>
+> **自定义异常**
+>
+> ```python
+> # 自定义异常类，只需要创建一个类继承Exception即可
+> class MyError(Exception):
+>     pass
+> 
+> 
+> def add(a, b):
+>     # 如果a或者b有负数，则抛出异常
+>     if a < 0 or b < 0:
+>         raise MyError("参数不能有负数")
+>     r = a + b
+>     return r
+> 
+> 
+> try:
+>     result = add(1, -1)
+> except MyError as e:
+>     print(e)
+>     print(type(e))
+> 
+> ```
+
+### 文件操作
+
+> **文件读取**
+>
+> ```python
+> """
+> 绝对路径
+> 
+> file_name = 'D:/webapp/python/demo/1.txt'
+> 
+> 在前面加 r 可以把转义字符转为普通字符
+> file_name = r'D:\webapp\python\demo\1.txt'
+> 
+> """
+> 
+> """
+> 普通打开文件和关闭文件
+> file_name = "1.txt"
+> fd = open(file_name, encoding='utf-8')
+> content = fd.read()
+> print(content)
+> fd.close()
+> fd.read()
+> """
+> 
+> # 使用with...as语句不需要手动关闭文件
+> # open打开文件，默认是以只读文本文件方式打开的
+> file_name = "1.txt"
+> with open(file_name, encoding='utf-8') as fd:
+>  # read默认参数是-1，读取所有内容
+>  # content = fd.read()
+>  # print(content)
+>  chunk = 4
+>  while True:
+>      content = fd.read(chunk)
+>      if not content:
+>          break
+>      print(content, end='')
+> print("")
+> print("============")
+> 
+> with open(file_name, encoding='utf-8') as fd1:
+>  # readline用于读取一行内容
+>  c1 = fd1.readline()
+>  print(c1, end='')
+> 
+> 
+> print("")
+> print("============")
+> 
+> with open(file_name, encoding='utf-8') as fd2:
+>  # readlines用于读取所有行的内容，并将每一行的内容放入一个列表中，每行的内容作为列表中的一个元素
+>  list1 = fd2.readlines()
+>  print(list1)
+> ```
+>
+> **文件写入**
+>
+> ```python
+> file_name = "1.txt"
+> # mode = a 表示以追加方式打开文件
+> with open(file_name, mode='a', encoding='utf-8') as fd:
+>  r = fd.write(",八重神子")
+>  # 这里的r是写入的字符个数
+>  print(r)
+> ```
+>
+> **二进制文件读取和写入**
+>
+> ```python
+> file_name = "1.jpg"
+> # mode = rb表示读取二进制文件
+> with open(file_name, mode='rb') as fd:
+>  file_name2 = "2.jpg"
+>  with open(file_name2, mode="wb") as fd2:
+>      # 定义每次读取大小
+>      chunk = 1024
+>      while True:
+>          # 读取文件内容
+>          content = fd.read(chunk)
+>          # 如果内容为空则退出循环
+>          if not content:
+>              break
+>          # 将读取的内容写入新文件
+>          fd2.write(content)
+> ```
+>
+> **从指定位置读取**
+>
+> ```python
+> from io import SEEK_SET
+> 
+> file_name = "1.txt"
+> with open(file_name, mode='rb') as fd:
+>     # print(fd.read(5))
+>     # tell()方法可以查看当前读取的位置
+>     print("当前读取的位置：", fd.tell())
+>     # seek()修改当前读取位置
+>     # seek()有2个参数，第一个参数是读取位置，第二个参数是计算位置的参数，可选项有
+>     # SEEK_SET(默认值):表示从头开始  SEEK_CUR:从当前位置开始  SEEK_END:从最后位置开始计算
+>     fd.seek(10, SEEK_SET)
+>     print(fd.read(5))
+>     print("当前读取的位置：", fd.tell())
+> ```
+>
+> **文件的其他操作**
+>
+> ```python
+> import os
+> from pprint import pprint
+> # 获取指定目录的目录结构
+> r = os.listdir("./")
+> pprint(r)
+> # 获取当前所在的目录
+> r1 = os.getcwd()
+> pprint(r1)
 > ```
 >
 > 
