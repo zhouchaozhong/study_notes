@@ -1,18 +1,95 @@
-###需要过滤的文件夹或者文件###
-.idea　　　　
-.mvn　　　　
-.iml
-mvnw
-mvnw.cmd
-logs/
+## maven  ###
 target/
+*.releaseBackup
+
+### gradle ###
+gradle
+gradlew
+gradlew.bat
+
+## hack for graddle wrapper
+!wrapper/*.jar
+!**/wrapper/*.jar
+
+### java ###
+classes/
+*.class
+*.war
+*.ear
  
+###  ide ### 
+/.classpath
+/.launch
+/.project
+/.settings
+/*.launch
+/*.tmproj
+/ivy*
+/eclipse
+.apt_generated
+.factorypath
+.springBeans
+
+### idea ###
+.idea
+*.iml
+*.ipr
+*.iws
+
+### eclipse ###
+*.pydevproject
 .project
-.settings
+.cproject
+.metadata
+.buildpath
+bin/**
+tmp/**
+tmp/**/*
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
 .classpath
+.settings/
+.loadpath
+*.launch
+.externalToolBuilders/
+
  
+### 临时文件 ###
+target/
+out/
+build/
+
+### windows ###
+Thumbs.db
+ehthumbs.db
+Desktop.ini
  
-/node_modules/
-/dist/
-/build/
+### linux ###
+!.gitignore
+*~
+ 
+## mac ###
 .DS_Store
+.AppleDouble
+.LSOverride
+Icon
+.Spotlight-V100
+.Trashes
+
+### npm yarn ###
+node_modules/
+/dist/
+package-lock.json
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+yarn-lock.json
+ 
+# Thumbnails
+._*
+
+### 其他 ###
+*.iws
