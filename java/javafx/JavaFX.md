@@ -252,3 +252,98 @@ module org.example{
 > }
 > ```
 
+### Group容器的使用
+
+> ```java
+> public void start(Stage stage) throws Exception{
+>   Button b1 = new Button("btn1");
+>   Button b2 = new Button("btn2");
+>   Button b3 = new Button("btn3");
+>   b1.setLayoutX(0);
+>   b1.setLayoutY(20);
+>   b2.setLayoutX(150);
+>   b2.setLayoutY(20);
+>   b3.setLayoutX(300);
+>   b3.setLayoutY(20);
+> 
+>   b1.setPrefWidth(100);
+>   b1.setPrefHeight(50);
+>   Group group = new Group();
+>   // 往Group容器中添加子组件
+>   group.getChildren().addAll(b1,b2,b3);
+>   group.setOpacity(0.5);
+>   Object[] arrs = group.getChildren().toArray();
+>   for (Object obj : arrs) {
+>     Button btn = (Button) obj;
+>     btn.setPrefWidth(100);
+>     btn.setPrefHeight(50);
+>   }
+>   // 给按钮增加点击事件
+>   b1.setOnAction(new EventHandler<ActionEvent>() {
+>     @Override
+>     public void handle(ActionEvent actionEvent) {
+>       Button b4 = new Button("b4");
+>       group.getChildren().add(b4);
+>     }
+>   });
+>   // 给Group容器添加监听器
+>   group.getChildren().addListener(new ListChangeListener<Node>() {
+>     @Override
+>     public void onChanged(Change<? extends Node> change) {
+>       System.out.println("当前子组件数量 = " + change.getList().size());
+>     }
+>   });
+>   // 设置子组件是否有默认尺寸
+>   // group.setAutoSizeChildren(false);
+>   // 移除Group容器中的组件
+>   // group.getChildren().remove(0);
+>   // 移除Group容器中所有子组件
+>   // group.getChildren().clear();
+>   Scene scene = new Scene(group);
+>   stage.setScene(scene);
+>   stage.setWidth(500);
+>   stage.setHeight(300);
+>   stage.show();
+> }
+> ```
+
+### Button按钮
+
+> ```java
+> Button b1 = new Button();
+> // 设置按钮上的文本
+> b1.setText("按钮一");
+> // 设置按钮位置
+> b1.setLayoutX(100);
+> b1.setLayoutY(100);
+> // 设置按钮的宽和高
+> b1.setPrefWidth(100);
+> b1.setPrefHeight(50);
+> // 设置字体
+> //        b1.setFont(Font.font("sans-serif", 20));
+> //        b1.setTextFill(Paint.valueOf("#CD0000"));
+> // 设置背景色，圆角,背景四个角的空白填充
+> //        BackgroundFill bgf = new BackgroundFill(Paint.valueOf("#8FBC8F"),new CornerRadii(10),new Insets(5));
+> //        Background bg = new Background(bgf);
+> //        b1.setBackground(bg);
+> //        // 设置边框颜色，边框样式，边框圆角，边框宽度
+> //        BorderStroke bos = new BorderStroke(Paint.valueOf("#7B68EE"), BorderStrokeStyle.SOLID,new CornerRadii(10),new BorderWidths(5));
+> //        Border border = new Border(bos);
+> //        b1.setBorder(border);
+> b1.setStyle("-fx-background-color: #7CCD7C;-fx-background-radius: 20;-fx-text-fill: #CD0000");
+> // 设置按钮的单击事件
+> b1.setOnAction(new EventHandler<ActionEvent>() {
+>   @Override
+>   public void handle(ActionEvent event) {
+>     Button btn = (Button) event.getSource();
+>     System.out.println("按钮文本是：" + btn.getText());
+>   }
+> });
+> Group group = new Group();
+> group.getChildren().add(b1);
+> Scene scene = new Scene(group);
+> stage.setScene(scene);
+> stage.setWidth(500);
+> stage.setHeight(300);
+> stage.show();
+> ```
