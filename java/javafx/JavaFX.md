@@ -347,3 +347,319 @@ module org.example{
 > stage.setHeight(300);
 > stage.show();
 > ```
+
+### 双击事件和检测键盘按键
+
+> ```java
+> public void start(Stage stage) throws Exception{
+>   Button b1 = new Button();
+>   // 设置按钮上的文本
+>   b1.setText("按钮一");
+>   // 设置按钮位置
+>   b1.setLayoutX(100);
+>   b1.setLayoutY(100);
+>   // 设置按钮的宽和高
+>   b1.setPrefWidth(100);
+>   b1.setPrefHeight(50);
+>   b1.setStyle("-fx-background-color: #7CCD7C;-fx-background-radius: 20;-fx-text-fill: #CD0000");
+>   // 设置按钮的单击事件
+>   b1.setOnAction(new EventHandler<ActionEvent>() {
+>     @Override
+>     public void handle(ActionEvent event) {
+>       Button btn = (Button) event.getSource();
+>       System.out.println("按钮文本是：" + btn.getText());
+>     }
+>   });
+>   b1.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+>     @Override
+>     public void handle(MouseEvent mouseEvent) {
+>       System.out.println("鼠标按键 = " + mouseEvent.getButton().name());
+>       if(mouseEvent.getClickCount() == 2){
+>         System.out.println("鼠标双击了！");
+>       }
+>     }
+>   });
+>   // 监听键盘按键按下事件
+>   b1.setOnKeyPressed(new EventHandler<KeyEvent>() {
+>     @Override
+>     public void handle(KeyEvent keyEvent) {
+>       System.out.println("按下的按键是：" + keyEvent.getCode().getName());
+>     }
+>   });
+>   // 监听键盘按键释放事件
+>   b1.setOnKeyReleased(new EventHandler<KeyEvent>() {
+>     @Override
+>     public void handle(KeyEvent keyEvent) {
+>       System.out.println("释放");
+>     }
+>   });
+>   Group group = new Group();
+>   group.getChildren().add(b1);
+>   Scene scene = new Scene(group);
+>   stage.setScene(scene);
+>   stage.setWidth(500);
+>   stage.setHeight(300);
+>   stage.show();
+> }
+> ```
+>
+
+### 设置快捷键
+
+> ```java
+> @Override
+> public void start(Stage stage) throws Exception{
+> Button b1 = new Button();
+> // 设置按钮上的文本
+> b1.setText("按钮一");
+> // 设置按钮位置
+> b1.setLayoutX(100);
+> b1.setLayoutY(100);
+> // 设置按钮的宽和高
+> b1.setPrefWidth(100);
+> b1.setPrefHeight(50);
+> b1.setStyle("-fx-background-color: #7CCD7C;-fx-background-radius: 20;-fx-text-fill: #CD0000");
+> b1.setOnAction(new EventHandler<ActionEvent>() {
+> @Override
+> public void handle(ActionEvent event) {
+> System.out.println("setOnAction");
+> }
+> });
+> Group group = new Group();
+> group.getChildren().add(b1);
+> Scene scene = new Scene(group);
+> // 设置快捷键
+> // 第一种
+> KeyCombination kc1 = new KeyCodeCombination(KeyCode.C, KeyCombination.ALT_DOWN, KeyCombination.CONTROL_DOWN);
+> Mnemonic m1 = new Mnemonic(b1, kc1);
+> scene.addMnemonic(m1);
+> // 第二种 不常用
+> KeyCombination kc2 = new KeyCharacterCombination("A", KeyCombination.ALT_DOWN);
+> Mnemonic m2 = new Mnemonic(b1, kc2);
+> scene.addMnemonic(m2);
+> // 第三种 不常用
+> KeyCombination kc3 = new KeyCodeCombination(KeyCode.K, KeyCombination.SHIFT_DOWN, KeyCombination.CONTROL_DOWN,KeyCombination.ALT_DOWN,KeyCombination.META_DOWN,KeyCombination.SHORTCUT_DOWN);
+> Mnemonic m3 = new Mnemonic(b1, kc3);
+> scene.addMnemonic(m3);
+> // 第四种 推荐使用
+> KeyCombination kcc = new KeyCodeCombination(KeyCode.Y, KeyCombination.SHORTCUT_DOWN);
+> scene.getAccelerators().put(kcc, new Runnable() {
+> @Override
+> public void run() {
+> System.out.println("run 方法");
+> b1.fire();
+> }
+> });
+> 
+> stage.setScene(scene);
+> stage.setWidth(500);
+> stage.setHeight(300);
+> stage.show();
+> }
+> ```
+
+### 文本框，密码框，标签
+
+> ```java
+> @Override
+> public void start(Stage stage) throws Exception{
+>   TextField tf = new TextField();
+>   tf.setText("这是文本框");
+>   tf.setLayoutX(100);
+>   tf.setLayoutY(20);
+>   tf.setFont(Font.font(14));
+>   Tooltip tip = new Tooltip("这是提示！");
+>   tip.setFont(Font.font(12));
+>   tf.setTooltip(tip);
+>   tf.setPromptText("请输入七个字以下");
+>   tf.setFocusTraversable(false);
+>   tf.textProperty().addListener(new ChangeListener<String>() {
+>     @Override
+>     public void changed(ObservableValue<? extends String> observableValue, String oldValue, String newValue) {
+>       System.out.println(newValue);
+>     }
+>   });
+>   // 监听文本框选择了哪几个字
+>   tf.selectedTextProperty().addListener(new ChangeListener<String>() {
+>     @Override
+>     public void changed(ObservableValue<? extends String> observableValue, String oldValue, String newValue) {
+>       System.out.println(newValue);
+>     }
+>   });
+> 
+>   // 密码框
+>   PasswordField pwf = new PasswordField();
+>   pwf.setLayoutX(100);
+>   pwf.setLayoutY(60);
+>   // 标签
+>   Label label = new Label();
+>   label.setText("这是标签");
+>   label.setLayoutX(100);
+>   label.setLayoutY(90);
+>   label.setOnMouseClicked(new EventHandler<MouseEvent>() {
+>     @Override
+>     public void handle(MouseEvent mouseEvent) {
+>       System.out.println("鼠标单击事件触发！");
+>     }
+>   });
+>   // 设置标签文字颜色
+>   label.setTextFill(Paint.valueOf("red"));
+>   Group root = new Group();
+>   root.getChildren().addAll(tf,pwf,label);
+>   Scene scene = new Scene(root);
+>   stage.setScene(scene);
+>   stage.setWidth(500);
+>   stage.setHeight(300);
+>   stage.show();
+> }
+> ```
+
+### AnchorPane布局类
+
+> ```java
+> @Override
+> public void start(Stage stage) throws Exception{
+>   Button b1 = new Button("button1");
+>   b1.setLayoutX(100.0);
+>   b1.setLayoutY(100.0);
+>   Button b2 = new Button("Button2");
+>   Button b3 = new Button("Button3");
+>   Button b4 = new Button("Button4");
+>   AnchorPane ap = new AnchorPane();
+>   ap.getChildren().addAll(b2,b1);
+>   ap.setStyle("-fx-background-color: #FF3E96");
+> 
+>   Group g1 = new Group();
+>   Group g2 = new Group();
+>   g1.getChildren().addAll(b1,b2);
+>   g2.getChildren().addAll(b3,b4);
+>   // 距离参考点上面100个像素
+>   AnchorPane.setTopAnchor(g1,100.0);
+>   // 距离参考点左边100个像素
+>   AnchorPane.setLeftAnchor(g1,100.0);
+>   AnchorPane.setTopAnchor(g2,200.0);
+>   AnchorPane.setLeftAnchor(g2,200.0);
+>   ap.getChildren().addAll(g1,g2);
+>   Scene scene = new Scene(ap);
+>   stage.setScene(scene);
+>   stage.setWidth(500);
+>   stage.setHeight(300);
+>   stage.show();
+> }
+> ```
+
+>```java
+>public void start(Stage stage) throws Exception{
+>  AnchorPane ap = new AnchorPane();
+>  ap.setStyle("-fx-background-color: #FF3E96");
+>  AnchorPane ap2 = new AnchorPane();
+>  ap2.setStyle("-fx-background-color: #80aaff");
+>  ap.getChildren().add(ap2);
+>  Scene scene = new Scene(ap);
+>  stage.setScene(scene);
+>  stage.setWidth(500);
+>  stage.setHeight(300);
+>  stage.show();
+>
+>  // 因为stage  show才会进行宽高初始化，所以获取stage宽高要在show之后
+>  // 距离参考点上面100个像素
+>  AnchorPane.setTopAnchor(ap2,0.0);
+>  // 距离参考点左边100个像素
+>  AnchorPane.setLeftAnchor(ap2,0.0);
+>  AnchorPane.setRightAnchor(ap2,ap.getWidth() / 2);
+>  AnchorPane.setBottomAnchor(ap2,ap.getHeight() / 2);
+>  stage.widthProperty().addListener(new ChangeListener<Number>() {
+>    @Override
+>    public void changed(ObservableValue<? extends Number> observableValue, Number number, Number t1) {
+>      AnchorPane.setRightAnchor(ap2,ap.getWidth() / 2);
+>    }
+>  });
+>  stage.heightProperty().addListener(new ChangeListener<Number>() {
+>    @Override
+>    public void changed(ObservableValue<? extends Number> observableValue, Number number, Number t1) {
+>      AnchorPane.setBottomAnchor(ap2,ap.getHeight() / 2);
+>    }
+>  });
+>}
+>```
+
+### HBox和VBox
+
+> ```java
+> public void start(Stage stage) throws Exception{
+>   Button b1 = new Button("按钮一");
+>   Button b2 = new Button("按钮二");
+>   Button b3 = new Button("按钮三");
+>   AnchorPane ap = new AnchorPane();
+>   ap.setStyle("-fx-background-color: #AEEEEE");
+>   // 水平布局
+>   HBox hb = new HBox();
+>   // 垂直布局
+>   // VBox hb = new VBox();
+>   hb.setPrefWidth(200);
+>   hb.setPrefHeight(100);
+>   // 设置内边距
+>   hb.setPadding(new Insets(10));
+>   // 子组件之间的间距
+>   hb.setSpacing(10);
+>   // 设置外边距
+>   HBox.setMargin(b1,new Insets(10));
+>   // 设置对齐方式【下方居中对齐】
+>   hb.setAlignment(Pos.BOTTOM_CENTER);
+>   hb.setStyle("-fx-background-color: #E066FF");
+>   hb.getChildren().addAll(b1,b2,b3);
+>   ap.getChildren().addAll(hb);
+>   Scene scene = new Scene(ap);
+>   stage.setScene(scene);
+>   stage.setWidth(500);
+>   stage.setHeight(300);
+>   stage.show();
+> }
+> ```
+
+### setManaged和setVisible以及setOpacity
+
+* setManaged:控制组件是否存在，类似于css中的display:none，设置为false，组件不再占用空间
+* setVisible: 控制组件的可见性：类似于css中的visibility:hidden，设置为false，组件依然占用空间，只是不可见
+* setOpacity:控制组件的透明度
+
+### BorderPane布局类
+
+> ```java
+> public void start(Stage stage) throws Exception{
+>   AnchorPane ap1 = new AnchorPane();
+>   ap1.setStyle("-fx-background-color: #00FF7F");
+>   ap1.setPrefSize(100, 100);
+> 
+>   AnchorPane ap2 = new AnchorPane();
+>   ap2.setStyle("-fx-background-color: #8B658B");
+>   ap2.setPrefSize(100, 100);
+> 
+>   AnchorPane ap3 = new AnchorPane();
+>   ap3.setStyle("-fx-background-color: #FF6A6A");
+>   ap3.setPrefSize(100, 100);
+> 
+>   AnchorPane ap4 = new AnchorPane();
+>   ap4.setStyle("-fx-background-color: #FFA500");
+>   ap4.setPrefSize(100, 100);
+> 
+>   AnchorPane ap5 = new AnchorPane();
+>   ap5.setStyle("-fx-background-color: #8B8989");
+>   ap5.setPrefSize(100, 100);
+> 
+>   // 设置上下左右中间的布局方式
+>   BorderPane bp = new BorderPane();
+>   bp.setStyle("-fx-background-color: #EECBAD");
+>   bp.setTop(ap1);
+>   bp.setBottom(ap2);
+>   bp.setLeft(ap3);
+>   bp.setRight(ap4);
+>   bp.setCenter(ap5);
+> 
+>   Scene scene = new Scene(bp);
+>   stage.setScene(scene);
+>   stage.setWidth(500);
+>   stage.setHeight(300);
+>   stage.show();
+> }
+> ```
