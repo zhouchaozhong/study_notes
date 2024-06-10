@@ -663,3 +663,294 @@ module org.example{
 >   stage.show();
 > }
 > ```
+
+### FlowPane布局类
+
+> ```java
+> // 流式布局，子组件根据空间自动调整位置
+> public void start(Stage stage) throws Exception{
+>   Button b1 = new Button("按钮一");
+>   Button b2 = new Button("按钮二");
+>   Button b3 = new Button("按钮三");
+>   Button b4 = new Button("按钮四");
+>   Button b5 = new Button("按钮五");
+>   Button b6 = new Button("按钮六");
+>   FlowPane fp = new FlowPane();
+>   fp.getChildren().addAll(b1,b2,b3,b4,b5,b6);
+>   // fp.setMargin(b1,new Insets(0,10,0,10));
+>   // 设置子组件的水平间距
+>   fp.setHgap(10);
+>   // 设置子组件的垂直间距
+>   fp.setVgap(10);
+>   Scene scene = new Scene(fp);
+>   stage.setScene(scene);
+>   stage.setWidth(500);
+>   stage.setHeight(300);
+>   stage.show();
+> }
+> ```
+
+### GridPane布局类
+
+> ```java
+> public void start(Stage stage) throws Exception{
+>   Button b1 = new Button("按钮一");
+>   Button b2 = new Button("按钮二");
+>   Button b3 = new Button("按钮三");
+>   Button b4 = new Button("按钮四");
+>   Button b5 = new Button("按钮五");
+>   Button b6 = new Button("按钮六");
+>   Button b7 = new Button("按钮七");
+>   Button b8 = new Button("按钮八");
+>   // 网格布局
+>   GridPane grid = new GridPane();
+>   grid.setStyle("-fx-background-color: #EE6AA7");
+>   grid.setHgap(10);
+>   grid.setVgap(10);
+>   // 设置子组件在GridPane里的第几列第几行
+>   grid.add(b1, 0, 0);
+>   grid.add(b2, 1, 0);
+>   grid.add(b3, 2, 0);
+>   grid.add(b4, 3, 0);
+>   grid.add(b5, 0, 1);
+>   grid.add(b6, 1, 1);
+>   grid.add(b7, 2, 1);
+>   grid.add(b8, 3, 1);
+>   Scene scene = new Scene(grid);
+>   stage.setScene(scene);
+>   stage.setWidth(500);
+>   stage.setHeight(300);
+>   stage.show();
+> }
+> ```
+
+### StackPane布局类
+
+> ```java
+> public void start(Stage stage) throws Exception{
+>   Button b1 = new Button("按钮一");
+>   Button b2 = new Button("按钮二");
+>   Button b3 = new Button("按钮三");
+>   Button b4 = new Button("按钮四");
+>   Button b5 = new Button("按钮五");
+>   // 只显示最后一个加入容器的子组件
+>   StackPane stack = new StackPane();
+>   stack.setStyle("-fx-background-color: #EE6AA7");
+>   stack.getChildren().addAll(b1,b2,b3,b4,b5);
+>   stack.setPadding(new Insets(10));
+>   stack.setAlignment(Pos.BOTTOM_LEFT);
+>   Scene scene = new Scene(stack);
+>   stage.setScene(scene);
+>   stage.setWidth(500);
+>   stage.setHeight(300);
+>   stage.show();
+> }
+> ```
+
+### TextFlow布局类
+
+> ```java
+> public void start(Stage stage) throws Exception{
+>   // 文字布局
+>   Text t1 = new Text("刻晴\n");
+>   Text t2 = new Text("宵宫\n");
+>   Text t3 = new Text("神里绫华\n");
+>   // 设置字体
+>   t1.setFont(Font.font(20));
+>   // 设置颜色
+>   t1.setFill(Paint.valueOf("#FF82AB"));
+>   t2.setFont(Font.font(20));
+>   t3.setFont(Font.font(20));
+>   TextFlow tf = new TextFlow();
+>   tf.setStyle("-fx-background-color: #EECFA1");
+>   tf.getChildren().addAll(t1, t2, t3);
+>   // 设置行间距
+>   tf.setLineSpacing(10);
+>   // 设置文字对齐方式
+>   tf.setTextAlignment(TextAlignment.CENTER);
+>   Scene scene = new Scene(tf);
+>   stage.setScene(scene);
+>   stage.setWidth(500);
+>   stage.setHeight(300);
+>   stage.show();
+> }
+> ```
+
+### TilePane布局类
+
+> ```java
+> public void start(Stage stage) throws Exception{
+>   Button b1 = new Button("按钮一");
+>   Button b2 = new Button("按钮二");
+>   Button b3 = new Button("按钮三");
+>   Button b4 = new Button("按钮四");
+>   Button b5 = new Button("按钮五");
+>   Button b6 = new Button("按钮六");
+>   // 瓷砖瓦片布局，每块都保持一样
+>   TilePane tile = new TilePane();
+>   tile.setStyle("-fx-background-color: #EE6AA7");
+>   tile.getChildren().addAll(b1,b2,b3,b4,b5,b6);
+>   tile.setHgap(10);
+>   tile.setVgap(10);
+>   tile.setMargin(b1,new Insets(20));
+>   Scene scene = new Scene(tile);
+>   stage.setScene(scene);
+>   stage.setWidth(500);
+>   stage.setHeight(300);
+>   stage.show();
+> }
+> ```
+
+### DialogPane布局类
+
+> ```java
+> public void start(Stage stage) throws Exception{
+>   Button btn = new Button("点击弹出窗口");
+>   AnchorPane ap = new AnchorPane();
+>   ap.setStyle("-fx-background-color: #fff");
+>   AnchorPane.setTopAnchor(btn,100.00);
+>   AnchorPane.setLeftAnchor(btn,100.00);
+>   ap.getChildren().add(btn);
+>   btn.setOnAction(new EventHandler<ActionEvent>() {
+>     @Override
+>     public void handle(ActionEvent event) {
+>       // 对话框面板
+>       DialogPane dp = new DialogPane();
+>       dp.setHeaderText("提示信息");
+>       dp.setContentText("提示详细内容");
+>       // 设置按钮
+>       dp.getButtonTypes().add(ButtonType.APPLY);
+>       dp.getButtonTypes().add(ButtonType.CANCEL);
+>       Button applyBtn = (Button) dp.lookupButton(ButtonType.APPLY);
+>       Button cancelBtn = (Button) dp.lookupButton(ButtonType.CANCEL);
+>       // 设置左上角图片
+>       ImageView iv = new ImageView("file:src/main/resources/icon/info.png");
+>       iv.setFitHeight(30);
+>       iv.setFitWidth(30);
+>       dp.setGraphic(iv);
+>       dp.setExpandableContent(new Text("这是扩展内容"));
+>       Stage stage1 = new Stage();
+>       Scene sc = new Scene(dp);
+>       stage1.setScene(sc);
+>       stage1.initOwner(stage);
+>       stage1.initModality(Modality.WINDOW_MODAL);
+>       stage1.initStyle(StageStyle.UTILITY);
+>       stage1.setResizable(false);
+>       stage1.show();
+>       applyBtn.setOnAction(new EventHandler<ActionEvent>() {
+>         @Override
+>         public void handle(ActionEvent event) {
+>           System.out.println("apply按钮被点击了！");
+>         }
+>       });
+>       cancelBtn.setOnAction(new EventHandler() {
+>         @Override
+>         public void handle(Event event) {
+>           stage1.close();
+>         }
+>       });
+>     }
+>   });
+>   Scene scene = new Scene(ap);
+>   stage.setScene(scene);
+>   stage.setWidth(500);
+>   stage.setHeight(300);
+>   stage.show();
+> }
+> ```
+
+### 多任务
+
+> ```java
+> package org.example;
+> 
+> import javafx.application.Application;
+> import javafx.concurrent.ScheduledService;
+> import javafx.concurrent.Task;
+> import javafx.event.ActionEvent;
+> import javafx.event.EventHandler;
+> import javafx.scene.Scene;
+> import javafx.scene.control.Button;
+> import javafx.scene.control.Label;
+> import javafx.scene.layout.AnchorPane;
+> import javafx.scene.paint.Paint;
+> import javafx.scene.text.Font;
+> import javafx.stage.Stage;
+> import javafx.util.Duration;
+> 
+> public class Launch extends Application {
+>     @Override
+>     public void init() throws Exception {
+> 
+>     }
+> 
+>     @Override
+>     public void stop() throws Exception {
+> 
+>     }
+> 
+>     @Override
+>     public void start(Stage stage) throws Exception{
+>         Button btn = new Button("点击运行多任务");
+>         AnchorPane ap = new AnchorPane();
+>         ap.setStyle("-fx-background-color: #fff");
+>         AnchorPane.setTopAnchor(btn,100.00);
+>         AnchorPane.setLeftAnchor(btn,100.00);
+>         Label label = new Label();
+>         label.setTextFill(Paint.valueOf("#FF00FF"));
+>         label.setFont(Font.font(50));
+>         label.setText("0");
+>         AnchorPane.setTopAnchor(label,30.00);
+>         AnchorPane.setLeftAnchor(label,150.00);
+>         ap.getChildren().addAll(btn,label);
+>         // 运行多任务
+>         btn.setOnAction(new EventHandler<ActionEvent>() {
+>             @Override
+>             public void handle(ActionEvent event) {
+>                 MyScheduledService myService = new MyScheduledService(label);
+>                 // 设置2秒后执行
+>                 myService.setDelay(Duration.seconds(2.00));
+>                 // 设置运行间隔为1秒
+>                 myService.setPeriod(Duration.seconds(1.00));
+>                 myService.start();
+>             }
+>         });
+> 
+>         Scene scene = new Scene(ap);
+>         stage.setScene(scene);
+>         stage.setWidth(500);
+>         stage.setHeight(300);
+>         stage.show();
+>     }
+> 
+> }
+> 
+> class MyScheduledService extends ScheduledService<Integer> {
+>     public static int num = 0;
+>     public Label label;
+>     MyScheduledService(Label label) {
+>         this.label = label;
+>     }
+>     @Override
+>     protected Task<Integer> createTask() {
+>         return new Task<Integer>() {
+>             // 此方法不是UI线程执行的
+>             @Override
+>             protected Integer call() throws Exception {
+>                 System.out.println("call method " + Thread.currentThread().getName());
+>                 return num++;
+>             }
+> 
+>             // 这个方法是UI线程执行的
+>             @Override
+>             protected void updateValue(Integer value) {
+>                 System.out.println("updateValue method " + Thread.currentThread().getName());
+>                 System.out.println("updateValue " + value);
+>                 label.setText(String.valueOf(num));
+>                 super.updateValue(value);
+>             }
+>         };
+>     }
+> }
+> ```
+
