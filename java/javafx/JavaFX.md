@@ -954,3 +954,67 @@ module org.example{
 > }
 > ```
 
+### 简单登录窗口示例
+
+> ```java
+> public void start(Stage stage) throws Exception{
+>   Label lName = new Label("账号：");
+>   Label lPassword = new Label("密码：");
+> 
+>   TextField tName = new TextField();
+>   PasswordField pPassword = new PasswordField();
+> 
+>   Button loginBtn = new Button("登录");
+>   Button clearBtn = new Button("清除");
+> 
+>   GridPane gp = new GridPane();
+>   gp.setStyle("-fx-background-color: #FFEBCD");
+>   gp.add(lName,0,0);
+>   gp.add(tName,1,0);
+>   gp.add(lPassword,0,1);
+>   gp.add(pPassword,1,1);
+>   gp.add(clearBtn,0,2);
+>   gp.add(loginBtn,1,2);
+>   gp.setHgap(10);
+>   gp.setVgap(10);
+>   gp.setAlignment(Pos.CENTER);
+>   GridPane.setMargin(loginBtn,new Insets(0,0,0,120));
+> 
+>   clearBtn.setOnAction(new EventHandler<ActionEvent>() {
+>     @Override
+>     public void handle(ActionEvent event) {
+>       tName.setText("");
+>       pPassword.setText("");
+>     }
+>   });
+> 
+>   loginBtn.setOnAction(new EventHandler<ActionEvent>() {
+>     @Override
+>     public void handle(ActionEvent event) {
+>       tName.setUserData("admin");
+>       pPassword.setUserData("12345");
+>       String name = tName.getText();
+>       String password = pPassword.getText();
+>       if(tName.getUserData().equals(name) && pPassword.getUserData().equals(password)){
+>         System.out.println("登录成功！");
+>         stage.close();
+>       }else{
+>         System.out.println("登录失败！");
+>         // 设置渐入动画
+>         FadeTransition ft = new FadeTransition();
+>         ft.setDuration(Duration.seconds(0.5));
+>         ft.setNode(gp);
+>         ft.setFromValue(0);
+>         ft.setToValue(1);
+>         ft.play();
+>       }
+>     }
+>   });
+> 
+>   Scene scene = new Scene(gp);
+>   stage.setScene(scene);
+>   stage.setWidth(500);
+>   stage.setHeight(300);
+>   stage.show();
+> }
+> ```
