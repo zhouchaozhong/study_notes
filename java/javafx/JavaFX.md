@@ -1018,3 +1018,19 @@ module org.example{
 >   stage.show();
 > }
 > ```
+
+### Hyperlink超链接
+
+> ```java
+> // 点击这个链接默认不会打开浏览器
+> Hyperlink link = new Hyperlink("http://www.sina.com.cn");
+> // 触发点击事件，打开浏览器
+> link.setOnAction(new EventHandler<ActionEvent>() {
+>   @Override
+>   public void handle(ActionEvent event) {
+>     System.out.println(link.getText());
+>     HostServices host = getHostServices();
+>     host.showDocument(link.getText());
+>   }
+> });
+> ```
