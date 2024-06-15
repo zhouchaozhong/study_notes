@@ -1034,3 +1034,55 @@ module org.example{
 >   }
 > });
 > ```
+
+### 菜单的使用
+
+> **MenuBar,Menu,MenuItem【菜单栏，菜单，菜单项】**
+>
+> ```java
+> public void start(Stage stage) throws Exception{
+>   AnchorPane ap = new AnchorPane();
+>   ap.setStyle("-fx-background-color: #ffffff");
+>   // 创建菜单栏
+>   MenuBar menuBar = new MenuBar();
+>   // 创建菜单
+>   Menu menu1 = new Menu("菜单一");
+>   Menu menu2 = new Menu("菜单二");
+>   Menu menu3 = new Menu("菜单三");
+>   Menu menu4 = new Menu("菜单四");
+> 
+>   ImageView iv = new ImageView("file:src/main/resources/icon/info.png");
+>   iv.setFitHeight(20);
+>   iv.setFitWidth(20);
+>   // 创建菜单项
+>   MenuItem item1 = new MenuItem("菜单项一",iv);
+>   item1.setAccelerator(KeyCombination.valueOf("Ctrl+1"));
+>   MenuItem item2 = new MenuItem("菜单项二");
+>   MenuItem item3 = new MenuItem("菜单项三");
+>   MenuItem item4 = new MenuItem("菜单项四");
+>   MenuItem item5 = new MenuItem("菜单项五");
+> 
+>   item1.setOnAction(new EventHandler<ActionEvent>() {
+>     @Override
+>     public void handle(ActionEvent event) {
+>       System.out.println("菜单项一被点击了～");
+>     }
+>   });
+> 
+>   menu1.getItems().addAll(item1, item2, item3);
+>   menu2.getItems().addAll(item4, item5);
+>   menuBar.getMenus().addAll(menu1, menu2, menu3, menu4);
+>   ap.getChildren().add(menuBar);
+>   Scene scene = new Scene(ap);
+>   stage.setScene(scene);
+>   stage.setWidth(500);
+>   stage.setHeight(300);
+>   stage.show();
+>   menuBar.setPrefWidth(ap.getWidth());
+>   ap.widthProperty().addListener((observable, oldValue, newValue) -> {
+>     menuBar.setPrefWidth(newValue.doubleValue());
+>   });
+> }
+> ```
+>
+> 
