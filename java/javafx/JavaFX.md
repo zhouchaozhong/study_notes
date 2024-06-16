@@ -1041,6 +1041,54 @@ module org.example{
 >
 > ```java
 > public void start(Stage stage) throws Exception{
+> AnchorPane ap = new AnchorPane();
+> ap.setStyle("-fx-background-color: #ffffff");
+> // 创建菜单栏
+> MenuBar menuBar = new MenuBar();
+> // 创建菜单
+> Menu menu1 = new Menu("菜单一");
+> Menu menu2 = new Menu("菜单二");
+> Menu menu3 = new Menu("菜单三");
+> Menu menu4 = new Menu("菜单四");
+> 
+> ImageView iv = new ImageView("file:src/main/resources/icon/info.png");
+> iv.setFitHeight(20);
+> iv.setFitWidth(20);
+> // 创建菜单项
+> MenuItem item1 = new MenuItem("菜单项一",iv);
+> item1.setAccelerator(KeyCombination.valueOf("Ctrl+1"));
+> MenuItem item2 = new MenuItem("菜单项二");
+> MenuItem item3 = new MenuItem("菜单项三");
+> MenuItem item4 = new MenuItem("菜单项四");
+> MenuItem item5 = new MenuItem("菜单项五");
+> 
+> item1.setOnAction(new EventHandler<ActionEvent>() {
+>  @Override
+>  public void handle(ActionEvent event) {
+>    System.out.println("菜单项一被点击了～");
+>  }
+> });
+> 
+> menu1.getItems().addAll(item1, item2, item3);
+> menu2.getItems().addAll(item4, item5);
+> menuBar.getMenus().addAll(menu1, menu2, menu3, menu4);
+> ap.getChildren().add(menuBar);
+> Scene scene = new Scene(ap);
+> stage.setScene(scene);
+> stage.setWidth(500);
+> stage.setHeight(300);
+> stage.show();
+> menuBar.setPrefWidth(ap.getWidth());
+> ap.widthProperty().addListener((observable, oldValue, newValue) -> {
+>  menuBar.setPrefWidth(newValue.doubleValue());
+> });
+> }
+> ```
+>
+> **子菜单，分隔符，单选，多选**
+>
+> ```java
+> public void start(Stage stage) throws Exception{
 >   AnchorPane ap = new AnchorPane();
 >   ap.setStyle("-fx-background-color: #ffffff");
 >   // 创建菜单栏
@@ -1050,17 +1098,15 @@ module org.example{
 >   Menu menu2 = new Menu("菜单二");
 >   Menu menu3 = new Menu("菜单三");
 >   Menu menu4 = new Menu("菜单四");
+>   // 分割器，分隔符
+>   SeparatorMenuItem separator1 = new SeparatorMenuItem();
+>   SeparatorMenuItem separator2 = new SeparatorMenuItem();
+>   SeparatorMenuItem separator3 = new SeparatorMenuItem();
 > 
->   ImageView iv = new ImageView("file:src/main/resources/icon/info.png");
->   iv.setFitHeight(20);
->   iv.setFitWidth(20);
 >   // 创建菜单项
->   MenuItem item1 = new MenuItem("菜单项一",iv);
->   item1.setAccelerator(KeyCombination.valueOf("Ctrl+1"));
+>   MenuItem item1 = new MenuItem("菜单项一");
 >   MenuItem item2 = new MenuItem("菜单项二");
 >   MenuItem item3 = new MenuItem("菜单项三");
->   MenuItem item4 = new MenuItem("菜单项四");
->   MenuItem item5 = new MenuItem("菜单项五");
 > 
 >   item1.setOnAction(new EventHandler<ActionEvent>() {
 >     @Override
@@ -1069,8 +1115,29 @@ module org.example{
 >     }
 >   });
 > 
->   menu1.getItems().addAll(item1, item2, item3);
->   menu2.getItems().addAll(item4, item5);
+>   // 菜单项的子菜单
+>   Menu m = new Menu("菜单");
+>   MenuItem subItem1 = new MenuItem("子菜单1");
+>   MenuItem subItem2 = new MenuItem("子菜单2");
+>   m.getItems().addAll(subItem1,subItem2);
+> 
+>   // 单选
+>   ToggleGroup tg = new ToggleGroup();
+>   RadioMenuItem rm1 = new RadioMenuItem("选项一");
+>   RadioMenuItem rm2 = new RadioMenuItem("选项二");
+>   RadioMenuItem rm3 = new RadioMenuItem("选项三");
+>   rm1.setToggleGroup(tg);
+>   rm2.setToggleGroup(tg);
+>   rm3.setToggleGroup(tg);
+>   menu2.getItems().addAll(rm1,rm2,rm3);
+> 
+>   // 多选
+>   CheckMenuItem cm1 = new CheckMenuItem("选项1");
+>   CheckMenuItem cm2 = new CheckMenuItem("选项2");
+>   CheckMenuItem cm3 = new CheckMenuItem("选项3");
+>   menu3.getItems().addAll(cm1,cm2,cm3);
+> 
+>   menu1.getItems().addAll(item1, separator1,item2, separator2,item3,m);
 >   menuBar.getMenus().addAll(menu1, menu2, menu3, menu4);
 >   ap.getChildren().add(menuBar);
 >   Scene scene = new Scene(ap);
