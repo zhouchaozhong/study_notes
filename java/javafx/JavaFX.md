@@ -1109,10 +1109,10 @@ module org.example{
 > MenuItem item3 = new MenuItem("菜单项三");
 > 
 > item1.setOnAction(new EventHandler<ActionEvent>() {
->  @Override
->  public void handle(ActionEvent event) {
->    System.out.println("菜单项一被点击了～");
->  }
+> @Override
+> public void handle(ActionEvent event) {
+> System.out.println("菜单项一被点击了～");
+> }
 > });
 > 
 > // 菜单项的子菜单
@@ -1147,7 +1147,7 @@ module org.example{
 > stage.show();
 > menuBar.setPrefWidth(ap.getWidth());
 > ap.widthProperty().addListener((observable, oldValue, newValue) -> {
->  menuBar.setPrefWidth(newValue.doubleValue());
+> menuBar.setPrefWidth(newValue.doubleValue());
 > });
 > }
 > ```
@@ -1156,35 +1156,35 @@ module org.example{
 >
 > ```java
 > public void start(Stage stage) throws Exception{
->   AnchorPane ap = new AnchorPane();
->   ap.setStyle("-fx-background-color: #ffffff");
->   // 创建菜单栏
->   MenuBar menuBar = new MenuBar();
->   // 创建菜单
->   Menu menu1 = new Menu("菜单一");
->   Menu menu2 = new Menu("菜单二");
->   Menu menu3 = new Menu("菜单三");
+> AnchorPane ap = new AnchorPane();
+> ap.setStyle("-fx-background-color: #ffffff");
+> // 创建菜单栏
+> MenuBar menuBar = new MenuBar();
+> // 创建菜单
+> Menu menu1 = new Menu("菜单一");
+> Menu menu2 = new Menu("菜单二");
+> Menu menu3 = new Menu("菜单三");
 > 
->   MenuItem item1 = new MenuItem("菜单项1");
->   MenuItem item2 = new MenuItem("菜单项2");
->   MenuItem item3 = new MenuItem("菜单项3");
->   // 自定义菜单项
->   CustomMenuItem cm1 = new CustomMenuItem();
->   Button btn = new Button("按钮1");
->   cm1.setContent(btn);
+> MenuItem item1 = new MenuItem("菜单项1");
+> MenuItem item2 = new MenuItem("菜单项2");
+> MenuItem item3 = new MenuItem("菜单项3");
+> // 自定义菜单项
+> CustomMenuItem cm1 = new CustomMenuItem();
+> Button btn = new Button("按钮1");
+> cm1.setContent(btn);
 > 
->   CustomMenuItem cm2 = new CustomMenuItem();
->   ProgressBar bar = new ProgressBar(0.5);
->   cm2.setContent(bar);
+> CustomMenuItem cm2 = new CustomMenuItem();
+> ProgressBar bar = new ProgressBar(0.5);
+> cm2.setContent(bar);
 > 
->   menu1.getItems().addAll(item1, item2, item3,cm1,cm2);
->   menuBar.getMenus().addAll(menu1, menu2, menu3);
->   ap.getChildren().add(menuBar);
->   Scene scene = new Scene(ap);
->   stage.setScene(scene);
->   stage.setWidth(500);
->   stage.setHeight(300);
->   stage.show();
+> menu1.getItems().addAll(item1, item2, item3,cm1,cm2);
+> menuBar.getMenus().addAll(menu1, menu2, menu3);
+> ap.getChildren().add(menuBar);
+> Scene scene = new Scene(ap);
+> stage.setScene(scene);
+> stage.setWidth(500);
+> stage.setHeight(300);
+> stage.show();
 > }
 > ```
 >
@@ -1193,34 +1193,34 @@ module org.example{
 > ```java
 > @Override
 > public void start(Stage stage) throws Exception{
->   AnchorPane ap = new AnchorPane();
->   ap.setStyle("-fx-background-color: #ffffff");
->   // 创建菜单栏
->   MenuBar menuBar = new MenuBar();
->   // 创建菜单
->   Menu menu1 = new Menu("菜单一");
->   Menu menu2 = new Menu("菜单二");
->   Menu menu3 = new Menu("菜单三");
+> AnchorPane ap = new AnchorPane();
+> ap.setStyle("-fx-background-color: #ffffff");
+> // 创建菜单栏
+> MenuBar menuBar = new MenuBar();
+> // 创建菜单
+> Menu menu1 = new Menu("菜单一");
+> Menu menu2 = new Menu("菜单二");
+> Menu menu3 = new Menu("菜单三");
 > 
->   MenuItem item1 = new MenuItem("菜单项1");
->   MenuItem item2 = new MenuItem("菜单项2");
->   MenuItem item3 = new MenuItem("菜单项3");
+> MenuItem item1 = new MenuItem("菜单项1");
+> MenuItem item2 = new MenuItem("菜单项2");
+> MenuItem item3 = new MenuItem("菜单项3");
 > 	// 按钮菜单
->   MenuButton mb = new MenuButton("按钮菜单");
->   AnchorPane.setTopAnchor(mb,100.0);
->   MenuItem item4 = new MenuItem("菜单项4");
->   MenuItem item5 = new MenuItem("菜单项5");
->   MenuItem item6 = new MenuItem("菜单项6");
->   mb.getItems().addAll( item4, item5, item6);
+> MenuButton mb = new MenuButton("按钮菜单");
+> AnchorPane.setTopAnchor(mb,100.0);
+> MenuItem item4 = new MenuItem("菜单项4");
+> MenuItem item5 = new MenuItem("菜单项5");
+> MenuItem item6 = new MenuItem("菜单项6");
+> mb.getItems().addAll( item4, item5, item6);
 > 
->   menu1.getItems().addAll(item1, item2, item3);
->   menuBar.getMenus().addAll(menu1, menu2, menu3);
->   ap.getChildren().addAll(menuBar,mb);
->   Scene scene = new Scene(ap);
->   stage.setScene(scene);
->   stage.setWidth(500);
->   stage.setHeight(300);
->   stage.show();
+> menu1.getItems().addAll(item1, item2, item3);
+> menuBar.getMenus().addAll(menu1, menu2, menu3);
+> ap.getChildren().addAll(menuBar,mb);
+> Scene scene = new Scene(ap);
+> stage.setScene(scene);
+> stage.setWidth(500);
+> stage.setHeight(300);
+> stage.show();
 > }
 > ```
 >
@@ -1229,30 +1229,329 @@ module org.example{
 > ```java
 > @Override
 > public void start(Stage stage) throws Exception{
+> AnchorPane ap = new AnchorPane();
+> ap.setStyle("-fx-background-color: #ffffff");
+> // 创建菜单栏
+> MenuBar menuBar = new MenuBar();
+> // 创建菜单
+> Menu menu1 = new Menu("菜单一");
+> Menu menu2 = new Menu("菜单二");
+> Menu menu3 = new Menu("菜单三");
+> 
+> MenuItem item1 = new MenuItem("菜单项1");
+> MenuItem item2 = new MenuItem("菜单项2");
+> MenuItem item3 = new MenuItem("菜单项3");
+> // 箭头和按钮分割的按钮菜单
+> SplitMenuButton smb = new SplitMenuButton();
+> smb.setText("分割按钮菜单");
+> AnchorPane.setTopAnchor(smb, 50.0);
+> MenuItem item4 = new MenuItem("菜单项4");
+> MenuItem item5 = new MenuItem("菜单项5");
+> MenuItem item6 = new MenuItem("菜单项6");
+> smb.getItems().addAll(item4, item5, item6);
+> 
+> menu1.getItems().addAll(item1, item2, item3);
+> menuBar.getMenus().addAll(menu1, menu2, menu3);
+> ap.getChildren().addAll(menuBar,smb);
+> Scene scene = new Scene(ap);
+> stage.setScene(scene);
+> stage.setWidth(500);
+> stage.setHeight(300);
+> stage.show();
+> }
+> ```
+>
+> **ContextMenu**
+>
+> ```java
+> @Override
+> public void start(Stage stage) throws Exception{
+> AnchorPane ap = new AnchorPane();
+> ap.setStyle("-fx-background-color: #ffffff");
+> Button btn = new Button("按钮1");
+> // 右键单击弹出菜单
+> ContextMenu cm = new ContextMenu();
+> MenuItem item1 = new MenuItem("菜单项1");
+> MenuItem item2 = new MenuItem("菜单项2");
+> MenuItem item3 = new MenuItem("菜单项3");
+> cm.getItems().addAll(item1, item2, item3);
+> 
+> btn.setContextMenu(cm);
+> 
+> // 右键菜单弹出事件
+> btn.setOnContextMenuRequested(new EventHandler<ContextMenuEvent>() {
+>  @Override
+>  public void handle(ContextMenuEvent contextMenuEvent) {
+>    System.out.println("右键菜单弹出事件触发了～");
+>  }
+> });
+> ap.getChildren().addAll(btn);
+> Scene scene = new Scene(ap);
+> stage.setScene(scene);
+> stage.setWidth(500);
+> stage.setHeight(300);
+> stage.show();
+> }
+> ```
+>
+
+
+### TitledPane折叠面板
+>
+> ```java
+> @Override
+> public void start(Stage stage) throws Exception{
+> AnchorPane ap = new AnchorPane();
+> ap.setStyle("-fx-background-color: #ffffff");
+> VBox vBox = new VBox();
+> // 可折叠面板
+> TitledPane tp1 = new TitledPane("TitledPane 1", new Button("Button 1"));
+> TitledPane tp2 = new TitledPane();
+> tp2.setText("TitledPane 2");
+> tp2.setContent(new Button("Button 2"));
+> vBox.getChildren().addAll(tp1, tp2);
+> ap.getChildren().addAll(vBox);
+> Scene scene = new Scene(ap);
+> stage.setScene(scene);
+> stage.setWidth(500);
+> stage.setHeight(300);
+> stage.show();
+> }
+> ```
+
+### Accordion
+>
+> ```java
+> @Override
+> public void start(Stage stage) throws Exception{
+> AnchorPane ap = new AnchorPane();
+> ap.setStyle("-fx-background-color: #ffffff");
+> // 用来在里面放多个可折叠面板的容器,每次只能展开一个面板
+> Accordion acc = new Accordion();
+> TitledPane tp1 = new TitledPane("TitledPane 1", new Button("Button 1"));
+> TitledPane tp2 = new TitledPane();
+> tp2.setText("TitledPane 2");
+> tp2.setContent(new Button("Button 2"));
+> acc.getPanes().addAll(tp1, tp2);
+> // 监听展开属性变化
+> acc.expandedPaneProperty().addListener(new ChangeListener<TitledPane>() {
+>  @Override
+>  public void changed(ObservableValue<? extends TitledPane> observableValue, TitledPane oldVal, TitledPane newVal) {
+>    System.out.println(newVal.getText());
+>  }
+> });
+> ap.getChildren().addAll(acc);
+> Scene scene = new Scene(ap);
+> stage.setScene(scene);
+> stage.setWidth(500);
+> stage.setHeight(300);
+> stage.show();
+> }
+> ```
+>
+
+### TabPane和Tab
+
+> ```java
+> @Override
+> public void start(Stage stage) throws Exception{
 >   AnchorPane ap = new AnchorPane();
 >   ap.setStyle("-fx-background-color: #ffffff");
->   // 创建菜单栏
->   MenuBar menuBar = new MenuBar();
->   // 创建菜单
->   Menu menu1 = new Menu("菜单一");
->   Menu menu2 = new Menu("菜单二");
->   Menu menu3 = new Menu("菜单三");
+>   TabPane tp = new TabPane();
+>   tp.setPrefWidth(300);
+>   tp.setPrefHeight(300);
+>   Tab tab1 = new Tab("tab1");
+>   Tab tab2 = new Tab("tab2");
+>   Tab tab3 = new Tab("tab3");
+>   tab1.setContent(new Button("button 1"));
+>   tab2.setContent(new Button("button 2"));
+>   tab3.setContent(new Button("button 3"));
+>   tp.getTabs().addAll(tab1, tab2, tab3);
+>   // 设置是否允许关闭标签
+>   tab2.setClosable(false);
+>   // 设置切换标签的面板位置
+>   tp.setSide(Side.RIGHT);
+>   // 选择打开哪一个标签页
+>   tp.getSelectionModel().selectLast();
+>   // 监听切换标签页事件
+>   tp.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Tab>() {
+>     @Override
+>     public void changed(ObservableValue<? extends Tab> observableValue, Tab oldVal, Tab newVal) {
+>       System.out.println(newVal.getText());
+>     }
+>   });
+>   // 设置标签切换触发事件的处理方法
+>   tab1.setOnSelectionChanged(new EventHandler<Event>() {
+>     @Override
+>     public void handle(Event event) {
+>       Tab t = (Tab) event.getSource();
+>       System.out.println(t);
+>     }
+>   });
+>   ap.getChildren().addAll(tp);
+>   Scene scene = new Scene(ap);
+>   stage.setScene(scene);
+>   stage.setWidth(500);
+>   stage.setHeight(300);
+>   stage.show();
+> }
+> ```
+
+### RadioButton和CheckBox
+
+> ```java
+> @Override
+> public void start(Stage stage) throws Exception{
+> AnchorPane ap = new AnchorPane();
+> ap.setStyle("-fx-background-color: #ffffff");
+> HBox box = new HBox(10);
+> ToggleGroup tg = new ToggleGroup();
+> RadioButton r1 = new RadioButton("RadioButton 1");
+> RadioButton r2 = new RadioButton("RadioButton 2");
+> RadioButton r3 = new RadioButton("RadioButton 3");
+> RadioButton r4 = new RadioButton("RadioButton 4");
+> r1.setToggleGroup(tg);
+> r2.setToggleGroup(tg);
+> r3.setToggleGroup(tg);
+> r4.setToggleGroup(tg);
 > 
->   MenuItem item1 = new MenuItem("菜单项1");
->   MenuItem item2 = new MenuItem("菜单项2");
->   MenuItem item3 = new MenuItem("菜单项3");
->   // 箭头和按钮分割的按钮菜单
->   SplitMenuButton smb = new SplitMenuButton();
->   smb.setText("分割按钮菜单");
->   AnchorPane.setTopAnchor(smb, 50.0);
->   MenuItem item4 = new MenuItem("菜单项4");
->   MenuItem item5 = new MenuItem("菜单项5");
->   MenuItem item6 = new MenuItem("菜单项6");
->   smb.getItems().addAll(item4, item5, item6);
+> // 监听r1属性变化
+> r1.selectedProperty().addListener(new ChangeListener<Boolean>() {
+>  @Override
+>  public void changed(ObservableValue<? extends Boolean> observableValue, Boolean oldVal, Boolean newVal) {
+>    System.out.println(newVal);
+>  }
+> });
+> // 监听ToggleGroup子组件状态
+> tg.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
+>  @Override
+>  public void changed(ObservableValue<? extends Toggle> observableValue, Toggle oldVal, Toggle newVal) {
+>    RadioButton rb = (RadioButton) newVal;
+>    System.out.println(rb.getText());
+>  }
+> });
+> box.getChildren().addAll(r1, r2, r3, r4);
+> ap.getChildren().addAll(box);
+> Scene scene = new Scene(ap);
+> stage.setScene(scene);
+> stage.setWidth(500);
+> stage.setHeight(300);
+> stage.show();
+> }
+> ```
+>
+> ```java
+> @Override
+> public void start(Stage stage) throws Exception{
+>   AnchorPane ap = new AnchorPane();
+>   ap.setStyle("-fx-background-color: #ffffff");
+>   HBox box = new HBox(10);
+>   CheckBox c1 = new CheckBox("CheckBox 1");
+>   CheckBox c2 = new CheckBox("CheckBox 2");
+>   CheckBox c3 = new CheckBox("CheckBox 3");
+>   CheckBox c4 = new CheckBox("CheckBox 4");
+>   box.getChildren().addAll(c1, c2, c3, c4);
+>   // 监听checkbox选中属性变化
+>   c1.selectedProperty().addListener(new ChangeListener<Boolean>() {
+>     @Override
+>     public void changed(ObservableValue<? extends Boolean> observableValue, Boolean oldVal, Boolean newVal) {
+>       System.out.println(newVal);
+>     }
+>   });
 > 
->   menu1.getItems().addAll(item1, item2, item3);
->   menuBar.getMenus().addAll(menu1, menu2, menu3);
->   ap.getChildren().addAll(menuBar,smb);
+>   ap.setOnMouseClicked(new EventHandler<MouseEvent>() {
+>     @Override
+>     public void handle(MouseEvent mouseEvent) {
+>       Object[] objs = box.getChildren().toArray();
+>       for (Object obj : objs) {
+>         CheckBox c = (CheckBox) obj;
+>         System.out.println(c.getText() + " : " + c.isSelected());
+>       }
+>     }
+>   });
+> 
+>   ap.getChildren().addAll(box);
+>   Scene scene = new Scene(ap);
+>   stage.setScene(scene);
+>   stage.setWidth(500);
+>   stage.setHeight(300);
+>   stage.show();
+> }
+> ```
+>
+
+### TextArea
+
+> ```java
+> @Override
+> public void start(Stage stage) throws Exception{
+>   AnchorPane ap = new AnchorPane();
+>   ap.setStyle("-fx-background-color: #ffffff");
+>   TextArea area = new TextArea();
+>   area.setFont(Font.font(16));
+>   area.setText("神里绫华");
+>   // 设置是否允许自动换行，超出宽度自动换行
+>   area.setWrapText(false);
+>   // 设置初始是几行几列
+>   area.setPrefRowCount(5);
+>   area.setPrefColumnCount(10);
+>   // 追加文本
+>   area.appendText("宵宫");
+>   // 插入文本
+>   area.insertText(4,"纳西妲");
+>   // 选中全部文本
+>   area.selectAll();
+>   // 获取文本长度
+>   int length = area.getLength();
+>   System.out.println(length);
+>   ap.getChildren().addAll(area);
+>   Scene scene = new Scene(ap);
+>   stage.setScene(scene);
+>   stage.setWidth(500);
+>   stage.setHeight(300);
+>   stage.show();
+> }
+> ```
+
+### 文本框限制用户输入格式
+
+> ```java
+> @Override
+> public void start(Stage stage) throws Exception{
+>   AnchorPane ap = new AnchorPane();
+>   ap.setStyle("-fx-background-color: #ffffff");
+>   TextArea area = new TextArea();
+>   TextField tf = new TextField();
+>   // 限制用户输入格式
+>   //        tf.setTextFormatter(new TextFormatter<String>(new UnaryOperator<TextFormatter.Change>() {
+>   //            @Override
+>   //            public TextFormatter.Change apply(TextFormatter.Change t) {
+>   //                String text = t.getText();
+>   //                if(text.matches("[a-z]*")){
+>   //                    return t;
+>   //                }
+>   //                return null;
+>   //            }
+>   //        }));
+>   tf.setTextFormatter(new TextFormatter<String>(new StringConverter<String>() {
+>     @Override
+>     public String toString(String s) {
+>       System.out.println("tostring = " + s);
+>       return s;
+>     }
+> 
+>     @Override
+>     public String fromString(String s) {
+>       System.out.println("fromString = " + s);
+>       if(s.contains("5")){
+>         String value = s.replace("5","五");
+>         return value;
+>       }
+>       return s;
+>     }
+>   }));
+>   tf.commitValue();
+>   ap.getChildren().addAll(tf);
 >   Scene scene = new Scene(ap);
 >   stage.setScene(scene);
 >   stage.setWidth(500);
@@ -1262,4 +1561,3 @@ module org.example{
 > ```
 >
 > 
-
