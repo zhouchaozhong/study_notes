@@ -1560,4 +1560,89 @@ module org.example{
 > }
 > ```
 >
+
+### 简单实现文本框的关键词查询和文本排序
+
+> ```java
+> public void start(Stage stage) throws Exception{
+>   AnchorPane ap = new AnchorPane();
+>   ap.setStyle("-fx-background-color: #ffffff");
+>   TextField tf = new TextField();
+>   Button findBtn = new Button("查找");
+>   Button sortBtn = new Button("排序");
+>   HBox hBox = new HBox(10);
+>   hBox.setAlignment(Pos.CENTER);
+>   hBox.getChildren().addAll(tf, findBtn, sortBtn);
+>   TextArea area = new TextArea();
+>   area.setFont(Font.font(16));
+>   VBox vBox = new VBox(10);
+>   vBox.getChildren().addAll(hBox,area);
+>   vBox.setPrefWidth(300);
 > 
+>   AnchorPane.setTopAnchor(vBox,10.0);
+>   AnchorPane.setLeftAnchor(vBox,10.0);
+>   ap.getChildren().addAll(vBox);
+>   Scene scene = new Scene(ap);
+>   stage.setScene(scene);
+>   stage.setWidth(500);
+>   stage.setHeight(300);
+>   stage.show();
+> 
+>   // 文本查找
+>   findBtn.setOnAction(new EventHandler<ActionEvent>() {
+>     @Override
+>     public void handle(ActionEvent event) {
+> 
+>       area.getParagraphs().forEach(new Consumer<CharSequence>() {
+>         @Override
+>         public void accept(CharSequence t) {
+>           String findVal = tf.getText();
+>           String value = t.toString();
+>           if(value.contains(findVal)){
+>             area.requestFocus();
+>             int i = value.indexOf(findVal);
+>             int index = findVal.length() + i;
+>             area.selectRange(i,index);
+>           }
+>         }
+>       });
+>     }
+>   });
+> 
+>   // 文本排序
+>   sortBtn.setOnAction(new EventHandler<ActionEvent>() {
+>     @Override
+>     public void handle(ActionEvent event) {
+>       char[] charArr = area.getText().toCharArray();
+>       Arrays.sort(charArr);
+>       area.setText(String.valueOf(charArr));
+>     }
+>   });
+> 
+> }
+> ```
+
+### ButtonBar的使用
+
+> ```java
+> public void start(Stage stage) throws Exception{
+>   AnchorPane ap = new AnchorPane();
+>   ap.setStyle("-fx-background-color: #ffffff");
+>   ButtonBar btnBar = new ButtonBar();
+>   Button b1 = new Button("按钮一");
+>   Button b2 = new Button("按钮二");
+>   Button b3 = new Button("按钮三");
+>   ButtonBar.setButtonData(b1, ButtonBar.ButtonData.APPLY);
+>   ButtonBar.setButtonData(b2, ButtonBar.ButtonData.FINISH);
+>   ButtonBar.setButtonData(b3, ButtonBar.ButtonData.NO);
+>   btnBar.getButtons().addAll(b1,b2,b3);
+>   ap.getChildren().addAll(btnBar);
+>   Scene scene = new Scene(ap);
+>   stage.setScene(scene);
+>   stage.setWidth(500);
+>   stage.setHeight(300);
+>   stage.show();
+> 
+> }
+> ```
+
