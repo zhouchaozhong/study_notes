@@ -1646,3 +1646,173 @@ module org.example{
 > }
 > ```
 
+### ChoiceBox(下拉选择)
+
+> ```java
+> @Override
+> public void start(Stage stage) throws Exception{
+> AnchorPane ap = new AnchorPane();
+> ap.setStyle("-fx-background-color: #ffffff");
+> ChoiceBox<String> cb = new ChoiceBox<>();
+> cb.getItems().addAll("A", "B", "C");
+> // 设置默认选择的值
+> cb.setValue("B");
+> // 设置选中哪个值
+> cb.getSelectionModel().select("A");
+> ap.getChildren().addAll(cb);
+> Scene scene = new Scene(ap);
+> stage.setScene(scene);
+> stage.setWidth(500);
+> stage.setHeight(300);
+> stage.show();
+> 
+> // 监听选项选中变化
+> cb.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
+>  @Override
+>  public void changed(ObservableValue<? extends String> observableValue, String oldVal, String newVal) {
+>    System.out.println(newVal);
+>  }
+> });
+> }
+> ```
+>
+> **加载对象类型数据**
+>
+> ```java
+> package org.example;
+> 
+> import javafx.application.Application;
+> import javafx.scene.Scene;
+> import javafx.scene.control.ChoiceBox;
+> import javafx.scene.layout.AnchorPane;
+> import javafx.stage.Stage;
+> import javafx.util.StringConverter;
+> 
+> public class Launch extends Application {
+>     @Override
+>     public void init() throws Exception {
+> 
+>     }
+> 
+>     @Override
+>     public void stop() throws Exception {
+> 
+>     }
+> 
+>     @Override
+>     public void start(Stage stage) throws Exception{
+>         AnchorPane ap = new AnchorPane();
+>         ap.setStyle("-fx-background-color: #ffffff");
+>         Student s1 = new Student("宵宫",16,90);
+>         Student s2 = new Student("神里绫华",15,92);
+>         Student s3 = new Student("雷电将军",18,95);
+>         Student s4 = new Student("刻晴",16,98);
+>         Student s5 = new Student("胡桃",16,86);
+>         ChoiceBox<Student> cb = new ChoiceBox<>();
+> //        cb.setValue(s1);
+>         cb.getItems().addAll(s1,s2,s3,s4,s5);
+>         cb.setConverter(new StringConverter<Student>() {
+>             @Override
+>             public String toString(Student stu) {
+>                 if (stu == null) {  // cb不设置默认值，这里就会有一个值为null，需要进行处理
+>                     return "默认值";
+>                 }
+>                 String val = stu.getName() + "-" + stu.getAge() + "-" + stu.getScore();
+>                 return val;
+>             }
+> 
+>             @Override
+>             public Student fromString(String s) {
+>                 return null;
+>             }
+>         });
+>         ap.getChildren().addAll(cb);
+>         Scene scene = new Scene(ap);
+>         stage.setScene(scene);
+>         stage.setWidth(500);
+>         stage.setHeight(300);
+>         stage.show();
+>     }
+> 
+> }
+> 
+> class Student{
+>     private String name;
+>     private int age;
+>     private double score;
+>     public Student(String name, int age, double score) {
+>         this.name = name;
+>         this.age = age;
+>         this.score = score;
+>     }
+> 
+>     public String getName() {
+>         return name;
+>     }
+> 
+>     public void setName(String name) {
+>         this.name = name;
+>     }
+> 
+>     public int getAge() {
+>         return age;
+>     }
+> 
+>     public void setAge(int age) {
+>         this.age = age;
+>     }
+> 
+>     public double getScore() {
+>         return score;
+>     }
+> 
+>     public void setScore(double score) {
+>         this.score = score;
+>     }
+> }
+> ```
+>
+> **级联列表**
+>
+> ```java
+>  @Override
+>     public void start(Stage stage) throws Exception{
+> 
+>         ObservableList<String> list1 = FXCollections.observableArrayList();
+>         list1.addAll("数字","字母");
+> 
+>         ObservableList<String> list2 = FXCollections.observableArrayList();
+>         list2.addAll("a","b","c","d","e","f");
+> 
+>         ObservableList<String> list3 = FXCollections.observableArrayList();
+>         list3.addAll("1","2","3","4","5","6","7","8","9");
+> 
+>         AnchorPane ap = new AnchorPane();
+>         ap.setStyle("-fx-background-color: #ffffff");
+>         ChoiceBox<String> cb1 = new ChoiceBox<>();
+>         cb1.setItems(list1);
+>         ChoiceBox<String> cb2 = new ChoiceBox<>();
+>         cb1.getItems().addAll();
+> 
+>         AnchorPane.setLeftAnchor(cb2,100.00);
+>         ap.getChildren().addAll(cb1,cb2);
+>         Scene scene = new Scene(ap);
+>         stage.setScene(scene);
+>         stage.setWidth(500);
+>         stage.setHeight(300);
+>         stage.show();
+> 
+>         cb1.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
+>             @Override
+>             public void changed(ObservableValue<? extends String> observableValue, String oldVal, String newVal) {
+>                 if("数字".equals(newVal)){
+>                     cb2.setItems(list3);
+>                 } else if ("字母".equals(newVal)) {
+>                     cb2.setItems(list2);
+>                 }
+>             }
+>         });
+>     }
+> ```
+>
+> 
