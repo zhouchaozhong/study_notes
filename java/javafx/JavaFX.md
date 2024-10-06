@@ -1815,4 +1815,289 @@ module org.example{
 >     }
 > ```
 >
+
+### ComboBox
+
+> ```java
+> public void start(Stage stage) throws Exception{
 > 
+>   AnchorPane ap = new AnchorPane();
+>   ap.setStyle("-fx-background-color: #ffffff");
+>   Button btn = new Button("点击搜索");
+>   ComboBox<String> cbb = new ComboBox<>();
+>   cbb.getItems().addAll("A", "B", "C", "D", "E", "F");
+>   cbb.setEditable(true);
+>   cbb.setPromptText("请输入。。。");
+>   // 设置默认显示多少行
+>   cbb.setVisibleRowCount(3);
+>   AnchorPane.setTopAnchor(cbb,30.0);
+>   ap.getChildren().addAll(cbb,btn);
+>   Scene scene = new Scene(ap);
+>   stage.setScene(scene);
+>   stage.setWidth(500);
+>   stage.setHeight(300);
+>   stage.show();
+> 
+>   cbb.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+>     System.out.println(newValue);
+>   });
+> 
+>   cbb.setOnAction(new EventHandler<ActionEvent>() {
+>     @Override
+>     public void handle(ActionEvent event) {
+>       System.out.println("set on action event");
+>     }
+>   });
+> }
+> ```
+>
+
+### setCellFactory
+
+><img src="./images/setcellfactory.jpg" style="zoom:50%;" />
+>
+>```java
+>package org.example;
+>
+>import javafx.application.Application;
+>import javafx.geometry.Pos;
+>import javafx.scene.Scene;
+>import javafx.scene.control.*;
+>import javafx.scene.layout.AnchorPane;
+>import javafx.scene.layout.HBox;
+>import javafx.stage.Stage;
+>import javafx.util.Callback;
+>import javafx.util.StringConverter;
+>
+>public class Launch extends Application {
+>    @Override
+>    public void init() throws Exception {
+>
+>    }
+>
+>    @Override
+>    public void stop() throws Exception {
+>
+>    }
+>
+>    @Override
+>    public void start(Stage stage) throws Exception{
+>
+>        AnchorPane ap = new AnchorPane();
+>        ap.setStyle("-fx-background-color: #ffffff");
+>        Label lab1 = new Label();
+>        lab1.setText("标签1");
+>        lab1.setStyle("-fx-background-color: #ffff55");
+>
+>        MyListCell<String> myCell = new MyListCell<>();
+>        myCell.updateItem("自定义按钮",true);
+>        ComboBox<String> cbb = new ComboBox<>();
+>        cbb.getItems().addAll("A", "B", "C");
+>        cbb.setConverter(new StringConverter<String>() {
+>            @Override
+>            public String toString(String s) {
+>                System.out.println(s);
+>                return s;
+>            }
+>
+>            @Override
+>            public String fromString(String s) {
+>                return null;
+>            }
+>        });
+>        cbb.setCellFactory(new Callback<ListView<String>, ListCell<String>>() {
+>            @Override
+>            public ListCell<String> call(ListView<String> stringListView) {
+>                ListCell<String> listCell = new ListCell<>();
+>                stringListView.getItems().forEach(item->listCell.setText(item));
+>                return listCell;
+>            }
+>        });
+>
+>        AnchorPane.setTopAnchor(lab1,50.0);
+>        AnchorPane.setTopAnchor(myCell,100.0);
+>        ap.getChildren().addAll(cbb,lab1,myCell);
+>        Scene scene = new Scene(ap);
+>        stage.setScene(scene);
+>        stage.setWidth(500);
+>        stage.setHeight(500);
+>        stage.show();
+>    }
+>
+>}
+>
+>class MyListCell<T> extends ListCell<String> {
+>    @Override
+>    protected void updateItem(String item, boolean empty) {
+>        super.updateItem(item, empty);
+>        HBox hBox = new HBox(10);
+>        hBox.setAlignment(Pos.CENTER);
+>        hBox.setMaxWidth(200);
+>        hBox.setMaxHeight(150);
+>        hBox.setStyle("-fx-background-color: #FF82AB");
+>        hBox.getChildren().addAll(new Button("button1"),new Button(item));
+>
+>        this.setStyle("-fx-background-color: #B0E0B6");
+>        this.setPrefWidth(300);
+>        this.setPrefHeight(200);
+>        this.setAlignment(Pos.CENTER);
+>        this.setContentDisplay(ContentDisplay.CENTER);
+>        this.setGraphic(hBox);
+>    }
+>}
+>```
+
+### ColorPicker和DatePicker
+
+> <img src="./images/colorpicker.jpg" style="zoom:50%;" />
+>
+> <img src="./images/datepicker.jpg" style="zoom:50%;" />
+>
+> 
+>
+> ```java
+> package org.example;
+> 
+> import javafx.application.Application;
+> import javafx.event.ActionEvent;
+> import javafx.event.EventHandler;
+> import javafx.scene.Scene;
+> import javafx.scene.control.ColorPicker;
+> import javafx.scene.control.DatePicker;
+> import javafx.scene.layout.AnchorPane;
+> import javafx.scene.paint.Color;
+> import javafx.stage.Stage;
+> 
+> import java.time.LocalDate;
+> 
+> public class Launch extends Application {
+>     @Override
+>     public void init() throws Exception {
+> 
+>     }
+> 
+>     @Override
+>     public void stop() throws Exception {
+> 
+>     }
+> 
+>     @Override
+>     public void start(Stage stage) throws Exception{
+> 
+>         AnchorPane ap = new AnchorPane();
+>         ap.setStyle("-fx-background-color: #ffffff");
+>         // 颜色选择器
+>         ColorPicker cp = new ColorPicker(Color.valueOf("#ffff55"));
+> //        cp.valueProperty().addListener(new ChangeListener<Color>() {
+> //            @Override
+> //            public void changed(ObservableValue<? extends Color> observableValue, Color oldVal, Color newVal) {
+> //                System.out.println(newVal.toString());
+> //            }
+> //        });
+>         cp.setOnAction(new EventHandler<ActionEvent>() {
+>             @Override
+>             public void handle(ActionEvent event) {
+>                 Color c = cp.getValue();
+>                 System.out.println(c);
+>             }
+>         });
+>         // 日期选择器
+>         DatePicker dp = new DatePicker(LocalDate.now());
+>         dp.setOnAction(new EventHandler<ActionEvent>() {
+>             @Override
+>             public void handle(ActionEvent event) {
+>                 LocalDate value = dp.getValue();
+>                 System.out.println(value);
+>             }
+>         });
+> 
+>         AnchorPane.setTopAnchor(dp,100.0);
+>         ap.getChildren().addAll(cp,dp);
+>         Scene scene = new Scene(ap);
+>         stage.setScene(scene);
+>         stage.setWidth(500);
+>         stage.setHeight(500);
+>         stage.show();
+>     }
+> }
+> ```
+
+### Pagination(分页)
+
+> ![](./images/pagination.jpg)
+>
+> ```java
+> package org.example;
+> 
+> import javafx.application.Application;
+> import javafx.beans.value.ChangeListener;
+> import javafx.beans.value.ObservableValue;
+> import javafx.scene.Node;
+> import javafx.scene.Scene;
+> import javafx.scene.control.*;
+> import javafx.scene.layout.AnchorPane;
+> import javafx.scene.layout.HBox;
+> import javafx.stage.Stage;
+> import javafx.util.Callback;
+> 
+> public class Launch extends Application {
+>     @Override
+>     public void init() throws Exception {
+> 
+>     }
+> 
+>     @Override
+>     public void stop() throws Exception {
+> 
+>     }
+> 
+>     @Override
+>     public void start(Stage stage) throws Exception{
+> 
+>         AnchorPane ap = new AnchorPane();
+>         ap.setStyle("-fx-background-color: #ffffff");
+>         Pagination pg = new Pagination();
+>         // 设置总记录条数
+>         pg.setPageCount(30);
+>         // 设置每页的记录数
+>         pg.setMaxPageIndicatorCount(5);
+>         // 监听页码改变事件
+>         pg.currentPageIndexProperty().addListener(new ChangeListener<Number>() {
+>             @Override
+>             public void changed(ObservableValue<? extends Number> observableValue, Number oldVal, Number newVal) {
+>                 System.out.println(newVal);
+>             }
+>         });
+> 
+>         // 设置每一页的显示内容
+>         pg.setPageFactory(new Callback<Integer, Node>() {
+>             @Override
+>             public Node call(Integer pageIndex) {
+>                 System.out.println("page = " + pageIndex);
+>                 HBox hBox = new HBox();
+>                 Button b1 = new Button("按钮" + (pageIndex + 1));
+>                 Label lab1 = new Label("标签" + (pageIndex + 1));
+>                 hBox.setStyle("-fx-background-color: #F4A49E");
+>                 hBox.getChildren().addAll(b1,lab1);
+>                 return hBox;
+>             }
+>         });
+> 
+>         pg.setLayoutX(100.0);
+>         pg.setLayoutY(100.0);
+>         pg.setPrefWidth(300);
+>         pg.setPrefHeight(100);
+>         pg.setStyle("-fx-background-color: #EFF3DE");
+>         ap.getChildren().addAll(pg);
+>         Scene scene = new Scene(ap);
+>         stage.setScene(scene);
+>         stage.setWidth(500);
+>         stage.setHeight(500);
+>         stage.show();
+>     }
+> 
+> }
+> ```
+>
+> 
+
