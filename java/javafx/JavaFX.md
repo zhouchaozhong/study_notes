@@ -2099,5 +2099,377 @@ module org.example{
 > }
 > ```
 >
+
+### Slider（滑动条）
+
+> ![](./images/slider.jpg)
+>
+> ```java
+> package org.example;
+> 
+> import javafx.application.Application;
+> import javafx.beans.value.ChangeListener;
+> import javafx.beans.value.ObservableValue;
+> import javafx.geometry.Orientation;
+> import javafx.scene.Scene;
+> import javafx.scene.control.Slider;
+> import javafx.scene.layout.AnchorPane;
+> import javafx.stage.Stage;
+> import javafx.util.StringConverter;
+> 
+> public class Launch extends Application {
+>     @Override
+>     public void init() throws Exception {
+> 
+>     }
+> 
+>     @Override
+>     public void stop() throws Exception {
+> 
+>     }
+> 
+>     @Override
+>     public void start(Stage stage) throws Exception{
+> 
+>         AnchorPane ap = new AnchorPane();
+>         ap.setStyle("-fx-background-color: #BEDED1");
+>         Slider slider = new Slider(0, 100, 50);
+>         slider.setPrefWidth(300);
+>         // 设置滑动条显示刻度
+>         slider.setShowTickMarks(true);
+>         // 设置滑动条显示刻度值
+>         slider.setShowTickLabels(true);
+>         // 设置滑动条刻度每格的大小
+>         slider.setMajorTickUnit(10);
+>         slider.setValue(20);
+>         // 设置滑动条是垂直还是水平显示
+>         slider.setOrientation(Orientation.HORIZONTAL);
+> 
+>         // 这里用来转换滑动条刻度的文本显示
+> //        slider.setLabelFormatter(new StringConverter<Double>() {
+> //            @Override
+> //            public String toString(Double val) {
+> //                if(val.doubleValue() == 0){
+> //                    return "零";
+> //                } else if (val.doubleValue() == 10) {
+> //                    return "拾";
+> //                } else{
+> //                    return "未知";
+> //                }
+> //
+> //            }
+> //
+> //            @Override
+> //            public Double fromString(String s) {
+> //                return 0.0;
+> //            }
+> //        });
+> 
+>         // 监听滑动条数值改变事件
+>         slider.valueProperty().addListener(new ChangeListener<Number>() {
+>             @Override
+>             public void changed(ObservableValue<? extends Number> observableValue, Number oldVal, Number newVal) {
+>                 System.out.println(newVal);
+>             }
+>         });
+> 
+>         AnchorPane.setTopAnchor(slider,100.0);
+>         AnchorPane.setLeftAnchor(slider,100.0);
+>         ap.getChildren().addAll(slider);
+>         Scene scene = new Scene(ap);
+>         stage.setScene(scene);
+>         stage.setWidth(500);
+>         stage.setHeight(500);
+>         stage.show();
+>     }
+> }
+> ```
+
+### ProgressBar和ProgressIndicator(进度条)
+
+> ![](./images/progressbar.jpg)
+>
+> ```java
+> package org.example;
+> 
+> import javafx.application.Application;
+> import javafx.concurrent.ScheduledService;
+> import javafx.concurrent.Task;
+> import javafx.scene.Scene;
+> import javafx.scene.control.ProgressBar;
+> import javafx.scene.control.ProgressIndicator;
+> import javafx.scene.layout.AnchorPane;
+> import javafx.stage.Stage;
+> import javafx.util.Duration;
+> 
+> public class Launch extends Application {
+> 
+>     ScheduledService<Double> service;
+> 
+>     @Override
+>     public void init() throws Exception {
+> 
+>     }
+> 
+>     @Override
+>     public void stop() throws Exception {
+> 
+>     }
+> 
+>     @Override
+>     public void start(Stage stage) throws Exception{
+> 
+>         AnchorPane ap = new AnchorPane();
+>         ap.setStyle("-fx-background-color: #BEDED1");
+>         ProgressBar pb = new ProgressBar();
+>         // 取值0到1，表示0%到100%
+>         pb.setProgress(0.5);
+>         // 未知进度
+> //        pb.setProgress(ProgressBar.INDETERMINATE_PROGRESS);
+> 
+>         pb.setPrefWidth(200);
+>         AnchorPane.setTopAnchor(pb, 100.0);
+>         AnchorPane.setLeftAnchor(pb, 100.0);
+> 
+>         ProgressIndicator pi = new ProgressIndicator();
+>         pi.setProgress(0.8);
+>         // jdk10以后，setPrefWidth和setPrefHeight会失效
+>         pi.setMinSize(100,100);
+>         AnchorPane.setTopAnchor(pi, 200.0);
+>         AnchorPane.setLeftAnchor(pi, 100.0);
+>         ap.getChildren().addAll(pb,pi);
+>         Scene scene = new Scene(ap);
+>         stage.setScene(scene);
+>         stage.setWidth(500);
+>         stage.setHeight(500);
+>         stage.show();
+> 
+>         // 按时间跑满进度条功能
+>         service = new ScheduledService<>() {
+>             Double i = 0.0;
+>             @Override
+>             protected Task<Double> createTask() {
+>                 Task<Double> task = new Task<>() {
+>                     @Override
+>                     protected Double call() throws Exception {
+>                         return i = i + 0.1;
+>                     }
+> 
+>                     @Override
+>                     protected void updateValue(Double value) {
+>                         pb.setProgress(value);
+>                         if(value >= 1){
+>                             service.cancel();
+>                         }
+>                     }
+>                 };
+>                 return task;
+>             }
+>         };
+> 
+>         service.setDelay(Duration.millis(0));
+>         service.setPeriod(Duration.millis(1000));
+>         service.start();
+>     }
+> }
+> ```
+
+### SplitPane(左右或上下分割框，可拖动)
+
+> ![](./images/splitpane.jpg)
+>
+> ```java
+> package org.example;
+> 
+> import javafx.application.Application;
+> import javafx.concurrent.ScheduledService;
+> import javafx.geometry.Orientation;
+> import javafx.scene.Scene;
+> import javafx.scene.control.Button;
+> import javafx.scene.control.SplitPane;
+> import javafx.scene.layout.AnchorPane;
+> import javafx.scene.layout.StackPane;
+> import javafx.stage.Stage;
+> 
+> public class Launch extends Application {
+> 
+>     ScheduledService<Double> service;
+> 
+>     @Override
+>     public void init() throws Exception {
+> 
+>     }
+> 
+>     @Override
+>     public void stop() throws Exception {
+> 
+>     }
+> 
+>     @Override
+>     public void start(Stage stage) throws Exception{
+> 
+>         AnchorPane ap = new AnchorPane();
+>         ap.setStyle("-fx-background-color: #BEDED1");
+>         Button b1 = new Button("按钮一");
+>         Button b2 = new Button("按钮二");
+>         Button b3 = new Button("按钮三");
+>         Button b4 = new Button("按钮四");
+>         SplitPane sp = new SplitPane();
+>         sp.setPrefWidth(500);
+> 
+>         StackPane sp1 = new StackPane();
+>         sp1.getChildren().add(b1);
+>         StackPane sp2 = new StackPane();
+>         sp2.getChildren().add(b2);
+>         StackPane sp3 = new StackPane();
+>         sp3.getChildren().add(b3);
+>         StackPane sp4 = new StackPane();
+>         sp4.getChildren().add(b4);
+> 
+>         //  设置布局方式，为垂直分布
+>         // sp.setOrientation(Orientation.VERTICAL);
+>         sp.getItems().addAll(sp1, sp2, sp3, sp4);
+> 
+>         // 设置分割位置
+>         sp.setDividerPosition(0,0.25);
+>         sp.setDividerPosition(1,0.5);
+>         sp.setDividerPosition(2,0.75);
+>         sp.setDividerPosition(3,1.0);
+> 
+>         AnchorPane.setTopAnchor(sp,100.0);
+>         ap.getChildren().addAll(sp);
+>         Scene scene = new Scene(ap);
+>         stage.setScene(scene);
+>         stage.setWidth(500);
+>         stage.setHeight(500);
+>         stage.show();
+>     }
+> }
+> ```
+
+### Spinner
+
+> ![](./images/spinner.jpg)
+>
+> ```java
+> package org.example;
+> 
+> import javafx.application.Application;
+> import javafx.collections.FXCollections;
+> import javafx.collections.ObservableList;
+> import javafx.concurrent.ScheduledService;
+> import javafx.scene.Scene;
+> import javafx.scene.control.Spinner;
+> import javafx.scene.layout.AnchorPane;
+> import javafx.stage.Stage;
+> 
+> public class Launch extends Application {
+> 
+>     ScheduledService<Double> service;
+> 
+>     @Override
+>     public void init() throws Exception {
+> 
+>     }
+> 
+>     @Override
+>     public void stop() throws Exception {
+> 
+>     }
+> 
+>     @Override
+>     public void start(Stage stage) throws Exception{
+> 
+>         AnchorPane ap = new AnchorPane();
+>         ap.setStyle("-fx-background-color: #BEDED1");
+>         Spinner<Integer> spr = new Spinner<>(0,10,5);
+>         // 最后一个参数2是步进值
+>         // Spinner<Integer> spr = new Spinner<>(0,10,5,2);
+> 
+>         ObservableList<String> list = FXCollections.observableArrayList();
+>         list.addAll("A","B","C","D");
+>         Spinner<String> spr1 = new Spinner<>(list);
+> 
+>         AnchorPane.setTopAnchor(spr1,50.0);
+>         ap.getChildren().addAll(spr,spr1);
+>         Scene scene = new Scene(ap);
+>         stage.setScene(scene);
+>         stage.setWidth(500);
+>         stage.setHeight(500);
+>         stage.show();
+>     }
+> }
+> ```
+
+### ScrollBar,ScrollPane,Separator
+
+> <img src="./images/scrollpane.jpg" style="zoom:50%;" />
+>
+> ```java
+> package org.example;
+> 
+> import javafx.application.Application;
+> import javafx.concurrent.ScheduledService;
+> import javafx.geometry.HPos;
+> import javafx.geometry.Orientation;
+> import javafx.geometry.VPos;
+> import javafx.scene.Scene;
+> import javafx.scene.control.Button;
+> import javafx.scene.control.ScrollBar;
+> import javafx.scene.control.ScrollPane;
+> import javafx.scene.control.Separator;
+> import javafx.scene.layout.AnchorPane;
+> import javafx.scene.layout.HBox;
+> import javafx.stage.Stage;
+> 
+> public class Launch extends Application {
+> 
+>     ScheduledService<Double> service;
+> 
+>     @Override
+>     public void init() throws Exception {
+> 
+>     }
+> 
+>     @Override
+>     public void stop() throws Exception {
+> 
+>     }
+> 
+>     @Override
+>     public void start(Stage stage) throws Exception{
+> 
+>         AnchorPane ap = new AnchorPane();
+>         ap.setStyle("-fx-background-color: #BEDED1");
+>         ScrollBar sb = new ScrollBar();
+>         sb.setOrientation(Orientation.VERTICAL);
+> 
+>         ScrollPane sp = new ScrollPane();
+>         sp.setPrefViewportWidth(200);
+>         sp.setPrefHeight(50);
+>         HBox hBox = new HBox();
+>         for (int i = 0; i < 10; i++) {
+>             hBox.getChildren().add(new Button("Button" + i));
+>         }
+>         AnchorPane.setTopAnchor(sp,150.0);
+>         sp.setContent(hBox);
+> 
+>         Separator sep = new Separator();
+>         sep.setPrefWidth(300);
+>         sep.setPrefHeight(100);
+>         sep.setHalignment(HPos.CENTER);
+>         sep.setValignment(VPos.CENTER);
+>         AnchorPane.setTopAnchor(sep,200.0);
+> 
+>         ap.getChildren().addAll(sb,sp,sep);
+>         Scene scene = new Scene(ap);
+>         stage.setScene(scene);
+>         stage.setWidth(500);
+>         stage.setHeight(500);
+>         stage.show();
+>     }
+> }
+> ```
+>
 > 
 
