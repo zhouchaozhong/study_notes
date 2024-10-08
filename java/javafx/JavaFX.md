@@ -2471,5 +2471,66 @@ module org.example{
 > }
 > ```
 >
+
+### 属性的单向绑定和双向绑定
+
+> ```java
+> package org.example;
 > 
+> import javafx.application.Application;
+> import javafx.beans.property.SimpleIntegerProperty;
+> import javafx.concurrent.ScheduledService;
+> import javafx.scene.Scene;
+> import javafx.scene.layout.AnchorPane;
+> import javafx.stage.Stage;
+> 
+> public class Launch extends Application {
+> 
+>     ScheduledService<Double> service;
+> 
+>     @Override
+>     public void init() throws Exception {
+> 
+>     }
+> 
+>     @Override
+>     public void stop() throws Exception {
+> 
+>     }
+> 
+>     @Override
+>     public void start(Stage stage) throws Exception{
+> 
+>         AnchorPane ap = new AnchorPane();
+>         ap.setStyle("-fx-background-color: #BEDED1");
+>         // 单向绑定
+>         SimpleIntegerProperty x = new SimpleIntegerProperty(1);
+>         SimpleIntegerProperty y = new SimpleIntegerProperty(5);
+>         x.bind(y);
+>         System.out.println(y.get());
+>         y.set(10);
+>         System.out.println(y.get());
+>         System.out.println(x.get());
+> 
+>         // 双向绑定
+>         SimpleIntegerProperty a = new SimpleIntegerProperty(3);
+>         SimpleIntegerProperty b = new SimpleIntegerProperty(6);
+>         a.bindBidirectional(b);
+>         a.set(20);
+>         System.out.println(a.get());
+>         System.out.println(b.get());
+>         b.set(30);
+>         System.out.println(a.get());
+>         System.out.println(b.get());
+> 
+>         Scene scene = new Scene(ap);
+>         stage.setScene(scene);
+>         stage.setWidth(500);
+>         stage.setHeight(500);
+>         stage.show();
+>     }
+> }
+> ```
+
+
 
