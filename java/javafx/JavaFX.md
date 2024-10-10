@@ -2532,5 +2532,340 @@ module org.example{
 > }
 > ```
 
+### fxml
 
-
+> <img src="./images/fxml.jpg" style="zoom:50%;" />
+>
+> 示例一：
+>
+> Launch.java
+>
+> ```java
+> package org.example;
+> 
+> import javafx.application.Application;
+> import javafx.fxml.FXMLLoader;
+> import javafx.scene.Scene;
+> import javafx.scene.layout.AnchorPane;
+> import javafx.stage.Stage;
+> 
+> public class Launch extends Application {
+> 
+> @Override
+> public void init() throws Exception {
+> 
+> }
+> 
+> @Override
+> public void stop() throws Exception {
+> 
+> }
+> 
+> @Override
+> public void start(Stage stage) throws Exception{
+> 
+>   FXMLLoader fx = new FXMLLoader();
+>   fx.setLocation(getClass().getResource("/demo.fxml"));
+>   AnchorPane root = (AnchorPane) fx.load();
+> 
+>   DemoController de = fx.getController();
+> 
+>   Scene scene = new Scene(root);
+>   stage.setScene(scene);
+>   stage.setWidth(500);
+>   stage.setHeight(500);
+>   stage.show();
+> }
+> }
+> ```
+>
+> demo.fxml
+>
+> ```xml
+> <?xml version="1.0" encoding="UTF-8"?>
+> 
+> <?import java.lang.*?>
+> <?import java.util.*?>
+> <?import javafx.scene.*?>
+> <?import javafx.scene.control.*?>
+> <?import javafx.scene.layout.*?>
+> <?import javafx.scene.image.ImageView?>
+> <?import javafx.scene.image.Image?>
+> <?import javafx.collections.FXCollections?>
+> 
+> <AnchorPane xmlns="http://javafx.com/javafx"
+>       xmlns:fx="http://javafx.com/fxml"
+>       fx:controller="org.example.DemoController"
+>       prefHeight="400.0" prefWidth="600.0">
+> <ImageView AnchorPane.topAnchor="20.0" AnchorPane.leftAnchor="100.0" fitWidth="150" fitHeight="150" preserveRatio="true">
+>   <Image url="@icon/kirara.jpg"></Image>
+> </ImageView>
+> <BorderPane style="-fx-background-color: #ffff55" prefWidth="400" prefHeight="200" AnchorPane.leftAnchor="30" AnchorPane.topAnchor="200">
+>   <left>
+>       <ListView fx:id="listView" prefWidth="200" prefHeight="200">
+>           <items>
+>               <FXCollections fx:factory="observableArrayList">
+>                   <String fx:value="data1"></String>
+>                   <String fx:value="data2"></String>
+>                   <String fx:value="data3"></String>
+>                   <String fx:value="data4"></String>
+>               </FXCollections>
+>           </items>
+>       </ListView>
+>   </left>
+>   <right>
+>       <ComboBox>
+>           <items>
+>               <FXCollections fx:factory="observableArrayList">
+>                   <String fx:value="data1"></String>
+>                   <String fx:value="data2"></String>
+>                   <String fx:value="data3"></String>
+>                   <String fx:value="data4"></String>
+>               </FXCollections>
+>           </items>
+>       </ComboBox>
+>   </right>
+> </BorderPane>
+> </AnchorPane>
+> ```
+>
+> DemoControll.java
+>
+> ```java
+> package org.example;
+> 
+> import javafx.beans.value.ChangeListener;
+> import javafx.beans.value.ObservableValue;
+> import javafx.fxml.FXML;
+> import javafx.scene.control.ListView;
+> 
+> public class DemoController {
+> 
+> @FXML
+> public ListView<String> listView;
+> 
+> public DemoController() {
+> 
+> }
+> 
+> @FXML
+> public void initialize(){
+>   listView.getItems().addAll("A","B","C");
+>   listView.getSelectionModel().selectedItemProperty().addListener((new ChangeListener<String>() {
+>       @Override
+>       public void changed(ObservableValue<? extends String> observableValue, String oldVal, String newVal) {
+>           System.out.println(newVal);
+>       }
+>   }));
+> }
+> }
+> ```
+>
+> **自定义fxml标签**
+>
+> ```xml
+> <?xml version="1.0" encoding="UTF-8"?>
+> 
+> <?import java.lang.*?>
+> <?import java.util.*?>
+> <?import javafx.scene.*?>
+> <?import javafx.scene.control.*?>
+> <?import javafx.scene.layout.*?>
+> 
+> <?import org.example.Person?>
+> <Person name="宵宫" age="18"></Person>
+> ```
+>
+> Launch.java
+>
+> ```java
+> package org.example;
+> 
+> import javafx.application.Application;
+> import javafx.fxml.FXMLLoader;
+> import javafx.scene.Scene;
+> import javafx.scene.layout.AnchorPane;
+> import javafx.stage.Stage;
+> 
+> public class Launch extends Application {
+> 
+>  @Override
+>  public void init() throws Exception {
+> 
+>  }
+> 
+>  @Override
+>  public void stop() throws Exception {
+> 
+>  }
+> 
+>  @Override
+>  public void start(Stage stage) throws Exception{
+> 
+>      FXMLLoader fx = new FXMLLoader();
+>      fx.setLocation(getClass().getResource("/person.fxml"));
+> 
+>      fx.setBuilderFactory(new PersonBuilderFactory());
+> 
+>      Person p = (Person) fx.load();
+>      System.out.println(p.getName());
+>      System.out.println(p.getAge());
+> 
+>      AnchorPane ap = new AnchorPane();
+>      Scene scene = new Scene(ap);
+>      stage.setScene(scene);
+>      stage.setWidth(500);
+>      stage.setHeight(500);
+>      stage.show();
+>  }
+> }
+> ```
+>
+> Person.java
+>
+> ```java
+> package org.example;
+> 
+> public class Person {
+>  private String name;
+>  private int age;
+> 
+>  public Person() {
+>      System.out.println("person constructor");
+>  }
+> 
+>  public Person(String name, int age) {
+>      this.name = name;
+>      this.age = age;
+>  }
+> 
+>  public int getAge() {
+>      return age;
+>  }
+> 
+>  public void setAge(int age) {
+>      this.age = age;
+>  }
+> 
+>  public String getName() {
+>      return name;
+>  }
+> 
+>  public void setName(String name) {
+>      this.name = name;
+>  }
+> }
+> ```
+>
+> PersonBuilder.java
+>
+> ```java
+> package org.example;
+> 
+> import javafx.util.Builder;
+> 
+> public class PersonBuilder implements Builder<Person> {
+> 
+>  private String name;
+>  private int age;
+> 
+>  public String getName() {
+>      return name;
+>  }
+> 
+>  public void setName(String name) {
+>      this.name = name;
+>  }
+> 
+>  public int getAge() {
+>      return age;
+>  }
+> 
+>  public void setAge(int age) {
+>      this.age = age;
+>  }
+> 
+>  @Override
+>  public Person build() {
+>      return new Person(name,age);
+>  }
+> }
+> ```
+>
+> PersonBuilderFactory.java
+>
+> ```java
+> package org.example;
+> 
+> import javafx.fxml.JavaFXBuilderFactory;
+> import javafx.util.Builder;
+> import javafx.util.BuilderFactory;
+> 
+> public class PersonBuilderFactory implements BuilderFactory {
+> 
+>  private final JavaFXBuilderFactory factory = new JavaFXBuilderFactory();
+> 
+>  @Override
+>  public Builder<?> getBuilder(Class<?> type) {
+> 
+>      if(type == Person.class){
+>          return new PersonBuilder();
+>      }else {
+>          return factory.getBuilder(type);
+>      }
+>  }
+> }
+> ```
+>
+> **常用标签**
+>
+> demo.fxml
+>
+> ```xml
+> <?xml version="1.0" encoding="UTF-8"?>
+> 
+> <?import javafx.scene.control.*?>
+> <?import javafx.scene.layout.*?>
+> <?import javafx.geometry.Insets ?>
+> <AnchorPane xmlns="http://javafx.com/javafx"
+>             xmlns:fx="http://javafx.com/fxml"
+>             fx:controller="org.example.DemoController"
+>             prefHeight="400.0" prefWidth="600.0">
+> 
+>    <fx:define>
+>       <ToggleGroup fx:id="group"></ToggleGroup>
+>       <Insets fx:id="margin" top="10" left="10" bottom="10" right="10"></Insets>
+>       <Button fx:id="btn" text="按钮"></Button>
+>    </fx:define>
+>    <HBox>
+>       <RadioButton text="A" toggleGroup="$group"></RadioButton>
+>       <RadioButton text="B" toggleGroup="$group"></RadioButton>
+>       <RadioButton text="C" toggleGroup="$group"></RadioButton>
+>       <Button text="hello" HBox.margin="$margin"></Button>
+>       <Button text="world" HBox.margin="$margin"></Button>
+> 
+>       <!--这里只能引用一次，否则会报错-->
+>       <fx:reference source="btn" HBox.margin="$margin"/>
+>       <fx:include source="other.fxml"/>
+>    </HBox>
+> </AnchorPane>
+> ```
+>
+> other.fxml
+>
+> ```xml
+> <?xml version="1.0" encoding="UTF-8"?>
+> 
+> <?import javafx.scene.layout.VBox?>
+> <?import javafx.scene.control.Label?>
+> <?import javafx.scene.control.Button?>
+> <VBox>
+>     <Label text="宵宫"/>
+>     <Label text="优菈"/>
+>     <Label text="雷电将军"/>
+>     <Button>纳西妲</Button>
+>     <Button>雷电将军</Button>
+> </VBox>
+> ```
+>
+> 
