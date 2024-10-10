@@ -2868,4 +2868,97 @@ module org.example{
 > </VBox>
 > ```
 >
+
+### css
+
+> <img src="./images/css.jpg" style="zoom:50%;" />
+>
+> Launch.java
+>
+> ```java
+> package org.example;
+> 
+> import javafx.application.Application;
+> import javafx.fxml.FXMLLoader;
+> import javafx.scene.Scene;
+> import javafx.scene.layout.AnchorPane;
+> import javafx.stage.Stage;
+> 
+> public class Launch extends Application {
+> 
+>     @Override
+>     public void init() throws Exception {
+> 
+>     }
+> 
+>     @Override
+>     public void stop() throws Exception {
+> 
+>     }
+> 
+>     @Override
+>     public void start(Stage stage) throws Exception{
+> 
+>         FXMLLoader fx = new FXMLLoader();
+>         fx.setLocation(getClass().getResource("/demo.fxml"));
+>         AnchorPane ap = (AnchorPane) fx.load();
+>         Scene scene = new Scene(ap);
+>         scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
+>         stage.setScene(scene);
+>         stage.setWidth(500);
+>         stage.setHeight(500);
+>         stage.show();
+>     }
+> }
+> ```
+>
+> demo.fxml
+>
+> ```xml
+> <?xml version="1.0" encoding="UTF-8"?>
+> 
+> <?import javafx.scene.control.*?>
+> <?import javafx.scene.layout.*?>
+> <?import javafx.geometry.Insets ?>
+> <AnchorPane xmlns="http://javafx.com/javafx"
+>             xmlns:fx="http://javafx.com/fxml"
+>             fx:controller="org.example.DemoController"
+>             fx:id="main"
+>             prefHeight="400.0" prefWidth="600.0">
+> 
+>    <fx:define>
+>       <ToggleGroup fx:id="group"></ToggleGroup>
+>       <Insets fx:id="margin" top="10" left="10" bottom="10" right="10"></Insets>
+>       <Button fx:id="btn" text="按钮"></Button>
+>    </fx:define>
+>    <HBox fx:id="btn_group">
+>       <RadioButton text="A" toggleGroup="$group"></RadioButton>
+>       <RadioButton text="B" toggleGroup="$group"></RadioButton>
+>       <RadioButton text="C" toggleGroup="$group"></RadioButton>
+>       <Button text="hello" HBox.margin="$margin"></Button>
+>       <Button text="world" HBox.margin="$margin"></Button>
+> 
+>       <!--这里只能引用一次，否则会报错-->
+>       <fx:reference source="btn" HBox.margin="$margin"/>
+>       <fx:include source="other.fxml"/>
+>    </HBox>
+> </AnchorPane>
+> ```
+>
+> style.css
+>
+> ```css
+> #main{
+>     -fx-background-color: #33CC99;
+> }
+> 
+> #btn_group{
+>     -fx-background-color: #33FF66;
+>     -fx-background-radius: 10;
+>     -fx-border-width: 2;
+>     -fx-border-color: #FF3366;
+>     -fx-border-radius: 10;
+> }
+> ```
+>
 > 
