@@ -167,7 +167,18 @@
 > ```
 
 ### 字符串的两种类型
-
+> * ·Rust的核心语言层面，只有一个字符串类型：字符串切片sr(或&sr)
+> * 字符串切片：对存储在其它地方、UTF-8编码的字符串的引用
+>   * 字符串字面值：存储在二进制文件中，也是字符串切片
+> * String类型：
+>   * 来自标准库而不是核心语言
+>   * 可增长、可修改、可拥有
+>   * UTF-8编码
+> * 其他类型字符串：Rust的标准库还包含了很多其它的字符串类型，例如：OsString、OsStr、CString、CStr
+>   * String vs Str后缀：拥有或借用的变体
+>   * 可存储不同编码的文本或在内存中以不同的形式展现
+>   * Library crate（第三方库）针对存储字符串可提供更多的选项
+>
 > * String是一个堆分配的可变字符串类型
 > * &str是指字符串切片引用，是在栈上分配的
 >   * 不可变引用，指向存储在其他地方的UTF-8编码的字符串数据
@@ -214,6 +225,27 @@
 >    println!("{}",data)
 > }
 > ```
+> ```rust
+> fn main() {
+>    let mut s1 = String::from("Hello");
+>    let mut s2 = String::from("World");
+>    s1.push('a');
+>    s1.push_str(" string"); 
+> 
+>    // 拼接之后，s1被借用，发生了所有权转移，s1将不可用
+>    let s3 = s1 + &s2;
+>    println!(" s3: {}",s3);
+>    println!(" s2: {}",s2);
+> 
+>    let s4 = String::from("宵宫");
+>    let s5 = String::from("雷电将军");
+>    let s6 = String::from("刻晴");
+>    let s7 = format!("{}-{}-{}",s4,s5,s6);
+>    println!(" s7: {}",s7);
+> }
+> ```
+>
+> 
 
 ### 函数
 
@@ -1020,6 +1052,62 @@
 > <img src="./images/mod_2.jpg" style="zoom:50%;" />
 >
 > <img src="./images/mod_3.jpg" style="zoom:50%;" />
+
+### Vector
+
+> ```rust
+> fn main() {
+>     // let v: Vec<i32> = Vec::new();
+>     // let v = vec![1,2,3];
+>     let mut v: Vec<i32> = Vec::new();
+>     v.push(1);
+>     v.push(2);
+>     v.push(3);
+>     v.push(4);
+>     v.push(5);
+>     let third = &v[2];
+>     println!("the third element is {}", third);
+> 
+>     match v.get(2) {
+>         Some(num) => println!("the third element is {}", num),
+>         None => println!("there is no third element"),
+>     }
+> 
+>     for i in &v {
+>         println!("{}", i);
+>     }
+> }
+> ```
+>
+> ```rust
+> fn main() {
+>     let mut v = vec![10, 20, 30];
+> 
+>     for i in &mut v {
+>         *i += 50;
+>     }
+> 
+>     for i in &v {
+>         println!("{}", i);
+>     }
+> }
+> ```
+>
+> ```rust
+> fn main() {
+>    let row = vec![
+>       SpreadsheetCell::Int(3),
+>       SpreadsheetCell::Text(String::from("blue")),
+>       SpreadsheetCell::Float(10.32),
+>    ];
+> }
+> 
+> enum SpreadsheetCell {
+>     Int(i32),
+>     Float(f64),
+>     Text(String),
+> }
+> ```
 >
 > 
 
