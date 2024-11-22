@@ -1111,3 +1111,518 @@
 >
 > 
 
+### HashMap
+
+> * HashMap用的较少，不在Prelude【预导入模块】中
+> * 标准库对其支持较少，没有内置的宏来创建HashMap
+> * 数据存储在heap上
+> * 同构的。一个HashMap中：
+>   * 所有的K必须是同一种类型
+>   * 所有的V必须是同一种类型
+>
+> **HashMap和所有权**
+>
+> * 对于实现了Copy trait的类型（例如i32),值会被复制到HashMap中
+> * 对于拥有所有权的值（例如String)，值会被移动，所有权会转移给HashMap
+> * 如果将值的引用插入到HashMap,值本身不会移动
+>   * 在HashMap有效的期间，被引用的值必须保持有效
+>
+> ```rust
+> use std::collections::HashMap;
+> 
+> fn main() {
+>    let mut scores: HashMap<String,i32>  = HashMap::new();
+>    scores.insert(String::from("Blue"), 10);
+>    scores.insert(String::from("Yellow"), 50);
+> 
+>    let teams = vec![String::from("Red"), String::from("Orange")];
+>    let initial_scores = vec![10, 50];
+>    let scores2: HashMap<_, _> = teams.iter().zip(initial_scores.iter()).collect();
+> 
+>    // 获取值
+>    let val: Option<&i32> = scores.get("Blue");
+>    match val {
+>       Some(score) => println!("Blue score: {}", score),
+>       None => println!("No Blue score"),
+>    }
+> 
+>    // 遍历
+>    for (key, value) in &scores {
+>       println!("{}: {}", key, value);
+>    }
+>    
+>    // 所有权
+>    let field_name: String = String::from("Favorite color");
+>    let field_value: String = String::from("Blue");
+>    let mut map: HashMap<String, String> = HashMap::new();
+>    map.insert(field_name, field_value);
+>    // println!("{}", field_name);   // 报错，field_name所有权被转移到map中
+> 
+>    // 更新
+>    let mut scores3: HashMap<String,i32>  = HashMap::new();
+>    scores3.insert(String::from("Blue"), 10);
+>    // 插入相同的key，会覆盖原来的值
+>    scores3.insert(String::from("Blue"), 20);
+>    // 只在key不存在时插入
+>    scores3.entry(String::from("Yellow")).or_insert(50);
+>    println!("{:?}", scores3);
+> 
+>    let text = "hello world wonderful world";
+>    let mut map = HashMap::new();
+>    for word in text.split_whitespace() {
+>       let count = map.entry(word).or_insert(0);
+>       *count += 1;
+>    }
+>    println!("{:?}", map);
+> }
+> ```
+
+### 错误处理
+
+> * Rust的可靠性：错误处理
+>   * 大部分情况下：在编译时提示错误，并处理
+> * 错误的分类：
+>   * 可恢复【例如文件未找到，可再次尝试】
+>   * 不可恢复 【bug,例如访问的索引超出范围】
+> * Rust没有类似异常的机制
+>   * 可恢复错误：Result<T,E>
+>   * 不可恢复：panic!宏
+>
+> **为应对panic,展开或中止(abort)调用栈**
+>
+> * 默认情况下，当panic发生：
+>   * 程序展开调用栈（工作量大）
+>   * Rust沿着调用栈往回走
+>   * 清理每个遇到的函数中的数据
+> * 或立即中止调用栈
+>   * 不进行清理，直接停止程序
+>   * 内存需要OS进行清理
+>   * 想让二进制文件更小，把设置从“展开”改为“中止”
+> * 在Cargo.toml中适当的profile部分设置：
+>   * panic=‘abort'
+>
+> ```toml
+> [profile.release]
+> panic = 'abort'
+> ```
+>
+> ```rust
+> use std::fs::File;
+> fn main() {
+>    let f = File::open("hello.txt");
+>    let f = match f {
+>        Ok(file) => {
+>          println!("{:?}", file);
+>          file
+>        },
+>        Err(e) => {
+>          panic!("打开文件出错了！ 详细错误信息：{}", e)
+>        },
+>    };
+> }
+> ```
+>
+> 匹配不同错误
+>
+> ```rust
+> use std::{fs::File, io::ErrorKind};
+> fn main() {
+>    let f = File::open("hello.txt");
+>    let f = match f {
+>        Ok(file) => {
+>          println!("{:?}", file);
+>          file
+>        },
+>        Err(e) => match e.kind(){
+>          ErrorKind::NotFound => match File::create("hello.txt"){
+>            Ok(fc) => {
+>              println!("创建文件成功！{:?}", fc);
+>              fc
+>            },
+>            Err(e) => panic!("创建文件失败！{:?}", e)
+>          },
+>          other_error => {
+>            panic!("打开文件出错！ {:?}", other_error)
+>          }
+>        }
+>    };
+> }
+> ```
+>
+> 简化后
+>
+> ```rust
+> use std::{fs::File, io::ErrorKind};
+> fn main() {
+>    let f = File::open("hello.txt").unwrap_or_else(|error|{
+>        if error.kind() == ErrorKind::NotFound{
+>            println!("file not found");
+>            File::create("hello.txt").unwrap()
+>        }else{
+>            panic!("problem opening the file: {:?}", error);
+>        }
+>    });
+> }
+> ```
+>
+> **unwrap**
+>
+> * unwrap : match表达式的一个快捷方法：
+> * 如果Result结果是Ok,返回Ok里面的值
+> * 果Result结果是Err,调用panic!宏
+> * 缺点：不能自定义错误信息
+>
+> ```rust
+> use std::fs::File;
+> fn main() {
+>    let f = File::open("hello.txt").unwrap();
+> }
+> ```
+>
+> **expect**
+>
+> * expect：和unwrap类似，但可指定错误信息
+>
+> ```rust
+> use std::fs::File;
+> fn main() {
+>    let f = File::open("hello.txt").expect("无法打开文件");
+> }
+> ```
+>
+> 传播错误
+>
+> ```rust
+> use std::io::{self, Read};
+> use std::fs::File;
+> fn main() {
+>    let s = read_username_from_file();
+>    match s {
+>       Ok(s) => println!("{}",s),
+>       Err(e) => panic!("Failed to read from file: {}",e),
+>    };
+> }
+> 
+> fn read_username_from_file() -> Result<String,io::Error>{
+>    let f = File::open("hello.txt");
+>    let mut f = match f {
+>       Ok(file) => file,
+>       Err(e) => return Err(e),
+>    };
+>    let mut s = String::new();
+>    match f.read_to_string(&mut s) {
+>       Ok(_) => Ok(s),
+>       Err(e) => Err(e),
+>    }
+> }
+> ```
+>
+> **?运算符**
+>
+> * ？ 运算符：传播错误的一种快捷方式
+> * 如果Result是Ok：Ok中的值就是表达式的结果，然后继续执行程序
+> * 如果Result是Er：Err就是整个函数的返回值，就像使用了return
+> * ？运算符只能用于返回Result的函数
+>
+> 利用？运算符，上述传播错误代码可以简写为：
+>
+> ```rust
+> use std::io::{self, Read};
+> use std::fs::File;
+> fn main() {
+>    let s = read_username_from_file();
+>    match s {
+>       Ok(s) => println!("{}",s),
+>       Err(e) => panic!("Failed to read from file: {}",e),
+>    };
+> }
+> 
+> fn read_username_from_file() -> Result<String,io::Error>{
+>    let mut f = File::open("hello.txt")?;
+>    let mut s = String::new();
+>    f.read_to_string(&mut s)?;
+>    Ok(s)
+> }
+> ```
+>
+> **?与from函数**
+>
+> * Trait std::convert::From上的from函数：
+>   * 用于错误之间的转换
+> * 被？所应用的错误，会隐式的被from函数处理
+> * 当？调用from函数时：
+>   * 它所接收的错误类型会被转化为当前函数返回类型所定义的错误类型
+> * 用于：针对不同错误原因，返回同一种错误类型
+>   * 只要每个错误类型实现了转换为所返回的错误类型的from函数
+>
+> **？运算符链式调用**
+>
+> ```rust
+> use std::io::{self, Read};
+> use std::fs::File;
+> fn main() {
+>    let s = read_username_from_file();
+>    match s {
+>       Ok(s) => println!("{}",s),
+>       Err(e) => panic!("Failed to read from file: {}",e),
+>    };
+> }
+> 
+> fn read_username_from_file() -> Result<String,io::Error>{
+>    let mut s = String::new();
+>    File::open("hello.txt")?.read_to_string(&mut s)?;
+>    Ok(s)
+> }
+> ```
+>
+> **panic和Result使用场景**
+>
+> * 调用你的代码，传入无意义的参数值：panic!
+> * 调用外部不可控代码，返回非法状态，你无法修复：panic!
+> * 如果失败是可预期的：Result
+> * 当你的代码对值进行操作，首先应该验证这些值：panic!
+>
+> ```rust
+> use std::io::stdin;
+> fn main() {
+>    loop {
+>       println!("Please input your guess.");
+> 
+>       let mut guess = String::new();
+>       stdin().read_line(&mut guess).expect("expected a string");
+>       let guess: i32 = match guess.trim().parse(){
+>           Ok(num) => num,
+>           Err(_) => continue,
+>       };
+>       let guess = Guess::new(guess);
+>       println!("You guessed: {}", guess.value());
+>    }
+> }
+> 
+> pub struct Guess {
+>     value: i32,
+> }
+> 
+> impl Guess {
+>     pub fn new(value: i32) -> Guess {
+>         if value < 1 || value > 100 {
+>             panic!("Guess value must be between 1 and 100, got {}.", value);
+>         }
+>         Guess { value }
+>     }
+>     pub fn value(&self) -> i32 {
+>         self.value
+>     }
+> }
+> ```
+
+### 泛型
+
+> ```rust
+> fn main() {
+>    let v = vec![10,5,8,20,15,6,30,50];
+>    let num = largest(&v);
+>    println!("The largest number is {}", num);
+> }
+> 
+> fn largest<T: std::cmp::PartialOrd>(list:&[T]) -> &T {
+>     let mut largest = &list[0];
+>     for item in list {
+>         if item > largest {
+>             largest = item;
+>         }
+>     }
+>     largest
+> }
+> ```
+>
+> ```rust
+> fn main() {
+>    let p1 = Point {x: 5, y: 10.5};
+>    let p2 = Point {x: 1.0, y: 4.0};
+> }
+> 
+> struct Point<T,U> {
+>     x: T,
+>     y: U,
+> }
+> ```
+>
+> ```rust
+> fn main() {
+>    let p1 = Point {x: 5, y: 10};
+>    let p2 = Point {x: "Hello", y: 'c'};
+>    let p3 = p1.mixup(p2);
+>    println!("p3.x = {} p3.y = {}", p3.x, p3.y);
+> }
+> 
+> struct Point<T,U> {
+>     x: T,
+>     y: U,
+> }
+> 
+> impl <T,U> Point<T,U> {
+>     fn x(&self)-> &T {
+>         &self.x
+>     }
+>     fn y(&self) -> &U {
+>         &self.y
+>     }
+> }
+> 
+> impl Point<i32,i32>{
+>    fn x1(&self) -> &i32 {
+>        &self.x
+>    }
+>    fn y1(&self) -> &i32 {
+>        &self.y
+>    }
+> }
+> 
+> impl <T,U> Point<T,U>{
+>     fn mixup<V,W>(self, other: Point<V,W>) -> Point<T,W> {
+>         Point {
+>             x: self.x,
+>             y: other.y,
+>         }
+>     }
+> }
+> ```
+
+### Trait
+
+> * Trait告诉Rust编译器：
+>   * 某种类型具有哪些并且可以与其它类型共享的功能
+> * Trait:抽象的定义共享行为
+> * Trait bounds(约束)：泛型类型参数指定为实现了特定行为的类型
+> * Trait与其它语言的接口(interface)类似，但有些区别。
+> * 默认实现的方法可以调用Trait中其它的方法，即使这些方法没有默认实现。
+> * 注意：无法从方法的重写实现里面调用默认的实现。
+>
+> **实现Trait的约束**
+>
+> * 可以在某个类型上实现某个rat的前提条件是：
+>   * 这个类型或这个trait是在本地crate里定义的
+> * 无法为外部类型来实现外部的trait
+>   * 这个限制是程序属性的一部分（也就是一致性）
+>   * 更具体地说是孤儿规则：之所以这样命名是因为父类型不存在。
+>   * 此规则确保其他人的代码不能破坏您的代码，反之亦然。
+>   * 如果没有这个规则，两个crate可以为同一类型实现同一个trait,Rust就不知道应该使用哪个实现了。
+>
+> ```rust
+> fn main() {
+>    let tweet = Tweet {
+>      username: String::from("horse_ebooks"),
+>      content: String::from("of course, as you probably already know, people"),
+>      reply: false,
+>      retweet: false,
+>    };
+>    println!("1 new tweet: {}", tweet.summarize());
+> }
+> 
+> pub trait Summary{
+> //   fn summarize(&self) -> String;
+> 
+>    // 默认实现  默认实现的方法可以调用Trait中其它的方法，即使这些方法没有默认实现。
+>   // 注意：无法从方法的重写实现里面调用默认的实现。
+>   fn summarize(&self) -> String{
+>     String::from("read more...")
+>   }
+> }
+> 
+> pub struct NewsArticle {
+>   pub headline: String,
+>   pub location: String,
+>   pub author: String,
+>   pub content: String,
+> }
+> 
+> impl Summary for NewsArticle {
+>   fn summarize(&self) -> String {
+>     format!("{}, by {} ({})", self.headline, self.author, self.location)
+>   }
+> }
+> 
+> struct Tweet {
+>   pub username: String,
+>   pub content: String,
+>   pub reply: bool,
+>   pub retweet: bool,
+> }
+> 
+> impl Summary for Tweet {
+>   fn summarize(&self) -> String {
+>     format!("{}: {}", self.username, self.content)
+>   }
+> }
+> ```
+>
+> **Trait作为参数**
+>
+> * impl Trait语法：适用于简单情况
+> * Trait bound语法：可用于复杂情况
+> * impl Trait语法是Trait bound的语法糖
+> * 使用+指定多个Trait bound
+> * Trait bound使用where子句
+>   * 在方法签名后指定where子句
+>
+> ```rust
+> // pub fn notify(item : impl Summary){
+> //   println!("notify! {}", item.summarize());
+> // }
+> 
+> // 实现多个Trait
+> // pub fn notify(item : impl Summary + Display){
+> //   println!("notify! {}", item.summarize());
+> // }
+> 
+> // 实现多个Trait，用加号 + 连接多个 Trait
+> // pub fn notify<T: Summary + Display>(item : T){
+> //   println!("notify! {}", item.summarize());
+> // }
+> 
+> pub fn notify<T: Summary + Display,U: Clone + Debug>(a: T,b: U) -> String{
+>   format!("notify! {}", a.summarize())
+> }
+> 
+> pub fn notify2<T,U>(a: T,b: U) -> String
+> where T: Summary + Display,
+>       U: Clone + Debug
+> {
+>   format!("notify! {}", a.summarize())
+> }
+> ```
+>
+> **使用Trait作为返回类型**
+>
+> * impl Trait语法
+> * 注意：impl Trait只能返回确定的同一种类型，返回可能不同类型的代码会报错
+>
+> ```rust
+> fn notify(flag: bool) -> impl Summary{
+>   // 这里NewsArticle和Tweet虽然都实现了Summary Trait，但是有可能返回两种类型，会报错
+>   // impl Trait这种形式只能返回一种类型
+>   if flag {
+>       NewsArticle {
+>         headline: String::from("Penguins win the Stanley Cup Championship!"),
+>         location: String::from("Pittsburgh, PA, USA"),
+>         author: String::from("Iceburgh"),
+>         content: String::from(
+>           "The Pittsburgh Penguins once again are the best \
+>            hockey team in the NHL.",
+>         ),
+>       }
+>   }else {
+>       Tweet {
+>         username: String::from("horse_ebooks"),
+>         content: String::from("of course, as you probably already know, people"),
+>         reply: false,
+>         retweet: false,
+>       }
+>   }
+> }
+> ```
+
+### 生命周期
+
+> 
