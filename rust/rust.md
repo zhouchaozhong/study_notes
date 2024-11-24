@@ -2389,5 +2389,166 @@
 >   * 但Rc<T>不是Sync的
 >   * RefCell<T>和Cell<T>家族也不是Sync的
 >
+
+### unsafe
+
+> **Unsafe超能力**
+>
+> * 使用unsafe关键字来切换到unsafe Rust,开启一个块，里面放着unsafe代码
+> * Unsafe Rust里可执行的四个动作(unsafe超能力)：
+>   * 解引用原始指针
+>   * 调用unsafe函数或方法
+>   * 访问或修改可变的静态变量
+>   * 实现unsafe trait
+> * 注意：
+>   * unsafe并没有关闭借用检查或停用其它安全检查
+>   * 任何内存安全相关的错误必须留在unsafe块里
+>   * 尽可能隔离unsafe代码，最好将其封装在安全的抽象里，提供安全的API
+>
+> **解引用原始指针**
+>
+> * 原始指针
+>   * 可变的：*mutT
+>   * 不可变的：*const T。意味着指针在解引用后不能直接对其进行赋值
+>   * 注意：这里的*不是解引用符号，它是类型名的一部分。
+> * 与引用不同，原始指针：
+>   * 允许通过同时具有不可变和可变指针或多个指向同一位置的可变指针来忽略借用规则
+>   * 无法保证能指向合理的内存
+>   * 允许为null
+>   * 不实现任何自动清理
+> * 放弃保证的安全，换取更好的性能/与其它语言或硬件接口的能力
+>
+> ```rust
+> fn main() {
+>     let mut num = 5;
+>     let r1: *const i32 = &num as *const i32;
+>     let r2: *mut i32 = &mut num as *mut i32;
+> 
+>     unsafe{
+>         println!("r1: {}", *r1);
+>         println!("r2: {}", *r2);
+>     }
+> 
+>     let address = 0x012345usize;
+>     let r3: *const i32 = address as *const i32;
+>     unsafe{
+>         println!("r3: {}", *r3);
+>     }
+> }
+> ```
+>
+> ```rust
+> static HELLO_WORLD: &str = "Hello, world!"; // 全局变量
+> static mut COUNTER: u32 = 0; // 对可变的静态变量操作是不安全的
+> fn main() {
+>    println!("{}", HELLO_WORLD);
+>    add_to_counter(3);
+>    unsafe {
+>       println!("Counter = {}", COUNTER);
+>    }
+> }
+> 
+> fn add_to_counter(inc: u32) -> u32 {
+>    unsafe {
+>       COUNTER += inc;
+>       COUNTER
+>    }
+> }
+> ```
+
+### 高级Trait
+
+> ```rust
+> use std::ops::Add;
+> fn main() {
+>    let p1 = Point{x:1,y:2};
+>    let p2 = Point{x:5,y:6};
+>    let p3 = p1 + p2;
+>    println!("{:?}",p3);
+> }
+> 
+> #[derive(Debug)]
+> struct Point{
+>     x: i32,
+>     y: i32,
+> }
+> 
+> impl Add for Point{
+>     type Output = Point;
+>     fn add(self, other: Point) -> Point{
+>         Point{
+>             x: self.x + other.x,
+>             y: self.y + other.y,
+>         }
+>     }
+> }
+> ```
+
+### 高级类型
+
+> **类型别名**
+>
+> ```rust
+> type Kilometers = i32;
+> type Thunk = Box<dyn Fn() + Send + 'static>;
+> fn main() {
+>     let x: i32 = 5;
+>     let y: Kilometers = 6;
+>     println!("x + y = {}", x + y);
+> }
+> 
+> fn takes_long_type(f: Thunk){}
+> ```
+
+### 高级函数
+
+> **函数指针**
+>
+> * 可以将函数传递给其它函数
+> * 函数在传递过程中会被强制转换成fn类型
+> * fn类型就是“函数指针(function pointer)
+>
+> ```rust
+> fn main() {
+>     let answer = do_twice(add_one, 5);
+>     println!("The answer is: {}", answer);
+> }
+> 
+> fn add_one(x: i32) -> i32 {
+>     x + 1
+> }
+> 
+> fn do_twice(f: fn(i32) -> i32, arg: i32) -> i32 {
+>     f(arg) + f(arg)
+> }
+> ```
+>
+> **函数指针与闭包的不同点**
+>
+> * fn是一个类型，不是一个trait
+>   * 可以直接指定fn为参数类型，不用声明一个以Fn trait为约束的泛型参数
+> * 函数指针实现了全部3种闭包trait(Fn,FnMut,FnOnce):
+>   * 总是可以把函数指针用作参数传递给一个接收闭包的函数
+>   * 所以，倾向于搭配闭包trait的泛型来编写函数：可以同时接收闭包和普通函数
+> * 某些情景，只想接收f而不接收闭包：
+>   * 与外部不支持闭包的代码交互：C函数
+
+### 宏
+
+> * 宏在Rust里指的是一组相关特性的集合称谓：
+> * 使用macro_rules！构建的声明宏(declarative macro)
+> * 3种过程宏
+>   * 自定义#[derive]宏，用于struct或enum,可以为其指定随derive属性添加的代码
+>   * 类似属性的宏，在任何条目上添加自定义属性
+>   * 类似函数的宏，看起来像函数调用，对其指定为参数的token进行操作
+>
+> **函数与宏的差别**
+>
+> * 本质上，宏是用来编写可以生成其它代码的代码（元编程，metaprogramming)
+> * 函数在定义签名时，必须声明参数的个数和类型，宏可处理可变的参数
+> * 编译器会在解释代码前展开宏
+> * 宏的定义比函数复杂得多，难以阅读、理解、维护在某个文件调用宏时，必须提前定义宏或将宏引入当前作用域；
+> * 数可以在任何位置定义并在任何位置使用
+>
 > 
 
