@@ -1723,5 +1723,671 @@
 >   * `let s:&'static str "I have a static lifetime."`
 > * 为引用指定'static生命周期前要三思：
 >   * 是否需要引用在程序整个生命周期内都存活。
+
+### 测试
+
+> **测试的分类**
+>
+> * ·Rust对测试的分类：
+>   * 单元测试
+>   * 集成测试
+> * 单元测试：
+>   * 小、专注
+>   * 一次对一个模块进行隔离的测试
+>   * 可测试private接口
+> * 集成测试：
+>   * 在库外部。和其它外部代码一样使用你的代码
+>   * 只能使用public接口
+>   * 可能在每个测试中使用到多个模块
+>
+> **#[cfg(test)]标注**
+>
+> * tests模块上的#[cfg(test)]标注：
+>   * 只有运行cargo test才编译和运行代码
+>   * 运行cargo build则不会
+> * 集成测试在不同的目录，它不需要#[cfg(test)]标注
+> * cfg:configuration(配置)
+>   * 告诉Rust下面的条目只有在指定的配置选项下才被包含
+>   * 配置选项test:由Rust提供，用来编译和运行测试。
+>   * 只有cargo test才会编译代码，包括模块中的helper函数和#[test]标注的函数
+>
+> 单元测试示例
+>
+> ```rust
+> pub fn add(left: u64, right: u64) -> u64 {
+>     left + right
+> }
+> 
+> pub fn bigger(left:i32,right: i32) -> bool{
+>     if left > right{
+>         return true;
+>     }
+>     false
+> }
+> 
+> pub fn divide(a:i32,b:i32) -> i32{
+>     a/b
+> }
+> 
+> #[cfg(test)]
+> mod tests {
+>     use super::*;
+> 
+>     #[test]
+>     fn exploration() {
+>         let result = add(2, 2);
+>         assert_eq!(result, 4,"出错了，值不相等");
+>     }
+> 
+>     #[test]
+>     fn test_add() {
+>         assert_ne!(4, add(2, 2),"出错了！");
+>     }
+> 
+>     #[test]
+>     fn another() {
+>         panic!("Make this test fail");
+>     }
+> 
+>     #[test]
+>     fn test_bigger() {
+>         assert!(bigger(1,2),"断言出错!")
+>     }
+> 
+>     #[test]
+>     #[should_panic]
+>     fn test_should_panic(){
+>         // 发生panic，该测试才会通过
+>         divide(2,1);
+>     }
+> 
+>     #[test]
+>     #[should_panic(expected = "divide by zero")]
+>     fn test_should_panic2(){
+>         // 发生panic，该测试才会通过
+>         // expected 用来筛选panic的错误信息
+>         divide(2,0);
+>     }
+> 
+>     #[test]
+>     #[ignore]
+>     fn test_ignore() {
+>         // 忽略该测试
+>         divide(2,0);
+>     }
+>     
+>     #[test]
+>     fn it_works() -> Result<(), String> {
+>         // 测试通过返回 Ok(())，测试失败返回 Err(String)
+>         if 2 + 3 == 4 {
+>             Ok(())
+>         } else {
+>             Err(String::from("two plus two does not equal four"))
+>         }
+>     }
+> }
+> ```
+>
+> 集成测试示例
+>
+> ```rust
+> // 必须在跟src目录同级的目录创建tests目录，在tests目录下创建测试文件，需要将被测试库导入
+> use adder;
+> #[test]
+> fn test_add() {
+>     assert_eq!(adder::add(2, 3), 5);
+> }
+> ```
+
+### 闭包
+
+> **什么是闭包(closure)**
+>
+> * 闭包：可以捕获其所在环境的匿名函数。
+> * 闭包：
+>   * 是匿名函数
+>   * 保存为变量、作为参数
+>   * 可在一个地方创建闭包，然后在另一个上下文中调用闭包来完成运算
+>   * 可从其定义的作用域捕获值
+>
+> **闭包的类型推断**
+>
+> * 闭包不要求标注参数和返回值的类型
+> * 闭包通常很短小，只在狭小的上下文中工作，编译器通常能推断出类型
+> * 可以手动添加类型标注
+>
+> ```rust
+> fn main() {
+>     let example_closure = |x| x;
+>     println!("{}",example_closure(5));
+> 
+>     let example_closure2 = |x: i32,y: i32| -> i32 {
+>         x + y
+>     };
+>     println!("{}",example_closure2(5,6));
+> 
+>     let mut closure = Cacher::new(|num|{
+>         println!("Calculating slowly...");
+>         num * 2
+>     });
+>     let v1 = closure.value(5);
+>     let v2 = closure.value(5);
+>     let v3 = closure.value(5);
+>     // 这里无论调用多少次，都只会执行一次闭包
+>     println!("{} {} {}",v1,v2,v3);
+> }
+> 
+> struct Cacher<T>
+> where T: Fn(u32) -> u32,
+> {
+>     calculation: T,
+>     value: Option<u32>,
+> }
+> 
+> impl<T> Cacher<T>
+> where T: Fn(u32) -> u32,
+> {
+>    fn new(calculation: T) -> Cacher<T>{
+>        Cacher{
+>            calculation,
+>            value: None,
+>        }
+>    }
+> 
+>    fn value(&mut self,arg: u32) -> u32{
+>        match self.value{
+>            Some(v) => v,
+>            None => {
+>                let v = (self.calculation)(arg);
+>                self.value = Some(v);
+>                v
+>            }
+>        }
+> 
+>    }
+> }
+> ```
+>
+> **闭包捕获上下文**
+>
+> ```rust
+> fn main() {
+>    let x = vec![1,2,3];
+>    // move关键字，将x的所有权转移给闭包，闭包拥有x的所有权
+>    let equal_to_x = move |z| z == x;
+>    // println!("{}",x);   报错，x的所有权已经转移给闭包
+> }
+> ```
+
+### 迭代器
+
+> 几个迭代方法
+>
+> * iter方法：在不可变引用上创建迭代器
+> * into_iter方法：创建的迭代器会获得所有权
+> * iter_mut方法：迭代可变的引用
+>
+> ```rust
+> fn main() {
+>    let v = vec![1,2,3];
+>    let iter_1 = v.iter();
+>    for val in iter_1 {
+>        println!("{}",val);
+>    }
+> 
+>    let v2 = vec![1,2,3];
+>    let iter_2 = v2.iter();
+>    let mut iter_2 = iter_2.map(|x| x*2);
+>    for val in iter_2 {
+>        println!("{}",val);
+>    }
+> 
+>    let v3 = vec![1,2,3,4,5,6,7,8,9,10];
+>    let iter_3 = v3.into_iter();
+>    let v4: Vec<_> = iter_3.filter(|x| x%2 == 0).collect();
+>    println!("{:?}",v4);
+> 
+>    // 自定义迭代器
+>    let mut counter = Counter::new();
+>    println!("{:?}",counter.next());
+>    println!("{:?}",counter.next());
+> }
+> 
+> // 创建自定义迭代器
+> struct Counter {
+>     count: u32,
+> }
+> 
+> impl Counter {
+>     fn new() -> Counter {
+>         Counter { count: 0 }
+>     }
+> }
+> 
+> impl Iterator for Counter {
+>    // 定义迭代器返回的类型
+>     type Item = u32;
+>     fn next(&mut self) -> Option<Self::Item> {
+>         if self.count < 5 {
+>             self.count += 1;
+>             Some(self.count)
+>         } else {
+>             None
+>         }
+>     }
+> }
+> ```
+>
+
+### 智能指针
+
+> **智能指针的实现**
+>
+> * 智能指针通常使用struct实现，并且实现了：
+>   * Deref和Drop这两个trait
+> * Deref trait：允许智能指针struct的实例像引用一样使用
+> * Drop trait：允许你自定义当智能指针实例走出作用域时的代码
+>
+> 标准库中常见智能指针
+>
+> * Box<T>：在heap内存上分配值
+> * Rc<T>：启用多重所有权的引用计数类型
+> * Ref<T>和RefMut<T>,通过RefCell<T>访问：在运行时而不是编译时强制借用规则的类型
+>
+> 常见问题：
+>
+> * 内部可变模式(interior mutability pattern)：不可变类型暴露出可修改其内部值的API
+> * 引用循环(reference cycles):它们如何泄露内存，以及如何防止其发生。
+>
+> **Box<T>**
+>
+> * Box<T>是最简单的智能指针：
+> * 允许你在heap上存储数据（而不是stack)
+> * stack上是指向heap数据的指针
+> * 没有性能开销
+> * 没有其它额外功能
+>
+> Box<T>的常用场景
+>
+> * 在编译时，某类型的大小无法确定。但使用该类型时，上下文却需要知道它的确切大小。
+> * 当你有大量数据，想移交所有权，但需要确保在操作时数据不会被复制。
+> * 使用某个值时，你只关心它是否实现了特定的trait,,而不关心它的具体类型。
+>
+> ```rust
+> use crate::List::{Cons, Nil};
+> fn main() {
+>    let b = Box::new(5);
+>    println!("b = {}", b);
+>    let list = Cons(1,Box::new(Cons(2,Box::new(Cons(3,Box::new(Nil))))));
+> }
+> 
+> enum List {
+>     Cons(i32,Box<List>),
+>     Nil,
+> }
+> ```
+>
+> **Deref Trait**
+>
+> * 实现Deref Trait使我们可以自定义解引用运算符*的行为
+> * 通过实现Deref，智能指针可像常规引用一样来处理
+>
+> ```rust
+> use std::ops::Deref;
+> fn main() {
+>    let x = 5;
+>    let y = MyBox::new(x);
+>    assert_eq!(5,*y);
+> }
+> 
+> struct MyBox<T>(T);
+> 
+> impl <T> MyBox<T> {
+>     fn new(x:T) -> MyBox<T> {
+>         MyBox(x)
+>     }
+> }
+> 
+> impl <T> Deref for MyBox<T> {
+>     type Target = T;
+>     fn deref(&self) -> &Self::Target {
+>         &self.0
+>     }
+> }
+> ```
+>
+> **Drop Trait**
+>
+> * 实现Drop Trait,可以让我们自定义当值将要离开作用域时发生的动作。
+>   * 例如：文件、网络资源释放等
+>   * 任何类型都可以实现Drop trait
+> * Drop trait只要求你实现drop方法
+>   * 参数：对self的可变引用
+> * Drop trait在预导入模块里(prelude)
+>
+> ```rust
+> fn main() {
+>    let c = CustomSmartPointer { data: String::from("my stuff") };
+>    let d = CustomSmartPointer { data: String::from("other stuff") };
+> }
+> 
+> struct CustomSmartPointer {
+>     data: String
+> }
+> 
+> impl Drop for CustomSmartPointer {
+>     fn drop(&mut self) {
+>         println!("Dropping CustomSmartPointer with data `{}`!", self.data);
+>     }
+> }
+> ```
+>
+> 使用std::mem::drop来提前drop值
+>
+> * 很难直接禁用自动的drop功能，也没必要
+>   * Drop trait的目的就是进行自动的释放处理逻辑
+> * Rust不允许手动调用Drop trait的drop方法
+> * 但可以调用标准库的std::mem::drop函数，来提前drop值
+>
+> **Rc<T>引用计数智能指针**
+>
+> * 有时，一个值会有多个所有者
+> * 为了支持多重所有权：Rc<T>
+>   * reference couting(引用计数)
+>   * 追踪所有到值的引用
+>   * 0个引用：该值可以被清理掉
+>
+> **Rc<T>使用场景**
+>
+> * 需要在heap上分配数据，这些数据被程序的多个部分读取（只读)，但在编译时无法确定哪个部分最后使用完这些数据
+> * Rc<T>只能用于单线程场景
+>
+> ```rust
+> use crate::List::{Cons, Nil};
+> use std::rc::Rc;
+> fn main() {
+>    let a = Rc::new(Cons(5, Rc::new(Cons(10, Rc::new(Nil)))));
+>    println!("count after creating b = {}", Rc::strong_count(&a));
+>    let b = Cons(3, Rc::clone(&a));
+>    let c = Cons(4, Rc::clone(&a));
+>    println!("count after creating c = {}", Rc::strong_count(&a));
+> }
+> 
+> enum List {
+>     Cons(i32, Rc<List>),
+>     Nil,
+> }
+> ```
+>
+> **RefCell<T>**
+>
+> * 与Rc<T>相似，只能用于单线程场景
+>
+> 选择Box<T>、Rc<T>、RefCell<T>的依据
+>
+> |                  | Box<T>                        | Rc<T>                   | RefCell<T>                    |
+> | ---------------- | ----------------------------- | ----------------------- | ----------------------------- |
+> | 同一数据的所有者 | 一个                          | 多个                    | 一个                          |
+> | 可变性、借用检查 | 可变、不可变借用 (编译时检查) | 不可变借用 (编译时检查) | 可变、不可变借用 (运行时检查) |
+>
+> 其中：即便RefCell<T>本身不可变，但仍能修改其中存储的值
+>
+> 使用RefCell<T>在运行时记录借用信息
+>
+> 两个方法（安全接口）：
+>
+> * borrow方法
+>   * 返回智能指针Ref<T>,它实现了Deref
+> * borrow_mut方法
+>   * 返回智能指针RefMut<T>,它实现了Deref
+>
+> 规则：
+>
+> * RefCell<T>会记录当前存在多少个活跃的Ref<T>和RefMut<T>智能指针
+>   * 每次调用borrow:不可变借用计数加1
+>   * 任何一个Rf<T>的值离开作用域被释放时：不可变借用计数减1
+>   * 每次调用borrow_mut:可变借用计数加1
+>   * 任何一个RefMut<T>的值离开作用域被释放时：可变借用计数减1
+>
+> RefCell<T>实现修改不可变的值
+>
+> ```rust
+> pub trait Messager{
+>     fn send(&self,msg:&str);
+> }
+> 
+> pub struct LimitTracker<'a,T:'a + Messager>{
+>     messager:&'a T,
+>     value:usize,
+>     max:usize,
+> }
+> 
+> impl<'a,T> LimitTracker<'a,T>
+>     where T:Messager{
+>     pub fn new(messager:&T,max:usize)->LimitTracker<T>{
+>         LimitTracker{
+>             messager,
+>             value:0,
+>             max,
+>         }
+>     }
+>     pub fn set_value(&mut self,value:usize){
+>         self.value = value;
+>         let percentage_of_max = self.value as f64 / self.max as f64;
+>         if percentage_of_max >= 1.0{
+>             self.messager.send("Error: You are over your quota!");
+>         }else if percentage_of_max >= 0.9{
+>             self.messager.send("Urgent warning: You've used up over 90% of your quota!");
+>         }else if percentage_of_max >= 0.75{
+>             self.messager.send("Warning: You've used up over 75% of your quota!");
+>         }
+>     }
+> }
+> 
+> #[cfg(test)]
+> mod tests{
+>     use super::*;
+>     use std::cell::RefCell;
+>     struct MockMessager{
+>         sent_messages:RefCell<Vec<String>>,
+>     }
+>     impl MockMessager{
+>         fn new()->MockMessager{
+>             MockMessager{
+>                 sent_messages:RefCell::new(vec![]),
+>             }
+>         }
+>     }
+>     impl Messager for MockMessager{
+>         fn send(&self,msg:&str){
+>             let mut temp = String::from(msg);
+>             self.sent_messages.borrow_mut().push(temp);
+>         }
+>     }
+> 
+>     #[test]
+>     fn it_sends_an_over_75_percent_warning_message(){
+>         let mock_messager = MockMessager::new();
+>         let mut limit_tracker = LimitTracker::new(&mock_messager,100);
+>         limit_tracker.set_value(80);
+>         assert_eq!(mock_messager.sent_messages.borrow().len(),1);
+>     }
+> }
+> ```
+>
+> ```rust
+> use std::{cell::RefCell, rc::Rc};
+> use crate::List::{Cons,Nil};
+> fn main() {
+>    let value = Rc::new(RefCell::new(5));
+>    let a = Rc::new(Cons(Rc::clone(&value),Rc::new(Nil)));
+>    let b = Cons(Rc::new(RefCell::new(6)),Rc::clone(&a));
+>    let c = Cons(Rc::new(RefCell::new(10)),Rc::clone(&a));
+>    *value.borrow_mut() += 10;
+>    println!("a after = {:?}",a);
+>    println!("b after = {:?}",b);
+>    println!("c after = {:?}",c);
+> }
+> 
+> #[derive(Debug)]
+> enum List{
+>     Cons(Rc<RefCell<i32>>,Rc<List>),
+>     Nil,
+> }
+> ```
+>
+> ​	
+
+### 多线程
+
+> ```rust
+> use std::thread;
+> use std::time::Duration;
+> 
+> fn main() {
+>    let handle = thread::spawn(|| {
+>       for i in 1..10 {
+>          println!("hi number {} from the spawned thread!", i);
+>          thread::sleep(Duration::from_millis(1000));
+>       }
+>    });
+> 
+>    for i in 1..5 {
+>       println!("hi number {} from the main thread!", i);
+>       thread::sleep(Duration::from_millis(1000));
+>    }
+> 
+>    handle.join().unwrap();
+> }
+> ```
+>
+> **move关键字转移所有权**
+>
+> ```rust
+> use std::thread;
+> use std::time::Duration;
+> 
+> fn main() {
+>    let v = vec![1,2,3];
+>    // move 关键字将v的所有权从 main 函数转移到新线程中
+>    let handle = thread::spawn(move ||{
+>         println!("Here's a vector: {:?}", v);
+>    });
+>    handle.join().unwrap();
+> }
+> ```
+>
+> **使用消息传递来跨线程传递数据【Channel】**
+>
+> * 发送端的send方法
+>   * 参数：想要发送的数据
+>   * 返回：Result<T,E>
+> * 接收端recv方法
+>   * recv方法：阻止当前线程执行，直到Channel中有值被送来
+>     * 一旦有值收到，就返回Result<T,E>
+>     * 当发送端关闭，就会收到一个错误
+> * try_recv方法：不会阻塞，
+>   * 立即返回Result<T,E>:
+>   * 有数据达到：返回Ok,里面包含着数据
+>   * 否则，返回错误
+>   * 通常会使用循环调用来检查try_recv的结果
+>
+> ```rust
+> use std::{sync::mpsc, thread};
+> 
+> fn main() {
+>    let (tx,rx) = mpsc::channel();
+>    thread::spawn(move || {
+>        let val = String::from("hello");
+>        tx.send(val).unwrap();
+>    });
+>    let received = rx.recv().unwrap();
+>    println!("Got: {}", received);
+> }
+> ```
+>
+> 通过克隆创建多个发送者
+>
+> ```rust
+> use std::{sync::mpsc, thread};
+> 
+> fn main() {
+>    let (tx,rx) = mpsc::channel();
+>    let tx1 = mpsc::Sender::clone(&tx);
+>    thread::spawn(move || {
+>        let vals = vec![
+>            String::from("1: hi"),
+>            String::from("1: from"),
+>            String::from("1: the"),
+>            String::from("1: thread"),
+>        ];
+>        for val in vals {
+>            tx.send(val).unwrap();
+>            thread::sleep(std::time::Duration::from_millis(1000));
+>        }
+>    });
+> 
+>    thread::spawn(move || {
+>         let vals = vec![
+>             String::from("2: hi"),
+>             String::from("2: from"),
+>             String::from("2: the"),
+>             String::from("2: thread"),
+>         ];
+>         for val in vals {
+>             tx1.send(val).unwrap();
+>             thread::sleep(std::time::Duration::from_millis(500));
+>         }
+>     });
+>    for received in rx {
+>        println!("Got: {}", received);
+>    }
+> }
+> ```
+>
+> **互斥锁**
+>
+> ```rust
+> use std::{sync::{Arc, Mutex}, thread};
+> 
+> fn main() {
+>     // Arc<T>可用于多线程多重所有权，Rc<T>只用于单线程多重所有权
+>    let counter = Arc::new(Mutex::new(0));
+>    let mut handles = vec![];
+>    for _ in 0..10 {
+>       let counter = Arc::clone(&counter);
+>       let handle = thread::spawn(move || {
+>          let mut num = counter.lock().unwrap();
+>          *num += 1;
+>       });
+>       handles.push(handle);
+>    }
+>    for handle in handles {
+>       handle.join().unwrap();
+>    }
+>    println!("Reuslt : {}", *counter.lock().unwrap());
+> }
+> ```
+>
+> **Send和Sync trait**
+>
+> Send:允许线程间转移所有权
+>
+> * 实现Send trait的类型可在线程间转移所有权
+> * Rust中几乎所有的类型都实现了Send
+>   * 但Rc<T>没有实现Send,它只用于单线程情景
+> * 任何完全由Send类型组成的类型也被标记为Send
+> * 除了原始指针之外，几乎所有的基础类型都是Send
+>
+> Sync:允许从多线程访问
+>
+> * 实现Sync的类型可以安全的被多个线程引用
+> * 也就是说：如果T是Sync,那么&T就是Send
+>   * 引用可以被安全的送往另一个线程
+> * 基础类型都是Sync
+> * 完全由Sync类型组成的类型也是Sync
+>   * 但Rc<T>不是Sync的
+>   * RefCell<T>和Cell<T>家族也不是Sync的
 >
 > 
+
