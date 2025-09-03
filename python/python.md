@@ -1157,4 +1157,55 @@
 > pprint(r1)
 > ```
 >
+
+### URL请求
+
+> **GET请求**
+>
+> ```python
+> import urllib.request
+> import urllib.parse
 > 
+> url = 'https://www.baidu.com/s?'
+> headers = {
+>     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'
+> }
+> data = {
+>     'wd': '周杰伦',
+>     'job': '歌手',
+>     'type': 1
+> }
+> data = urllib.parse.urlencode(data)
+> url = url + data
+> request = urllib.request.Request(url=url, headers=headers)
+> response = urllib.request.urlopen(request)
+> content = response.read().decode('utf-8')
+> print(content)
+> ```
+>
+> **POST请求**
+>
+> ```python
+> import urllib.request
+> import urllib.parse
+> import json
+> 
+> url = 'https://fanyi.baidu.com/sug'
+> headers = {
+>     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'
+> }
+> data = {
+>     'kw': 'spider'
+> }
+> # POST请求，参数必修要进行编码成字节数据
+> data = urllib.parse.urlencode(data).encode('utf-8')
+> request = urllib.request.Request(url=url,data=data,headers=headers)
+> response = urllib.request.urlopen(request)
+> content = response.read().decode('utf-8')
+> 
+> obj = json.loads(content)
+> print(obj)
+> ```
+>
+> 
+
