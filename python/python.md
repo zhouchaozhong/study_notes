@@ -1158,7 +1158,7 @@
 > ```
 >
 
-### URL请求
+### HTTP请求
 
 > **GET请求**
 >
@@ -1168,12 +1168,12 @@
 > 
 > url = 'https://www.baidu.com/s?'
 > headers = {
->     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'
+> 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'
 > }
 > data = {
->     'wd': '周杰伦',
->     'job': '歌手',
->     'type': 1
+> 'wd': '周杰伦',
+> 'job': '歌手',
+> 'type': 1
 > }
 > data = urllib.parse.urlencode(data)
 > url = url + data
@@ -1192,10 +1192,10 @@
 > 
 > url = 'https://fanyi.baidu.com/sug'
 > headers = {
->     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'
+> 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'
 > }
 > data = {
->     'kw': 'spider'
+> 'kw': 'spider'
 > }
 > # POST请求，参数必修要进行编码成字节数据
 > data = urllib.parse.urlencode(data).encode('utf-8')
@@ -1205,6 +1205,218 @@
 > 
 > obj = json.loads(content)
 > print(obj)
+> ```
+>
+> **AJAX GET请求**
+>
+> ```python
+> import urllib.request
+> import urllib.parse
+> 
+> 
+> def create_request(page_no):
+> base_url = 'https://movie.douban.com/j/chart/top_list?type=5&interval_id=100%3A90&action=&'
+> data = {
+>   'start': (page_no - 1) * 20,
+>   'limit': 20
+> }
+> data = urllib.parse.urlencode(data)
+> url = base_url + data
+> headers = {
+>   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'
+> }
+> req = urllib.request.Request(url=url, headers=headers)
+> return req
+> 
+> 
+> def get_content(req):
+> response = urllib.request.urlopen(req)
+> c = response.read().decode('utf-8')
+> return c
+> 
+> if __name__ == '__main__':
+> start_page = int(input('请输入起始页码：'))
+> end_page = int(input('请输入结束页码：'))
+> 
+> for page in range(start_page,end_page + 1):
+>   request = create_request(page)
+>   content = get_content(request)
+>   print(content)
+> ```
+>
+> **AJAX POST请求**
+>
+> ```python
+> import urllib.request
+> import urllib.parse
+> 
+> 
+> def create_request(page_no):
+> url = 'https://www.kfc.com.cn/kfccda/ashx/GetStoreList.ashx?op=cname'
+> data = {
+>   'cname' : '深圳',
+>   'pid': '',
+>   'pageIndex': page_no,
+>   'pageSize': 10
+> }
+> data = urllib.parse.urlencode(data).encode('utf-8')
+> headers = {
+>   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'
+> }
+> req = urllib.request.Request(url=url, data=data,headers=headers)
+> return req
+> 
+> 
+> def get_content(req):
+> response = urllib.request.urlopen(req)
+> c = response.read().decode('utf-8')
+> return c
+> 
+> if __name__ == '__main__':
+> start_page = int(input('请输入起始页码：'))
+> end_page = int(input('请输入结束页码：'))
+> 
+> for page in range(start_page,end_page + 1):
+>   request = create_request(page)
+>   content = get_content(request)
+>   print(content)
+> ```
+>
+> **异常捕获**
+>
+> ```python
+> import urllib.request
+> import urllib.error
+> 
+> 
+> url = 'https://blog.csdn.net/yyz_1987/article/details/1480188651'
+> headers = {
+> 'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36'
+> }
+> 
+> try :
+> request = urllib.request.Request(url=url,headers=headers)
+> response = urllib.request.urlopen(request)
+> content = response.read().decode('utf-8')
+> print(content)
+> except urllib.error.HTTPError as e:
+> print('链接出错')
+> print(e)
+> except urllib.error.URLError as e:
+> print('请求出错')
+> print(e)
+> ```
+>
+> **代理访问**
+>
+> ```python
+> import urllib.request
+> import urllib.error
+> import random
+> 
+> 
+> url = 'https://qifu-api.baidubce.com/ip/local/geo/v1/district?'
+> headers = {
+>  'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36'
+> }
+> 
+> request = urllib.request.Request(url=url, headers=headers)
+> # 获取handler对象
+> proxies_pool = [
+>  {'https':'117.86.91.234:19110'},
+>  {'https':'114.232.3.79:23425'},
+>  {'https':'117.86.203.242:20973'}
+> ]
+> 
+> proxies = random.choice(proxies_pool)
+> 
+> handler = urllib.request.ProxyHandler(proxies=proxies)
+> # 获取opener对象
+> opener = urllib.request.build_opener(handler)
+> # 调用open方法
+> response = opener.open(request)
+> content = response.read().decode('utf-8')
+> print(content)
+> with open('ip.html', 'w', encoding='utf-8') as fp:
+>  fp.write(content)
+> ```
+>
+> **xpath**
+>
+> ```python
+> import urllib.request
+> import urllib.error
+> import random
+> from lxml import etree
+> 
+> 
+> url = 'https://www.sixyin.com/'
+> headers = {
+>     'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36'
+> }
+> 
+> request = urllib.request.Request(url=url, headers=headers)
+> # 获取handler对象
+> proxies_pool = [
+>     {'http':'117.86.91.234:19110'},
+>     {'http':'114.232.3.79:23425'},
+>     {'http':'117.86.203.242:20973'}
+> ]
+> 
+> proxies = random.choice(proxies_pool)
+> 
+> handler = urllib.request.ProxyHandler(proxies=proxies)
+> # 获取opener对象
+> opener = urllib.request.build_opener(handler)
+> # 调用open方法
+> response = opener.open(request)
+> content = response.read().decode('utf-8')
+> 
+> tree = etree.HTML(content)
+> result = tree.xpath('//posts//h2[@class="item-heading"]/a/text()')
+> print(result)
+> ```
+>
+> **jsonpath**
+>
+> ```python
+> import json
+> import urllib.request
+> import urllib.error
+> import random
+> import jsonpath
+> 
+> url = 'https://www.taopiaopiao.com/cityAction.json?activityId&_ksTS=1757058776310_124&jsoncallback=jsonp125&action=cityAction&n_s=new&event_submit_doGetAllRegion=true'
+> headers = {
+>     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36',
+>     'cookie': 'cna=3oNBId1DdTwBASQOA7KU6M6H; xlly_s=1; isg=BFpa8Ps-5u8Wp2pDAZxj8oTvqwB8i95lmus2ZWTSw-241_oRTBjKdWwpo6PLB1b9',
+>     'referer': 'https://www.taopiaopiao.com/?tbpm=3'
+> }
+> 
+> request = urllib.request.Request(url=url, headers=headers)
+> # 获取handler对象
+> proxies_pool = [
+>     {'http': '117.86.91.234:19110'},
+>     {'http': '114.232.3.79:23425'},
+>     {'http': '117.86.203.242:20973'}
+> ]
+> 
+> proxies = random.choice(proxies_pool)
+> 
+> handler = urllib.request.ProxyHandler(proxies=proxies)
+> # 获取opener对象
+> opener = urllib.request.build_opener(handler)
+> # 调用open方法
+> response = opener.open(request)
+> content = response.read().decode('utf-8')
+> content = content.split('(')[1].split(')')[0]
+> with open('test.json', 'w', encoding='utf-8') as fp:
+>     fp.write(content)
+> 
+> obj = json.load(open('test.json', encoding='utf-8'))
+> 
+> city_list = jsonpath.jsonpath(obj, '$..regionName')
+> print(city_list)
 > ```
 >
 > 
