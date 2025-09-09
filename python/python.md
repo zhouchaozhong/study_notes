@@ -1217,13 +1217,13 @@
 > def create_request(page_no):
 > base_url = 'https://movie.douban.com/j/chart/top_list?type=5&interval_id=100%3A90&action=&'
 > data = {
->   'start': (page_no - 1) * 20,
->   'limit': 20
+> 'start': (page_no - 1) * 20,
+> 'limit': 20
 > }
 > data = urllib.parse.urlencode(data)
 > url = base_url + data
 > headers = {
->   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'
+> 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'
 > }
 > req = urllib.request.Request(url=url, headers=headers)
 > return req
@@ -1239,9 +1239,9 @@
 > end_page = int(input('请输入结束页码：'))
 > 
 > for page in range(start_page,end_page + 1):
->   request = create_request(page)
->   content = get_content(request)
->   print(content)
+> request = create_request(page)
+> content = get_content(request)
+> print(content)
 > ```
 >
 > **AJAX POST请求**
@@ -1254,14 +1254,14 @@
 > def create_request(page_no):
 > url = 'https://www.kfc.com.cn/kfccda/ashx/GetStoreList.ashx?op=cname'
 > data = {
->   'cname' : '深圳',
->   'pid': '',
->   'pageIndex': page_no,
->   'pageSize': 10
+> 'cname' : '深圳',
+> 'pid': '',
+> 'pageIndex': page_no,
+> 'pageSize': 10
 > }
 > data = urllib.parse.urlencode(data).encode('utf-8')
 > headers = {
->   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'
+> 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'
 > }
 > req = urllib.request.Request(url=url, data=data,headers=headers)
 > return req
@@ -1277,9 +1277,9 @@
 > end_page = int(input('请输入结束页码：'))
 > 
 > for page in range(start_page,end_page + 1):
->   request = create_request(page)
->   content = get_content(request)
->   print(content)
+> request = create_request(page)
+> content = get_content(request)
+> print(content)
 > ```
 >
 > **异常捕获**
@@ -1317,15 +1317,15 @@
 > 
 > url = 'https://qifu-api.baidubce.com/ip/local/geo/v1/district?'
 > headers = {
->  'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36'
+> 'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36'
 > }
 > 
 > request = urllib.request.Request(url=url, headers=headers)
 > # 获取handler对象
 > proxies_pool = [
->  {'https':'117.86.91.234:19110'},
->  {'https':'114.232.3.79:23425'},
->  {'https':'117.86.203.242:20973'}
+> {'https':'117.86.91.234:19110'},
+> {'https':'114.232.3.79:23425'},
+> {'https':'117.86.203.242:20973'}
 > ]
 > 
 > proxies = random.choice(proxies_pool)
@@ -1338,7 +1338,7 @@
 > content = response.read().decode('utf-8')
 > print(content)
 > with open('ip.html', 'w', encoding='utf-8') as fp:
->  fp.write(content)
+> fp.write(content)
 > ```
 >
 > **xpath**
@@ -1352,15 +1352,15 @@
 > 
 > url = 'https://www.sixyin.com/'
 > headers = {
->     'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36'
+> 'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36'
 > }
 > 
 > request = urllib.request.Request(url=url, headers=headers)
 > # 获取handler对象
 > proxies_pool = [
->     {'http':'117.86.91.234:19110'},
->     {'http':'114.232.3.79:23425'},
->     {'http':'117.86.203.242:20973'}
+> {'http':'117.86.91.234:19110'},
+> {'http':'114.232.3.79:23425'},
+> {'http':'117.86.203.242:20973'}
 > ]
 > 
 > proxies = random.choice(proxies_pool)
@@ -1388,17 +1388,17 @@
 > 
 > url = 'https://www.taopiaopiao.com/cityAction.json?activityId&_ksTS=1757058776310_124&jsoncallback=jsonp125&action=cityAction&n_s=new&event_submit_doGetAllRegion=true'
 > headers = {
->     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36',
->     'cookie': 'cna=3oNBId1DdTwBASQOA7KU6M6H; xlly_s=1; isg=BFpa8Ps-5u8Wp2pDAZxj8oTvqwB8i95lmus2ZWTSw-241_oRTBjKdWwpo6PLB1b9',
->     'referer': 'https://www.taopiaopiao.com/?tbpm=3'
+> 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36',
+> 'cookie': 'cna=3oNBId1DdTwBASQOA7KU6M6H; xlly_s=1; isg=BFpa8Ps-5u8Wp2pDAZxj8oTvqwB8i95lmus2ZWTSw-241_oRTBjKdWwpo6PLB1b9',
+> 'referer': 'https://www.taopiaopiao.com/?tbpm=3'
 > }
 > 
 > request = urllib.request.Request(url=url, headers=headers)
 > # 获取handler对象
 > proxies_pool = [
->     {'http': '117.86.91.234:19110'},
->     {'http': '114.232.3.79:23425'},
->     {'http': '117.86.203.242:20973'}
+> {'http': '117.86.91.234:19110'},
+> {'http': '114.232.3.79:23425'},
+> {'http': '117.86.203.242:20973'}
 > ]
 > 
 > proxies = random.choice(proxies_pool)
@@ -1411,7 +1411,7 @@
 > content = response.read().decode('utf-8')
 > content = content.split('(')[1].split(')')[0]
 > with open('test.json', 'w', encoding='utf-8') as fp:
->     fp.write(content)
+> fp.write(content)
 > 
 > obj = json.load(open('test.json', encoding='utf-8'))
 > 
@@ -1419,5 +1419,100 @@
 > print(city_list)
 > ```
 >
+> **requests库基本使用**
+>
+> ```python
+> import requests
 > 
+> url = 'http://www.baidu.com'
+> response = requests.get(url=url)
+> # 设置响应编码格式
+> response.encoding = 'utf-8'
+> print(type(response))
+> # 以字符串形式返回网页源码
+> # print(response.text)
+> # 返回url
+> print(response.url)
+> # 返回二进制数据
+> print(response.content)
+> # 返回状态码
+> print(response.status_code)
+> # 响应头
+> print(response.headers)
+> ```
+>
+> **requests get请求**
+>
+> ```python
+> import requests
+> 
+> url = 'http://www.baidu.com/s'
+> 
+> headers = {
+>     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'
+> }
+> 
+> data = {
+>     'wd': '北京'
+> }
+> 
+> response = requests.get(url=url,params=data, headers=headers)
+> 
+> content = response.text
+> print(content)
+> ```
+>
+> **requests post请求**
+>
+> ```python
+> import requests
+> import json
+> 
+> url = 'https://fanyi.baidu.com/sug'
+> 
+> headers = {
+>     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'
+> }
+> 
+> data = {
+>     'kw': 'egg'
+> }
+> 
+> response = requests.post(url=url,data=data, headers=headers)
+> 
+> content = response.text
+> print(content)
+> 
+> obj = response.json()
+> print(obj)
+> ```
+>
+>  **requests 代理**
+>
+> ```python
+> import requests
+> 
+> url = 'http://www.baidu.com/s'
+> 
+> headers = {
+>     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'
+> }
+> 
+> data = {
+>     'wd': 'ip'
+> }
+> 
+> proxy = {
+>     'http': '121.226.32.88:18541'
+> }
+> 
+> response = requests.get(url=url,params=data, headers=headers,proxies=proxy)
+> 
+> content = response.text
+> print(content)
+> ```
+
+### scrapy
+
+
 
