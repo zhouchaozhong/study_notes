@@ -1514,5 +1514,436 @@
 
 ### scrapy
 
+##### 创建项目
+
+> ```python
+> scrapy startproject 项目名称
+> ```
+
+##### 创建爬虫文件
+
+> ```python
+> scrapy genspider 爬虫文件的名字 要爬取的网页
+> 示例： scrapy genspider baidu www.baidu.com
+> ```
+>
+> **示例文件**
+>
+> baidu.py
+>
+> ```python
+> import scrapy
+> 
+> 
+> class BaiduSpider(scrapy.Spider):
+>     # 爬虫名
+>     name = "baidu"
+>     # 允许的域名
+>     allowed_domains = ["www.baidu.com"]
+>     # 起始URL
+>     start_urls = ["http://www.baidu.com"]
+> 
+>     # 执行了start_urls之后执行的方法，方法中的response参数就是请求返回的响应对象
+>     def parse(self, response):
+>         print("-----=======================爬取网页完毕=====================----")
+>         print(response.text)
+> 
+> ```
+
+##### 运行爬虫代码
+
+> ```python
+> scrapy crawl 爬虫名 ，上面代码中BaiduSpider方法的name的赋值
+> ```
+>
+> 运行爬虫，需要将settings.py文件中的遵守robots协议改为False
+>
+> ROBOTSTXT_OBEY = False
+>
+> ```python
+> # Scrapy settings for scrapy_demo project
+> #
+> # For simplicity, this file contains only settings considered important or
+> # commonly used. You can find more settings consulting the documentation:
+> #
+> #     https://docs.scrapy.org/en/latest/topics/settings.html
+> #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
+> #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
+> 
+> BOT_NAME = "scrapy_demo"
+> 
+> SPIDER_MODULES = ["scrapy_demo.spiders"]
+> NEWSPIDER_MODULE = "scrapy_demo.spiders"
+> 
+> ADDONS = {}
+> 
+> 
+> # Crawl responsibly by identifying yourself (and your website) on the user-agent
+> #USER_AGENT = "scrapy_demo (+http://www.yourdomain.com)"
+> 
+> # Obey robots.txt rules
+> # ROBOTSTXT_OBEY = True
+> ROBOTSTXT_OBEY = False
+> 
+> # Concurrency and throttling settings
+> #CONCURRENT_REQUESTS = 16
+> CONCURRENT_REQUESTS_PER_DOMAIN = 1
+> DOWNLOAD_DELAY = 1
+> 
+> # Disable cookies (enabled by default)
+> #COOKIES_ENABLED = False
+> 
+> # Disable Telnet Console (enabled by default)
+> #TELNETCONSOLE_ENABLED = False
+> 
+> # Override the default request headers:
+> #DEFAULT_REQUEST_HEADERS = {
+> #    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+> #    "Accept-Language": "en",
+> #}
+> 
+> # Enable or disable spider middlewares
+> # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
+> #SPIDER_MIDDLEWARES = {
+> #    "scrapy_demo.middlewares.ScrapyDemoSpiderMiddleware": 543,
+> #}
+> 
+> # Enable or disable downloader middlewares
+> # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
+> #DOWNLOADER_MIDDLEWARES = {
+> #    "scrapy_demo.middlewares.ScrapyDemoDownloaderMiddleware": 543,
+> #}
+> 
+> # Enable or disable extensions
+> # See https://docs.scrapy.org/en/latest/topics/extensions.html
+> #EXTENSIONS = {
+> #    "scrapy.extensions.telnet.TelnetConsole": None,
+> #}
+> 
+> # Configure item pipelines
+> # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
+> #ITEM_PIPELINES = {
+> #    "scrapy_demo.pipelines.ScrapyDemoPipeline": 300,
+> #}
+> 
+> # Enable and configure the AutoThrottle extension (disabled by default)
+> # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
+> #AUTOTHROTTLE_ENABLED = True
+> # The initial download delay
+> #AUTOTHROTTLE_START_DELAY = 5
+> # The maximum download delay to be set in case of high latencies
+> #AUTOTHROTTLE_MAX_DELAY = 60
+> # The average number of requests Scrapy should be sending in parallel to
+> # each remote server
+> #AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
+> # Enable showing throttling stats for every response received:
+> #AUTOTHROTTLE_DEBUG = False
+> 
+> # Enable and configure HTTP caching (disabled by default)
+> # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html#httpcache-middleware-settings
+> #HTTPCACHE_ENABLED = True
+> #HTTPCACHE_EXPIRATION_SECS = 0
+> #HTTPCACHE_DIR = "httpcache"
+> #HTTPCACHE_IGNORE_HTTP_CODES = []
+> #HTTPCACHE_STORAGE = "scrapy.extensions.httpcache.FilesystemCacheStorage"
+> 
+> # Set settings whose default value is deprecated to a future-proof value
+> FEED_EXPORT_ENCODING = "utf-8"
+> 
+> ```
+
+##### 项目结构
+
+> 项目结构图示
+>
+> ![](./images/scrapy_struct.png)
+>
+> 代码示例：
+>
+> ```python
+> import scrapy
+> 
+> 
+> class TcSpider(scrapy.Spider):
+>     # 爬虫名
+>     name = "tc"
+>     # 允许的域名
+>     allowed_domains = ["cn.58.com"]
+>     # 起始URL
+>     start_urls = ["https://cn.58.com/sou/?key=%E5%B1%B1%E4%B8%9C%E8%8F%8F%E6%B3%BD&classpolicy=classify_E%2Cuuid_nJNstmFBBbzaPm6WymaHXFEFD36FtMsE%2Chit_composition&search_uuid=nJNstmFBBbzaPm6WymaHXFEFD36FtMsE&search_type=input"]
+> 
+>     # 执行了start_urls之后执行的方法，方法中的response参数就是请求返回的响应对象
+>     def parse(self, response):
+>         print("======================================================")
+>         # 字符串形式返回网页源码
+>         # content = response.text
+>         # print(content)
+>         # 二进制数据
+>         # content = response.body
+>         # print(content)
+>         content = response.xpath('//div[@class="main"]//span/text()')
+>         content2 = response.xpath('//div[@class="main"]//input/@value')
+>         print(content)
+>         print(content2)
+> 
+> ```
+>
+
+##### 爬虫示例
+
+> dang.py
+>
+> ```python
+> import scrapy
+> from scrapy_demo.items import ScrapyDemoItem
+> from scrapy.linkextractors import LinkExtractor
+> from scrapy.spiders import CrawlSpider, Rule
+> 
+> class DangSpider(scrapy.Spider):
+>     # 爬虫名
+>     name = "dang"
+>     # 允许的域名
+>     allowed_domains = ["dangdang.com"]
+>     # 起始URL
+>     start_urls = ["https://category.dangdang.com/cp01.01.02.00.00.00.html"]
+> 
+>     # 链接提取器规则
+>     # rules = [
+>     #     Rule(LinkExtractor(allow=r'//product.dangdang.com/\d+\.html'), callback='parse', follow=True)
+>     # ]
+> 
+>     base_url = 'https://category.dangdang.com/pg'
+>     page = 1
+> 
+>     def parse(self, response):
+>         print('===================================================')
+>         li_list = response.xpath('//ul[@id="component_59"]/li')
+>         for li in li_list:
+>             src = li.xpath('.//img/@data-original').extract_first()
+>             if src:
+>                 src = src
+>             else:
+>                 src = li.xpath('.//img/@src').extract_first()
+>             name = li.xpath('.//img/@alt').extract_first()
+>             price = li.xpath('.//p[@class="price"]/span[1]/text()').extract_first()
+>             print(src,name,price)
+> 
+>             book = ScrapyDemoItem(src=src, name=name, price=price)
+>             # 获取一个book就将book交给pipelines
+>             yield book
+> 
+>             if self.page <= 3:
+>                 self.page += 1
+>                 url = self.base_url + str(self.page) + '-cp01.01.02.00.00.00.html'
+>                 yield scrapy.Request(url=url, callback=self.parse)
+> ```
+>
+> items.py
+>
+> ```python
+> # Define here the models for your scraped items
+> #
+> # See documentation in:
+> # https://docs.scrapy.org/en/latest/topics/items.html
+> 
+> import scrapy
+> 
+> 
+> class ScrapyDemoItem(scrapy.Item):
+>     # define the fields for your item here like:
+>     # name = scrapy.Field()
+> 
+>     # 图片
+>     src = scrapy.Field()
+>     # 名字
+>     name = scrapy.Field()
+>     # 价格
+>     price = scrapy.Field()
+> 
+> ```
+>
+> pipelines.py
+>
+> ```python
+> # Define your item pipelines here
+> #
+> # Don't forget to add your pipeline to the ITEM_PIPELINES setting
+> # See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
+> 
+> 
+> # useful for handling different item types with a single interface
+> from itemadapter import ItemAdapter
+> from pymysql import connect
+> 
+> 
+> # 如果想使用管道的话，那么就必须在settings中开启管道
+> class ScrapyDemoPipeline:
+> 
+>     # 爬虫请求之前执行的方法
+>     def open_spider(self, spider):
+>         self.fp = open('book.json','w',encoding='utf-8')
+> 
+>     # item就是yield后面的book对象
+>     def process_item(self, item, spider):
+>         # 这种模式不推荐，因为每传递过来一个对象，就会打开一次文件，对文件操作频繁，效率会下降
+>         # with open('book.json','a',encoding='utf-8') as fp:
+>         #     fp.write(str(item))
+>         self.fp.write(str(item))
+>         return item
+>     # 爬虫请求关闭之后执行的方法
+>     def close_spider(self, spider):
+>         print('-----------------------------------------')
+> 
+> 
+> import urllib.request
+> class ScrapyDemoDownloadPipeline:
+> 
+>     def process_item(self, item, spider):
+>         url = 'https:' + item.get('src')
+>         filename = './books/' + item.get('name') + '.jpg'
+>         urllib.request.urlretrieve(url, filename)
+>         return item
+> 
+> 
+> from scrapy.utils.project import get_project_settings
+> import pymysql
+> class ScrapyDemoMysqlPipeline:
+>     def open_spider(self, spider):
+>         settings = get_project_settings()
+>         self.host = settings['DB_HOST']
+>         self.port = settings['DB_PORT']
+>         self.user = settings['DB_USER']
+>         self.password = settings['DB_PASSWORD']
+>         self.name = settings['DB_NAME']
+>         self.charset = settings['DB_CHARSET']
+> 
+>         self.connect()
+> 
+>     def connect(self):
+>         self.conn = pymysql.connect(host=self.host, port=self.port, user=self.user, password=self.password,
+>                                   database=self.name, charset=self.charset)
+>         self.cursor = self.conn.cursor()
+> 
+>     def process_item(self, item, spider):
+>         sql = 'insert into book(name,src,price) values ("{}","{}","{}")'.format(item['name'],item['src'],item['price'])
+>         self.cursor.execute(sql)
+>         self.conn.commit()
+>         return item
+> 
+>     def close_spider(self, spider):
+>         self.cursor.close()
+>         self.conn.close()
+> 
+> ```
+>
+> settings.py
+>
+> ```python
+> # Scrapy settings for scrapy_demo project
+> #
+> # For simplicity, this file contains only settings considered important or
+> # commonly used. You can find more settings consulting the documentation:
+> #
+> #     https://docs.scrapy.org/en/latest/topics/settings.html
+> #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
+> #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
+> 
+> BOT_NAME = "scrapy_demo"
+> 
+> SPIDER_MODULES = ["scrapy_demo.spiders"]
+> NEWSPIDER_MODULE = "scrapy_demo.spiders"
+> 
+> ADDONS = {}
+> 
+> 
+> # Crawl responsibly by identifying yourself (and your website) on the user-agent
+> #USER_AGENT = "scrapy_demo (+http://www.yourdomain.com)"
+> 
+> # Obey robots.txt rules
+> # ROBOTSTXT_OBEY = True
+> ROBOTSTXT_OBEY = False
+> 
+> # Concurrency and throttling settings
+> #CONCURRENT_REQUESTS = 16
+> CONCURRENT_REQUESTS_PER_DOMAIN = 1
+> DOWNLOAD_DELAY = 1
+> 
+> # Disable cookies (enabled by default)
+> #COOKIES_ENABLED = False
+> 
+> # Disable Telnet Console (enabled by default)
+> #TELNETCONSOLE_ENABLED = False
+> 
+> # Override the default request headers:
+> #DEFAULT_REQUEST_HEADERS = {
+> #    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+> #    "Accept-Language": "en",
+> #}
+> 
+> # Enable or disable spider middlewares
+> # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
+> #SPIDER_MIDDLEWARES = {
+> #    "scrapy_demo.middlewares.ScrapyDemoSpiderMiddleware": 543,
+> #}
+> 
+> # Enable or disable downloader middlewares
+> # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
+> #DOWNLOADER_MIDDLEWARES = {
+> #    "scrapy_demo.middlewares.ScrapyDemoDownloaderMiddleware": 543,
+> #}
+> 
+> # Enable or disable extensions
+> # See https://docs.scrapy.org/en/latest/topics/extensions.html
+> #EXTENSIONS = {
+> #    "scrapy.extensions.telnet.TelnetConsole": None,
+> #}
+> 
+> # 数据库配置
+> DB_HOST = "127.0.0.1"
+> DB_PORT = 3306
+> DB_USER = "root"
+> DB_PASSWORD = "root"
+> DB_NAME = "test_dangdang"
+> DB_CHARSET = "utf8"
+> 
+> # Configure item pipelines
+> # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
+> ITEM_PIPELINES = {
+>     # 管道可以可以有很多个，管道是有优先级的，优先级的范围是1到1000，值越小，优先级越高
+>    "scrapy_demo.pipelines.ScrapyDemoPipeline": 300,
+>    "scrapy_demo.pipelines.ScrapyDemoDownloadPipeline": 301,
+>    "scrapy_demo.pipelines.ScrapyDemoMysqlPipeline": 302,
+> }
+> 
+> # Enable and configure the AutoThrottle extension (disabled by default)
+> # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
+> #AUTOTHROTTLE_ENABLED = True
+> # The initial download delay
+> #AUTOTHROTTLE_START_DELAY = 5
+> # The maximum download delay to be set in case of high latencies
+> #AUTOTHROTTLE_MAX_DELAY = 60
+> # The average number of requests Scrapy should be sending in parallel to
+> # each remote server
+> #AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
+> # Enable showing throttling stats for every response received:
+> #AUTOTHROTTLE_DEBUG = False
+> 
+> # Enable and configure HTTP caching (disabled by default)
+> # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html#httpcache-middleware-settings
+> #HTTPCACHE_ENABLED = True
+> #HTTPCACHE_EXPIRATION_SECS = 0
+> #HTTPCACHE_DIR = "httpcache"
+> #HTTPCACHE_IGNORE_HTTP_CODES = []
+> #HTTPCACHE_STORAGE = "scrapy.extensions.httpcache.FilesystemCacheStorage"
+> 
+> # Set settings whose default value is deprecated to a future-proof value
+> FEED_EXPORT_ENCODING = "utf-8"
+> 
+> ```
+>
+> 项目目录结构
+>
+> ![](./images/scrapy_crawl_struct.png)
+
 
 
